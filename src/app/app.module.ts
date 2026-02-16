@@ -7,6 +7,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './modules/auth/login/login.component';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { provideRouter, withHashLocation } from '@angular/router';
+import { routes } from './app-routing.module';
 
 /**
  * Módulo raíz de la aplicación
@@ -21,12 +23,15 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     ReactiveFormsModule,
   ],
   providers: [
+    provideRouter(routes, withHashLocation()),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
       multi: true,
     },
+    
   ],
+  
   bootstrap: [AppComponent],
 })
 export class AppModule {}
