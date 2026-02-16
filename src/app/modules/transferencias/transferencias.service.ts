@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { Transferencia, CreateTransferenciaDto } from './transferencia.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TransferenciasService {
-  private apiUrl = 'http://localhost:3000/api/transferencias';
+  private apiUrl = `${environment.apiUrl}/transferencias`;
 
   constructor(private http: HttpClient) {}
 
