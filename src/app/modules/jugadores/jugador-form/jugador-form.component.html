@@ -118,7 +118,11 @@
       </div>
 
       <div class="form-group">
+        <div *ngIf="!selectedLigaId" class="info-message">
+          ℹ️ Primero selecciona un equipo para poder subir imágenes.
+        </div>
         <app-image-upload 
+          *ngIf="selectedLigaId"
           [tipo]="'jugador'"
           [ligaId]="selectedLigaId"
           [currentImageUrl]="jugadorForm.get('imagen')?.value"
@@ -129,7 +133,11 @@
       </div>
 
       <div class="form-group">
+        <div *ngIf="!selectedLigaId" class="info-message">
+          ℹ️ Primero selecciona un equipo para poder subir la imagen de cédula.
+        </div>
         <app-image-upload 
+          *ngIf="selectedLigaId"
           [tipo]="'cedula'"
           [ligaId]="selectedLigaId"
           [currentImageUrl]="jugadorForm.get('imagenCedula')?.value"

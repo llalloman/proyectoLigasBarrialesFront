@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { JugadorCampeonatosService } from '../jugador-campeonatos.service';
 import { JugadorCampeonato } from '../jugador-campeonato.model';
@@ -11,7 +12,7 @@ import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.c
 @Component({
   selector: 'app-jugador-campeonatos-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, MainNavComponent],
+  imports: [CommonModule, RouterModule, MainNavComponent, FormsModule],
   templateUrl: './jugador-campeonatos-list.component.html',
   styleUrls: ['./jugador-campeonatos-list.component.scss']
 })
@@ -25,6 +26,7 @@ export class JugadorCampeonatosListComponent implements OnInit {
   campeonatoNombre = '';
   showImageModal = false;
   modalImageUrl = '';
+  searchTerm = '';
 
   constructor(
     private jugadorCampeonatosService: JugadorCampeonatosService,
@@ -136,6 +138,26 @@ export class JugadorCampeonatosListComponent implements OnInit {
 
   editar(id: number): void {
     this.router.navigate(['/jugador-campeonatos/editar', id]);
+  }
+
+  get filteredJugadorCampeonatos(): JugadorCampeonato[] {
+    if (!this.searchTerm.trim()) {
+      return this.jugadorCampeonatos;
+    }
+
+    const term = this.searchTerm.toLowerCase().trim();
+    return this.jugadorCampeonatos.filter(jc => 
+      jc.jugador?.nombre?.toLowerCase().includes(term) ||
+      jc.jugador?.cedula?.toLowerCase().includes(term)
+    );
+  }
+
+  onSearchChange(term: string): void {
+    this.searchTerm = term;
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
   }
 
   verHistorial(jugadorId: number): void {

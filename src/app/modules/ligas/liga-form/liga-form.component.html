@@ -78,7 +78,11 @@
     </div>
 
     <div class="form-group">
+      <div *ngIf="!isEditMode" class="info-message">
+        ℹ️ Primero guarda la liga. Luego podrás editarla para agregar el logo.
+      </div>
       <app-image-upload 
+        *ngIf="isEditMode"
         [tipo]="'liga'"
         [ligaId]="ligaId || undefined"
         [currentImageUrl]="ligaForm.get('imagen')?.value"

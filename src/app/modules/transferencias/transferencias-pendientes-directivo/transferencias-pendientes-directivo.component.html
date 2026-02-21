@@ -53,19 +53,19 @@
       <div class="card-header">
         <div class="player-info">
           <img
-            *ngIf="transferencia.jugador?.fotoPerfil"
-            [src]="transferencia.jugador.fotoPerfil"
-            alt="{{ transferencia.jugador.nombreCompleto }}"
+            *ngIf="transferencia.jugador?.fotoPerfil || transferencia.jugador?.imagen"
+            [src]="transferencia.jugador.fotoPerfil || transferencia.jugador.imagen"
+            alt="{{ transferencia.jugador.nombreCompleto || transferencia.jugador.nombre }}"
             class="player-photo"
           />
           <div
             class="player-photo-placeholder"
-            *ngIf="!transferencia.jugador?.fotoPerfil"
+            *ngIf="!transferencia.jugador?.fotoPerfil && !transferencia.jugador?.imagen"
           >
             👤
           </div>
           <div>
-            <h3>{{ transferencia.jugador?.nombreCompleto }}</h3>
+            <h3>{{ transferencia.jugador?.nombreCompleto || transferencia.jugador?.nombre || 'Sin nombre' }}</h3>
             <p class="player-detail">{{ transferencia.jugador?.cedula }}</p>
           </div>
         </div>

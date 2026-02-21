@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { JugadorCampeonatosService } from '../jugador-campeonatos.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,7 +11,7 @@ import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.c
 @Component({
   selector: 'app-jugador-campeonatos-pendientes',
   standalone: true,
-  imports: [CommonModule, RouterModule, MainNavComponent],
+  imports: [CommonModule, RouterModule, MainNavComponent, FormsModule],
   templateUrl: './jugador-campeonatos-pendientes.component.html',
   styleUrls: ['./jugador-campeonatos-pendientes.component.scss'],
 })
@@ -22,6 +23,7 @@ export class JugadorCampeonatosPendientesComponent implements OnInit {
   user$ = this.authService.currentUser$;
   showImageModal = false;
   modalImageUrl = '';
+  searchTerm = '';
 
   constructor(
     private jugadorCampeonatosService: JugadorCampeonatosService,
@@ -90,6 +92,26 @@ export class JugadorCampeonatosPendientesComponent implements OnInit {
           },
         });
     }
+  }
+
+  get filteredHabilitaciones(): JugadorCampeonato[] {
+    if (!this.searchTerm.trim()) {
+      return this.habilitaciones;
+    }
+
+    const term = this.searchTerm.toLowerCase().trim();
+    return this.habilitaciones.filter(h => 
+      h.jugador?.nombre?.toLowerCase().includes(term) ||
+      h.jugador?.cedula?.toLowerCase().includes(term)
+    );
+  }
+
+  onSearchChange(term: string): void {
+    this.searchTerm = term;
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
   }
 
   logout(): void {

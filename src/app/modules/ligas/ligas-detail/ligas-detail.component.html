@@ -54,12 +54,12 @@
 
       <div class="info-row">
         <label>Directivo:</label>
-        <p>{{ liga.directivo.nombre }}</p>
+        <p>{{ liga.directivo?.nombre || 'Sin asignar' }}</p>
       </div>
 
       <div class="info-row">
         <label>Email del Directivo:</label>
-        <p>{{ liga.directivo.email }}</p>
+        <p>{{ liga.directivo?.email || 'N/A' }}</p>
       </div>
     </div>
 

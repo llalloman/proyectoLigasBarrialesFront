@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { TransferenciasService } from '../transferencias.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,7 +11,7 @@ import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.c
 @Component({
   selector: 'app-transferencias-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, MainNavComponent],
+  imports: [CommonModule, RouterModule, FormsModule, MainNavComponent],
   templateUrl: './transferencias-list.component.html',
   styleUrls: ['./transferencias-list.component.scss'],
 })
@@ -22,6 +23,7 @@ export class TransferenciasListComponent implements OnInit {
   user$ = this.authService.currentUser$;
   currentUser: any = null;
   currentEquipoId: number | null = null;
+  searchTerm: string = '';
 
   constructor(
     private transferenciasService: TransferenciasService,
@@ -37,6 +39,34 @@ export class TransferenciasListComponent implements OnInit {
       }
     });
     this.loadTransferencias();
+  }
+
+  get filteredTransferencias(): Transferencia[] {
+    if (!this.searchTerm.trim()) {
+      return this.transferencias;
+    }
+    const search = this.searchTerm.toLowerCase().trim();
+    return this.transferencias.filter((t) => {
+      const nombreCompleto = t.jugador?.nombreCompleto?.toLowerCase() || '';
+      const cedula = t.jugador?.cedula?.toLowerCase() || '';
+      return nombreCompleto.includes(search) || cedula.includes(search);
+    });
+  }
+
+  onSearchChange(): void {
+    // El filtrado se hace automáticamente a través del getter
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+  }
+
+  viewCedulaImage(imageUrl: string | undefined): void {
+    if (imageUrl) {
+      window.open(imageUrl, '_blank');
+    } else {
+      alert('No hay imagen de cédula disponible para este jugador');
+    }
   }
 
   loadTransferencias(): void {

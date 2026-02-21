@@ -48,7 +48,7 @@
         <div class="liga-info">
           <p><strong>Ubicación:</strong> {{ liga.ubicacion }}</p>
           <p><strong>Fecha de fundación:</strong> {{ liga.fechaFundacion | date: 'dd/MM/yyyy' }}</p>
-          <p><strong>Directivo:</strong> {{ liga.directivo.nombre }}</p>
+          <p><strong>Directivo:</strong> {{ liga.directivo?.nombre || 'Sin asignar' }}</p>
         </div>
 
         <div class="liga-actions">

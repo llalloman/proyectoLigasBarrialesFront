@@ -31,6 +31,30 @@
     {{ errorMessage }}
   </div>
 
+  <!-- Barra de búsqueda -->
+  <div class="search-container" *ngIf="!loading && habilitaciones.length > 0">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Buscar por nombre o cédula del jugador..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange($any($event.target).value)"
+      />
+      <button 
+        *ngIf="searchTerm" 
+        class="clear-btn" 
+        (click)="clearSearch()"
+        title="Limpiar búsqueda">
+        ✕
+      </button>
+    </div>
+    <div class="search-results" *ngIf="searchTerm">
+      <span>{{ filteredHabilitaciones.length }} de {{ habilitaciones.length }} habilitaciones pendientes</span>
+    </div>
+  </div>
+
   <div class="loading-spinner" *ngIf="loading">
     <p>Cargando...</p>
   </div>
@@ -40,7 +64,7 @@
   </div>
 
   <div class="cards-grid" *ngIf="!loading && habilitaciones.length > 0">
-    <div class="card" *ngFor="let habilitacion of habilitaciones">
+    <div class="card" *ngFor="let habilitacion of filteredHabilitaciones">
       <div class="card-header">
         <div class="player-info">
           <h3>{{ habilitacion.jugador?.nombreCompleto }}</h3>

@@ -48,6 +48,23 @@
     {{ errorMessage }}
   </div>
 
+  <div class="search-container" *ngIf="!loading && transferencias.length > 0">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()"
+        placeholder="Buscar por nombre o cédula del jugador..."
+        class="search-input"
+      />
+      <button *ngIf="searchTerm" (click)="clearSearch()" class="clear-btn">✕</button>
+    </div>
+    <div class="search-results" *ngIf="searchTerm">
+      Mostrando {{ filteredTransferencias.length }} de {{ transferencias.length }} transferencias
+    </div>
+  </div>
+
   <div class="loading-spinner" *ngIf="loading">
     <p>Cargando...</p>
   </div>
@@ -56,22 +73,36 @@
     <p>No hay transferencias registradas</p>
   </div>
 
-  <div class="cards-grid" *ngIf="!loading && transferencias.length > 0">
-    <div class="card" *ngFor="let transferencia of transferencias">
+  <div class="empty-state" *ngIf="!loading && transferencias.length > 0 && filteredTransferencias.length === 0">
+    <p>No se encontraron transferencias con ese criterio de búsqueda</p>
+  </div>
+
+  <div class="cards-grid" *ngIf="!loading && filteredTransferencias.length > 0">
+    <div class="card" *ngFor="let transferencia of filteredTransferencias">
       <div class="card-header">
         <div class="player-info">
           <img
-            *ngIf="transferencia.jugador?.fotoPerfil"
-            [src]="transferencia.jugador.fotoPerfil"
-            alt="{{ transferencia.jugador.nombreCompleto }}"
+            *ngIf="transferencia.jugador?.fotoPerfil || transferencia.jugador?.imagen"
+            [src]="transferencia.jugador.fotoPerfil || transferencia.jugador.imagen"
+            alt="{{ transferencia.jugador.nombreCompleto || transferencia.jugador.nombre }}"
             class="player-photo"
           />
-          <div class="player-photo-placeholder" *ngIf="!transferencia.jugador?.fotoPerfil">
+          <div class="player-photo-placeholder" *ngIf="!transferencia.jugador?.fotoPerfil && !transferencia.jugador?.imagen">
             👤
           </div>
           <div>
-            <h3>{{ transferencia.jugador?.nombreCompleto }}</h3>
-            <p class="player-detail">{{ transferencia.jugador?.cedula }}</p>
+            <h3>{{ transferencia.jugador?.nombreCompleto || transferencia.jugador?.nombre || 'Sin nombre' }}</h3>
+            <div class="player-cedula">
+              <p class="player-detail">{{ transferencia.jugador?.cedula }}</p>
+              <button
+                type="button"
+                class="btn-view-cedula"
+                (click)="viewCedulaImage(transferencia.jugador?.imagenCedula)"
+                title="Ver imagen de cédula"
+              >
+                🪪
+              </button>
+            </div>
           </div>
         </div>
         <span

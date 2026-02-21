@@ -126,7 +126,12 @@ export class LigaFormComponent implements OnInit {
       : this.ligasService.create(formData);
 
     request.subscribe({
-      next: () => {
+      next: (response) => {
+        // Si es modo creación y no hay ligaId, guardarlo para futuras subidas de imagen
+        if (!this.isEditMode && response && response.id) {
+          this.ligaId = response.id;
+          this.isEditMode = true; // Cambiar a modo edición para que futuras subidas usen el ID correcto
+        }
         this.router.navigate(['/ligas']);
       },
       error: (error) => {
