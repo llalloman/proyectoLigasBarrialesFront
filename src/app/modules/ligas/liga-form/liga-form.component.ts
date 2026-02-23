@@ -88,7 +88,7 @@ export class LigaFormComponent implements OnInit {
         });
         
         // Agregar directivo actual al listado si no está presente
-        if (liga.directivo && !this.directivos.find(d => d.id === liga.directivo.id)) {
+        if (liga.directivo && !this.directivos.find(d => d.id === liga.directivo?.id)) {
           this.directivos = [liga.directivo, ...this.directivos];
         }
         
