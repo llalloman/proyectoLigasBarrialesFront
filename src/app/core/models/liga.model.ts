@@ -9,7 +9,7 @@ export interface Liga {
   ubicacion: string;
   fechaFundacion: string;
   imagen?: string;
-  directivo: User;
+  directivo?: User;
   directivoId: number;
   activo: boolean;
   creadoEn: string;
