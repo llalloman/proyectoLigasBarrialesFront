@@ -10,6 +10,7 @@ import { LoginComponent } from './modules/auth/login/login.component';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { routes } from './app-routing.module';
+import { FooterComponent } from './shared/components/footer/footer.component';
 
 /**
  * Módulo raíz de la aplicación
@@ -23,6 +24,7 @@ import { routes } from './app-routing.module';
     AppRoutingModule,
     HttpClientModule,
     ReactiveFormsModule,
+    FooterComponent,
   ],
   providers: [
     provideRouter(routes, withHashLocation()),
