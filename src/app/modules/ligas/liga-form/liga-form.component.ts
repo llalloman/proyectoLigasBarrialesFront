@@ -35,6 +35,8 @@ export class LigaFormComponent implements OnInit {
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
       ubicacion: ['', [Validators.required, Validators.maxLength(200)]],
       fechaFundacion: ['', Validators.required],
+      correo: ['', [Validators.maxLength(150), Validators.email]],
+      telefono: ['', [Validators.maxLength(20)]],
       directivoId: [''], // Opcional: puede asignarse después de crear la liga
       imagen: [''],
     });
@@ -83,6 +85,8 @@ export class LigaFormComponent implements OnInit {
           nombre: liga.nombre,
           ubicacion: liga.ubicacion,
           fechaFundacion: liga.fechaFundacion.split('T')[0], // Formato YYYY-MM-DD
+          correo: liga.correo || '',
+          telefono: liga.telefono || '',
           directivoId: liga.directivoId,
           imagen: liga.imagen || '',
         });
@@ -170,6 +174,9 @@ export class LigaFormComponent implements OnInit {
     }
     if (control.hasError('maxlength')) {
       const maxLength = control.getError('maxlength').requiredLength;
+    if (control.hasError('email')) {
+      return 'Ingrese un correo electrónico válido';
+    }
       return `Máximo ${maxLength} caracteres`;
     }
     return '';

@@ -301,6 +301,15 @@
       <div class="card-actions">
         <button
           type="button"
+          class="btn-icon btn-success"
+          (click)="descargarPdf(transferencia)"
+          title="Descargar PDF"
+          *ngIf="transferencia.estadoEquipoOrigen !== 'rechazado' && transferencia.estadoDirectivo !== 'rechazado'"
+        >
+          📄
+        </button>
+        <button
+          type="button"
           class="btn-icon btn-danger"
           (click)="cancelar(transferencia.id)"
           title="Cancelar"

@@ -13,6 +13,7 @@ import { LigasService } from '../../../core/services/ligas.service';
 import { CampeonatosService } from '../../campeonatos/campeonatos.service';
 import { EquiposService } from '../../../core/services/equipos.service';
 import { JugadoresService } from '../../../core/services/jugadores.service';
+import { PdfTransferenciaService } from '../../../core/services/pdf-transferencia.service';
 import { Transferencia } from '../transferencia.model';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
 import { Observable, map, startWith } from 'rxjs';
@@ -76,7 +77,8 @@ export class TransferenciasListComponent implements OnInit {
     private ligasService: LigasService,
     private campeonatosService: CampeonatosService,
     private equiposService: EquiposService,
-    private jugadoresService: JugadoresService
+    private jugadoresService: JugadoresService,
+    private pdfTransferenciaService: PdfTransferenciaService
   ) {}
 
   ngOnInit(): void {
@@ -439,6 +441,40 @@ export class TransferenciasListComponent implements OnInit {
       transferencia.estadoEquipoOrigen === 'pendiente' &&
       transferencia.estadoDirectivo === 'pendiente'
     );
+  }
+
+  /**
+   * Descarga el PDF de la transferencia
+   */
+  async descargarPdf(transferencia: Transferencia): Promise<void> {
+    try {
+      await this.pdfTransferenciaService.generarPdfTransferencia(transferencia);
+      this.successMessage = 'PDF generado exitosamente';
+      setTimeout(() => {
+        this.successMessage = '';
+      }, 3000);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      this.errorMessage = 'Error al generar el PDF';
+      setTimeout(() => {
+        this.errorMessage = '';
+      }, 3000);
+    }
+  }
+
+  /**
+   * Abre el PDF en una nueva pestaña
+   */
+  abrirPdf(transferencia: Transferencia): void {
+    try {
+      this.pdfTransferenciaService.abrirPdfTransferencia(transferencia);
+    } catch (error) {
+      console.error('Error opening PDF:', error);
+      this.errorMessage = 'Error al abrir el PDF';
+      setTimeout(() => {
+        this.errorMessage = '';
+      }, 3000);
+    }
   }
 
   logout(): void {

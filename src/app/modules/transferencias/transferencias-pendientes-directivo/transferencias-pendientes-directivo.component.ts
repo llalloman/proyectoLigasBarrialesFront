@@ -5,6 +5,7 @@ import { TransferenciasService } from '../transferencias.service';
 import { Transferencia } from '../transferencia.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
+import { PdfTransferenciaService } from '../../../core/services/pdf-transferencia.service';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
 
 @Component({
@@ -24,7 +25,8 @@ export class TransferenciasPendientesDirectivoComponent implements OnInit {
   constructor(
     private transferenciasService: TransferenciasService,
     private authService: AuthService,
-    public permissions: PermissionsService
+    public permissions: PermissionsService,
+    private pdfTransferenciaService: PdfTransferenciaService
   ) {}
 
   ngOnInit(): void {
@@ -105,6 +107,25 @@ export class TransferenciasPendientesDirectivoComponent implements OnInit {
         return 'badge-pendiente';
       default:
         return '';
+    }
+  }
+
+  /**
+   * Descarga el PDF de la transferencia
+   */
+  async descargarPdf(transferencia: Transferencia): Promise<void> {
+    try {
+      await this.pdfTransferenciaService.generarPdfTransferencia(transferencia);
+      this.successMessage = 'PDF generado exitosamente';
+      setTimeout(() => {
+        this.successMessage = '';
+      }, 3000);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      this.errorMessage = 'Error al generar el PDF';
+      setTimeout(() => {
+        this.errorMessage = '';
+      }, 3000);
     }
   }
 

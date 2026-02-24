@@ -397,6 +397,15 @@
       background-color: #c0392b;
     }
   }
+
+  &.btn-info {
+    background-color: #3498db;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #2980b9;
+    }
+  }
 }
 
 @media (max-width: 768px) {

@@ -8,6 +8,8 @@ export interface Liga {
   nombre: string;
   ubicacion: string;
   fechaFundacion: string;
+  correo?: string;
+  telefono?: string;
   imagen?: string;
   directivo?: User;
   directivoId: number;
@@ -32,6 +34,8 @@ export interface UpdateLigaRequest {
   nombre?: string;
   ubicacion?: string;
   fechaFundacion?: string;
+  correo?: string;
+  telefono?: string;
   directivoId?: number;
   activo?: boolean;
 }
