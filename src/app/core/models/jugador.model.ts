@@ -6,6 +6,7 @@ export interface Jugador {
   nombreCompleto?: string; // Campo virtual del backend
   fechaNacimiento?: Date;
   cedula?: string;
+  tipoDocumento?: string;
   equipoId?: number;
   equipo?: Equipo;
   descripcion?: string;

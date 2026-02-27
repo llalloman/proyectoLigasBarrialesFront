@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -46,6 +46,11 @@ export class JugadorCampeonatoFormComponent implements OnInit {
   currentRole = '';
   currentEquipoId: number | null = null;
   user$ = this.authService.currentUser$;
+  
+  // Contador de habilitaciones
+  habilitadosCount: number = 0;
+  maxHabilitados: number = 20;
+  showLimitInfo: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -58,13 +63,14 @@ export class JugadorCampeonatoFormComponent implements OnInit {
     private categoriasService: CategoriasService,
     private inscripcionesService: InscripcionesService,
     private authService: AuthService,
-    public permissions: PermissionsService
+    public permissions: PermissionsService,
+    private cdr: ChangeDetectorRef
   ) {
     this.form = this.fb.group({
-      campeonatoId: ['', Validators.required],
-      equipoId: ['', Validators.required],
-      jugadorId: ['', Validators.required],
-      categoriaId: ['', Validators.required],
+      campeonatoId: [null, Validators.required],
+      equipoId: [null, Validators.required],
+      jugadorId: [null, Validators.required],
+      categoriaId: [null, Validators.required],
       numeroCancha: [''],
       posicion: [''],
       observaciones: [''],
@@ -98,6 +104,7 @@ export class JugadorCampeonatoFormComponent implements OnInit {
     // Cargar categoría del equipo cuando se seleccione campeonato o equipo
     this.form.get('campeonatoId')?.valueChanges.subscribe(() => {
       this.loadCategoriaDelEquipo();
+      this.loadContadorHabilitados();
     });
 
     this.form.get('equipoId')?.valueChanges.subscribe((equipoId) => {
@@ -105,6 +112,7 @@ export class JugadorCampeonatoFormComponent implements OnInit {
         this.loadJugadoresByEquipo(equipoId);
       }
       this.loadCategoriaDelEquipo();
+      this.loadContadorHabilitados();
     });
 
     // Auto-completar datos del jugador cuando se seleccione
@@ -184,7 +192,7 @@ export class JugadorCampeonatoFormComponent implements OnInit {
         // Limpiar categoría seleccionada si ya no está en la lista
         const categoriaActual = this.form.get('categoriaId')?.value;
         if (categoriaActual && !categorias.find(c => c.id === Number(categoriaActual))) {
-          this.form.patchValue({ categoriaId: '' });
+          this.form.patchValue({ categoriaId: null });
         }
       },
       error: (error) => {
@@ -204,7 +212,7 @@ export class JugadorCampeonatoFormComponent implements OnInit {
     // Limpiar si falta algún campo
     if (!campeonatoId || !equipoId) {
       this.categorias = [];
-      this.form.patchValue({ categoriaId: '' });
+      this.form.patchValue({ categoriaId: null });
       return;
     }
 
@@ -225,14 +233,45 @@ export class JugadorCampeonatoFormComponent implements OnInit {
         } else {
           // Si no hay inscripción confirmada, limpiar
           this.categorias = [];
-          this.form.patchValue({ categoriaId: '' });
+          this.form.patchValue({ categoriaId: null });
           this.form.get('categoriaId')?.enable();
         }
       },
       error: (error) => {
         console.error('Error loading inscripción:', error);
         this.categorias = [];
-        this.form.patchValue({ categoriaId: '' });
+        this.form.patchValue({ categoriaId: null });
+      },
+    });
+  }
+
+  /**
+   * Cargar contador de jugadores habilitados
+   */
+  loadContadorHabilitados(): void {
+    const campeonatoId = this.form.get('campeonatoId')?.value;
+    const equipoId = this.form.get('equipoId')?.value;
+
+    // Ocultar info si falta algún campo
+    if (!campeonatoId || !equipoId) {
+      this.showLimitInfo = false;
+      return;
+    }
+
+    // Obtener el límite del campeonato seleccionado
+    const campeonato = this.campeonatos.find(c => c.id === Number(campeonatoId));
+    this.maxHabilitados = campeonato?.maxJugadoresHabilitados || 20;
+
+    // Contar habilitados actuales
+    this.jugadorCampeonatosService.getByCampeonatoAndEquipo(Number(campeonatoId), Number(equipoId)).subscribe({
+      next: (habilitaciones) => {
+        // Contar solo los que están en estado 'habilitado'
+        this.habilitadosCount = habilitaciones.filter(h => h.estado === 'habilitado' && h.activo).length;
+        this.showLimitInfo = true;
+      },
+      error: (error) => {
+        console.error('Error loading contador habilitados:', error);
+        this.showLimitInfo = false;
       },
     });
   }
@@ -243,26 +282,62 @@ export class JugadorCampeonatoFormComponent implements OnInit {
     this.loading = true;
     this.jugadorCampeonatosService.getById(this.jugadorCampeonatoId).subscribe({
       next: (jugadorCampeonato) => {
-        // Primero patchear los valores para que estén disponibles para loadCategoriaDelEquipo
-        this.form.patchValue({
-          campeonatoId: jugadorCampeonato.campeonatoId,
-          equipoId: jugadorCampeonato.equipoId,
-          jugadorId: jugadorCampeonato.jugadorId,
-          categoriaId: jugadorCampeonato.categoriaId,
-          numeroCancha: jugadorCampeonato.numeroCancha,
-          posicion: jugadorCampeonato.posicion,
-          observaciones: jugadorCampeonato.observaciones,
-        });
-
-        // Cargar jugadores del equipo
+        // Cargar jugadores del equipo PRIMERO y esperar a que se complete
         if (jugadorCampeonato.equipoId) {
-          this.loadJugadoresByEquipo(jugadorCampeonato.equipoId);
+          this.jugadoresService.getByEquipo(jugadorCampeonato.equipoId).subscribe({
+            next: (jugadores) => {
+              this.jugadores = jugadores;
+              
+              // AHORA sí patchear los valores después de cargar jugadores
+              this.form.patchValue({
+                campeonatoId: jugadorCampeonato.campeonatoId,
+                equipoId: jugadorCampeonato.equipoId,
+                jugadorId: jugadorCampeonato.jugadorId,
+                categoriaId: jugadorCampeonato.categoriaId,
+                numeroCancha: jugadorCampeonato.numeroCancha,
+                posicion: jugadorCampeonato.posicion,
+                observaciones: jugadorCampeonato.observaciones,
+              });
+
+              // Forzar la actualización de la vista y deshabilitar campos después
+              // de que Angular haya renderizado las opciones del select
+              this.cdr.detectChanges();
+              
+              setTimeout(() => {
+                this.form.get('campeonatoId')?.disable();
+                this.form.get('equipoId')?.disable();
+                this.form.get('jugadorId')?.disable();
+              }, 100);
+
+              // Cargar la categoría del equipo (solo la inscrita)
+              this.loadCategoriaDelEquipo();
+
+              this.loading = false;
+            },
+            error: (error) => {
+              console.error('Error loading jugadores:', error);
+              this.errorMessage = 'Error al cargar los jugadores';
+              this.loading = false;
+            }
+          });
+        } else {
+          // Si no hay equipoId, solo patchear valores
+          this.form.patchValue({
+            campeonatoId: jugadorCampeonato.campeonatoId,
+            equipoId: jugadorCampeonato.equipoId,
+            jugadorId: jugadorCampeonato.jugadorId,
+            categoriaId: jugadorCampeonato.categoriaId,
+            numeroCancha: jugadorCampeonato.numeroCancha,
+            posicion: jugadorCampeonato.posicion,
+            observaciones: jugadorCampeonato.observaciones,
+          });
+
+          this.form.get('campeonatoId')?.disable();
+          this.form.get('equipoId')?.disable();
+          this.form.get('jugadorId')?.disable();
+          
+          this.loading = false;
         }
-
-        // Cargar la categoría del equipo (solo la inscrita)
-        this.loadCategoriaDelEquipo();
-
-        this.loading = false;
       },
       error: (error) => {
         console.error('Error loading jugador campeonato:', error);

@@ -39,24 +39,41 @@
         </div>
 
         <div class="form-group">
-          <label for="cedula">Cédula *</label>
-          <input 
-            type="text" 
-            id="cedula" 
-            formControlName="cedula" 
-            placeholder="Ej: 1234567890"
-            maxlength="10"
-            [class.error]="jugadorForm.get('cedula')?.invalid && jugadorForm.get('cedula')?.touched">
-          <small class="error-text" *ngIf="jugadorForm.get('cedula')?.hasError('required') && jugadorForm.get('cedula')?.touched">
-            La cédula es requerida
-          </small>
-          <small class="error-text" *ngIf="jugadorForm.get('cedula')?.hasError('pattern') && jugadorForm.get('cedula')?.touched">
-            La cédula debe tener 10 dígitos
+          <label for="tipoDocumento">Tipo de Documento *</label>
+          <select 
+            id="tipoDocumento" 
+            formControlName="tipoDocumento"
+            [class.error]="jugadorForm.get('tipoDocumento')?.invalid && jugadorForm.get('tipoDocumento')?.touched">
+            <option value="Cédula">Cédula</option>
+            <option value="Pasaporte">Pasaporte</option>
+          </select>
+          <small class="error-text" *ngIf="jugadorForm.get('tipoDocumento')?.invalid && jugadorForm.get('tipoDocumento')?.touched">
+            El tipo de documento es requerido
           </small>
         </div>
       </div>
 
       <div class="form-row">
+        <div class="form-group">
+          <label for="cedula">{{ jugadorForm.get('tipoDocumento')?.value === 'Cédula' ? 'Cédula *' : 'Pasaporte *' }}</label>
+          <input 
+            type="text" 
+            id="cedula" 
+            formControlName="cedula" 
+            [placeholder]="jugadorForm.get('tipoDocumento')?.value === 'Cédula' ? 'Ej: 1234567890' : 'Ej: ABC123456'"
+            [maxlength]="jugadorForm.get('tipoDocumento')?.value === 'Cédula' ? 10 : 20"
+            [class.error]="jugadorForm.get('cedula')?.invalid && jugadorForm.get('cedula')?.touched">
+          <small class="error-text" *ngIf="jugadorForm.get('cedula')?.hasError('required') && jugadorForm.get('cedula')?.touched">
+            {{ jugadorForm.get('tipoDocumento')?.value === 'Cédula' ? 'La cédula es requerida' : 'El pasaporte es requerido' }}
+          </small>
+          <small class="error-text" *ngIf="jugadorForm.get('cedula')?.hasError('pattern') && jugadorForm.get('cedula')?.touched">
+            La cédula debe tener 10 dígitos
+          </small>
+          <small class="error-text" *ngIf="jugadorForm.get('cedula')?.hasError('minlength') && jugadorForm.get('cedula')?.touched">
+            El pasaporte debe tener al menos 6 caracteres
+          </small>
+        </div>
+
         <div class="form-group">
           <label for="fechaNacimiento">Fecha de Nacimiento *</label>
           <input 
@@ -68,7 +85,9 @@
             La fecha de nacimiento es requerida
           </small>
         </div>
+      </div>
 
+      <div class="form-row">
         <div class="form-group">
           <label for="equipoId">Equipo</label>
           <select 

@@ -62,6 +62,7 @@ export class JugadorFormComponent implements OnInit {
   initForm(): void {
     this.jugadorForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(3)]],
+      tipoDocumento: ['Cédula', Validators.required],
       cedula: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       fechaNacimiento: ['', Validators.required],
       equipoId: [''],
@@ -70,6 +71,17 @@ export class JugadorFormComponent implements OnInit {
       imagenCedula: [''],
       numeroCancha: ['', [Validators.min(1), Validators.max(99)]],
       posicion: ['']
+    });
+
+    // Escuchar cambios en tipoDocumento para adaptar validaciones de cedula
+    this.jugadorForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
+      const cedulaControl = this.jugadorForm.get('cedula');
+      if (tipo === 'Cédula') {
+        cedulaControl?.setValidators([Validators.required, Validators.pattern(/^\d{10}$/)]);
+      } else if (tipo === 'Pasaporte') {
+        cedulaControl?.setValidators([Validators.required, Validators.minLength(6)]);
+      }
+      cedulaControl?.updateValueAndValidity();
     });
   }
 
@@ -140,6 +152,7 @@ export class JugadorFormComponent implements OnInit {
       next: (jugador) => {
         this.jugadorForm.patchValue({
           nombre: jugador.nombre,
+          tipoDocumento: jugador.tipoDocumento || 'Cédula',
           cedula: jugador.cedula,
           fechaNacimiento: jugador.fechaNacimiento ? new Date(jugador.fechaNacimiento).toISOString().split('T')[0] : '',
           equipoId: jugador.equipoId || '',

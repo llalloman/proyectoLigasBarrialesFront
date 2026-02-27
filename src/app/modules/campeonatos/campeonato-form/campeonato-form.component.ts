@@ -43,7 +43,8 @@ export class CampeonatoFormComponent implements OnInit {
       ligaId: ['', Validators.required],
       fechaInicio: ['', Validators.required],
       fechaFin: ['', Validators.required],
-      fechaLimiteInscripcion: ['', Validators.required]
+      fechaLimiteInscripcion: ['', Validators.required],
+      maxJugadoresHabilitados: [20, [Validators.min(1)]]
     });
   }
 
@@ -85,7 +86,8 @@ export class CampeonatoFormComponent implements OnInit {
             ligaId: campeonato.ligaId,
             fechaInicio: campeonato.fechaInicio.split('T')[0],
             fechaFin: campeonato.fechaFin.split('T')[0],
-            fechaLimiteInscripcion: campeonato.fechaLimiteInscripcion.split('T')[0]
+            fechaLimiteInscripcion: campeonato.fechaLimiteInscripcion.split('T')[0],
+            maxJugadoresHabilitados: campeonato.maxJugadoresHabilitados || 20
           });
         },
         error: (err) => {

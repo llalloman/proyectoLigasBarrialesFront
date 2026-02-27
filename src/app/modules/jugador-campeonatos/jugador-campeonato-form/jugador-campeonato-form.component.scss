@@ -208,6 +208,66 @@
   }
 }
 
+// Estilos para el contador de habilitaciones
+.info-box {
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .limit-counter {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+
+    strong {
+      color: #1b5e20;
+    }
+
+    .counter-text {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #2e7d32;
+    }
+  }
+
+  .help-text, .error-message {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  &:has(.limit-warning) {
+    background: #fff3e0;
+    border-left-color: #ff9800;
+
+    .limit-counter strong {
+      color: #e65100;
+    }
+
+    .limit-counter .counter-text {
+      color: #f57c00;
+    }
+  }
+
+  &:has(.limit-reached) {
+    background: #ffebee;
+    border-left-color: #f44336;
+
+    .limit-counter strong {
+      color: #b71c1c;
+    }
+
+    .limit-counter .counter-text {
+      color: #c62828;
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .page-container {
     padding: 1rem;

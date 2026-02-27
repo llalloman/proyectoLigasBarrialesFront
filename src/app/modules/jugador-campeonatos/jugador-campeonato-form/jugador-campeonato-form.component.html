@@ -25,6 +25,20 @@
         {{ errorMessage }}
       </div>
 
+      <!-- Contador de jugadores habilitados -->
+      <div class="info-box" *ngIf="showLimitInfo && !isEditMode">
+        <div class="limit-counter" [class.limit-warning]="habilitadosCount >= maxHabilitados * 0.9" [class.limit-reached]="habilitadosCount >= maxHabilitados">
+          <strong>📊 Jugadores Habilitados:</strong> 
+          <span class="counter-text">{{ habilitadosCount }} / {{ maxHabilitados }}</span>
+        </div>
+        <small class="help-text" *ngIf="habilitadosCount < maxHabilitados">
+          ✅ Aún puedes habilitar {{ maxHabilitados - habilitadosCount }} jugador(es) más
+        </small>
+        <small class="error-message" *ngIf="habilitadosCount >= maxHabilitados">
+          ⚠️ Se alcanzó el límite máximo. Para habilitar otro jugador, solicita al directivo que libere un cupo.
+        </small>
+      </div>
+
       <div class="form-grid">
         <div class="form-group">
           <label for="campeonatoId">Campeonato *</label>
@@ -37,8 +51,8 @@
               form.get('campeonatoId')?.touched
             "
           >
-            <option value="">Seleccione un campeonato</option>
-            <option *ngFor="let campeonato of campeonatos" [value]="campeonato.id">
+            <option [ngValue]="null">Seleccione un campeonato</option>
+            <option *ngFor="let campeonato of campeonatos" [ngValue]="campeonato.id">
               {{ campeonato.nombre }} - {{ campeonato.liga?.nombre }}
             </option>
           </select>
@@ -63,8 +77,8 @@
               form.get('equipoId')?.invalid && form.get('equipoId')?.touched
             "
           >
-            <option value="">Seleccione un equipo</option>
-            <option *ngFor="let equipo of equipos" [value]="equipo.id">
+            <option [ngValue]="null">Seleccione un equipo</option>
+            <option *ngFor="let equipo of equipos" [ngValue]="equipo.id">
               {{ equipo.nombre }}
             </option>
           </select>
@@ -88,8 +102,8 @@
               form.get('jugadorId')?.invalid && form.get('jugadorId')?.touched
             "
           >
-            <option value="">Seleccione un jugador</option>
-            <option *ngFor="let jugador of jugadores" [value]="jugador.id">
+            <option [ngValue]="null">Seleccione un jugador</option>
+            <option *ngFor="let jugador of jugadores" [ngValue]="jugador.id">
               {{ jugador.nombre }} - {{ jugador.cedula }}
             </option>
           </select>
@@ -114,12 +128,12 @@
               form.get('categoriaId')?.touched
             "
           >
-            <option value="" *ngIf="categorias.length === 0">
+            <option [ngValue]="null" *ngIf="categorias.length === 0">
               {{ (!form.get('campeonatoId')?.value || !form.get('equipoId')?.value)
                 ? 'Primero seleccione campeonato y equipo' 
                 : 'El equipo no tiene inscripción confirmada' }}
             </option>
-            <option *ngFor="let categoria of categorias" [value]="categoria.id">
+            <option *ngFor="let categoria of categorias" [ngValue]="categoria.id">
               {{ categoria.nombre }}
             </option>
           </select>

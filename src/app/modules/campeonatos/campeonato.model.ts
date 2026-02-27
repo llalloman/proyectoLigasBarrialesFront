@@ -11,6 +11,7 @@ export interface Campeonato {
   fechaLimiteInscripcion: string;
   estado: 'inscripcion_abierta' | 'en_curso' | 'finalizado' | 'cancelado';
   activo: boolean;
+  maxJugadoresHabilitados?: number;
   creadoEn: string;
 }
 
@@ -22,4 +23,5 @@ export interface CreateCampeonatoDto {
   fechaFin: string;
   fechaLimiteInscripcion: string;
   estado?: 'inscripcion_abierta' | 'en_curso' | 'finalizado' | 'cancelado';
+  maxJugadoresHabilitados?: number;
 }

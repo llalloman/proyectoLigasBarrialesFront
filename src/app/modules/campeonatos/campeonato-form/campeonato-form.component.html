@@ -107,6 +107,24 @@
         </span>
       </div>
 
+      <div class="form-group">
+        <label for="maxJugadoresHabilitados">Máximo de Jugadores Habilitados por Equipo</label>
+        <input
+          type="number"
+          id="maxJugadoresHabilitados"
+          formControlName="maxJugadoresHabilitados"
+          min="1"
+          placeholder="20"
+          [class.error]="hasError('maxJugadoresHabilitados', 'min')"
+        />
+        <small class="help-text">
+          💡 Número máximo de jugadores que cada equipo puede habilitar en este campeonato (Por defecto: 20)
+        </small>
+        <span *ngIf="getErrorMessage('maxJugadoresHabilitados')" class="field-error">
+          El valor debe ser al menos 1
+        </span>
+      </div>
+
       <div class="form-actions">
         <button type="submit" class="btn-primary" [disabled]="campeonatoForm.invalid || loading">
           <span *ngIf="loading">Guardando...</span>
