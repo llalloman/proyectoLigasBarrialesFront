@@ -17,17 +17,10 @@
         <button *ngIf="canApprove()" class="btn-warning" routerLink="/jugador-campeonatos/pendientes">
           ⏳ Ver Solo Pendientes
         </button>
-        <button *ngIf="canCreate()" class="btn-primary" routerLink="/jugador-campeonatos/habilitar" [queryParams]="{campeonatoId: campeonatoId}">
+        <button *ngIf="canCreate()" class="btn-primary" routerLink="/jugador-campeonatos/habilitar">
           <span class="icon">+</span> Habilitar Jugadores
         </button>
       </div>
-    </div>
-
-    <div *ngIf="campeonatoNombre" class="info-panel">
-      <div class="info-item">
-        <strong>Campeonato:</strong> {{ campeonatoNombre }}
-      </div>
-      <button class="btn-secondary" routerLink="/campeonatos">← Volver a Campeonatos</button>
     </div>
 
     <div class="info-panel info-help">
@@ -125,7 +118,7 @@
 
     <div *ngIf="!loading && jugadorCampeonatos.length === 0" class="empty-state">
       <p>No hay jugadores habilitados</p>
-      <button *ngIf="canCreate()" class="btn-primary" routerLink="/jugador-campeonatos/habilitar" [queryParams]="{campeonatoId: campeonatoId}">
+      <button *ngIf="canCreate()" class="btn-primary" routerLink="/jugador-campeonatos/habilitar">
         <span class="icon">+</span> Habilitar Primer Jugador
       </button>
     </div>

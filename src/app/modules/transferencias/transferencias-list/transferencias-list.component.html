@@ -138,7 +138,7 @@
       <div class="filter-item filter-item-full">
         <label for="filter-jugador">Jugador</label>
         <mat-form-field class="filter-autocomplete" appearance="outline">
-          <mat-label>Buscar jugador...</mat-label>
+          <mat-label>Buscar por nombre o cédula...</mat-label>
           <input 
             type="text"
             matInput
@@ -180,23 +180,6 @@
       <span class="summary-text">
         Mostrando {{ filteredTransferencias.length }} de {{ transferencias.length }} transferencias
       </span>
-    </div>
-  </div>
-
-  <div class="search-container" *ngIf="!loading && transferencias.length > 0">
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input
-        type="text"
-        [(ngModel)]="searchTerm"
-        (input)="onSearchChange()"
-        placeholder="Buscar por nombre o cédula del jugador..."
-        class="search-input"
-      />
-      <button *ngIf="searchTerm" (click)="clearSearch()" class="clear-btn">✕</button>
-    </div>
-    <div class="search-results" *ngIf="searchTerm">
-      Mostrando {{ filteredTransferencias.length }} de {{ transferencias.length }} transferencias
     </div>
   </div>
 
@@ -304,7 +287,7 @@
           class="btn-icon btn-success"
           (click)="descargarPdf(transferencia)"
           title="Descargar PDF"
-          *ngIf="transferencia.estadoEquipoOrigen !== 'rechazado' && transferencia.estadoDirectivo !== 'rechazado'"
+          *ngIf="canDownloadPdf(transferencia) && transferencia.estadoEquipoOrigen !== 'rechazado' && transferencia.estadoDirectivo !== 'rechazado'"
         >
           📄
         </button>

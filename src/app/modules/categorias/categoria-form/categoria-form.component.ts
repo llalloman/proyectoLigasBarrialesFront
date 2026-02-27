@@ -22,6 +22,7 @@ export class CategoriaFormComponent implements OnInit {
   campeonatoId: number = 0;
   loading = false;
   errorMessage = '';
+  successMessage = '';
   user$: Observable<any>;
 
   constructor(
@@ -38,8 +39,7 @@ export class CategoriaFormComponent implements OnInit {
       descripcion: ['', Validators.maxLength(500)],
       orden: [1, [Validators.required, Validators.min(1)]],
       equiposAscienden: [0, [Validators.required, Validators.min(0)]],
-      equiposDescienden: [0, [Validators.required, Validators.min(0)]],
-      activo: [true]
+      equiposDescienden: [0, [Validators.required, Validators.min(0)]]
     });
   }
 
@@ -66,8 +66,7 @@ export class CategoriaFormComponent implements OnInit {
           descripcion: categoria.descripcion,
           orden: categoria.orden,
           equiposAscienden: categoria.equiposAscienden,
-          equiposDescienden: categoria.equiposDescienden,
-          activo: categoria.activo
+          equiposDescienden: categoria.equiposDescienden
         });
         this.loading = false;
       },
@@ -86,19 +85,12 @@ export class CategoriaFormComponent implements OnInit {
 
     this.loading = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
-    // Preparar datos sin el campo 'activo' para creación
-    const { activo, ...categoriaData } = this.categoriaForm.value;
-    
     const formData = {
-      ...categoriaData,
+      ...this.categoriaForm.value,
       campeonatoId: Number(this.campeonatoId)
     };
-
-    // En modo edición, incluir el campo 'activo'
-    if (this.isEditMode) {
-      formData['activo'] = activo;
-    }
 
     const request = this.isEditMode
       ? this.categoriasService.update(this.categoriaId, formData)
@@ -106,9 +98,17 @@ export class CategoriaFormComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.router.navigate(['/categorias'], {
-          queryParams: { campeonatoId: this.campeonatoId }
-        });
+        this.loading = false;
+        this.successMessage = this.isEditMode 
+          ? '✓ Categoría actualizada exitosamente'
+          : '✓ Categoría creada exitosamente';
+        
+        // Redirigir después de 1.5 segundos para que el usuario vea el mensaje
+        setTimeout(() => {
+          this.router.navigate(['/categorias'], {
+            queryParams: { campeonatoId: this.campeonatoId }
+          });
+        }, 1500);
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Error al guardar la categoría';

@@ -12,7 +12,6 @@ import { AuthService } from '../../../core/services/auth.service';
 import { LigasService } from '../../../core/services/ligas.service';
 import { CampeonatosService } from '../../campeonatos/campeonatos.service';
 import { EquiposService } from '../../../core/services/equipos.service';
-import { JugadoresService } from '../../../core/services/jugadores.service';
 import { PdfTransferenciaService } from '../../../core/services/pdf-transferencia.service';
 import { Transferencia } from '../transferencia.model';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
@@ -44,13 +43,11 @@ export class TransferenciasListComponent implements OnInit {
   user$ = this.authService.currentUser$;
   currentUser: any = null;
   currentEquipoId: number | null = null;
-  searchTerm: string = '';
 
   // Filtros
   ligas: any[] = [];
   campeonatos: any[] = [];
   equipos: any[] = [];
-  jugadores: any[] = [];
   estados = [
     { value: '', label: 'Todos los estados' },
     { value: 'pendiente', label: 'Pendiente' },
@@ -77,7 +74,6 @@ export class TransferenciasListComponent implements OnInit {
     private ligasService: LigasService,
     private campeonatosService: CampeonatosService,
     private equiposService: EquiposService,
-    private jugadoresService: JugadoresService,
     private pdfTransferenciaService: PdfTransferenciaService
   ) {}
 
@@ -94,6 +90,7 @@ export class TransferenciasListComponent implements OnInit {
     }
 
     // Configurar autocomplete para jugadores
+    // Se filtra desde las transferencias cargadas
     this.filteredJugadores$ = this.jugadorControl.valueChanges.pipe(
       startWith(''),
       map(value => this._filterJugadores(value || ''))
@@ -131,21 +128,8 @@ export class TransferenciasListComponent implements OnInit {
     this.equiposService.getAll().subscribe({
       next: (equipos: any[]) => {
         this.equipos = equipos.filter((e: any) => e.activo);
-        // Si es dirigente de equipo, pre-seleccionar su equipo
-        if (this.permissions.isDirigente() && this.currentEquipoId) {
-          this.selectedEquipoOrigenId = this.currentEquipoId;
-          this.selectedEquipoDestinoId = this.currentEquipoId;
-        }
       },
       error: (error: any) => console.error('Error loading equipos:', error)
-    });
-
-    // Cargar jugadores
-    this.jugadoresService.getAll().subscribe({
-      next: (jugadores: any[]) => {
-        this.jugadores = jugadores;
-      },
-      error: (error: any) => console.error('Error loading jugadores:', error)
     });
   }
 
@@ -211,17 +195,37 @@ export class TransferenciasListComponent implements OnInit {
     this.selectedEquipoDestinoId = null;
   }
 
-  private _filterJugadores(value: string): any[] {
-    if (!value || typeof value !== 'string') {
-      return this.jugadores.slice(0, 10);
+  private _filterJugadores(value: string | any): any[] {
+    // Obtener jugadores únicos de las transferencias actuales
+    const jugadoresUnicos = new Map();
+    
+    this.transferencias.forEach(t => {
+      if (t.jugador && !jugadoresUnicos.has(t.jugador.id)) {
+        jugadoresUnicos.set(t.jugador.id, t.jugador);
+      }
+    });
+    
+    const jugadoresArray = Array.from(jugadoresUnicos.values());
+    
+    // Si no hay valor o es un objeto (jugador ya seleccionado), mostrar todos
+    if (!value || typeof value === 'object') {
+      return jugadoresArray.slice(0, 20);
     }
-    const filterValue = value.toLowerCase();
-    return this.jugadores
-      .filter(j => 
-        j.nombreCompleto?.toLowerCase().includes(filterValue) ||
-        j.cedula?.includes(filterValue)
-      )
-      .slice(0, 10);
+    
+    // Si es string vacío, mostrar todos
+    if (typeof value === 'string' && value.trim() === '') {
+      return jugadoresArray.slice(0, 20);
+    }
+    
+    // Filtrar por nombre o cédula
+    const filterValue = value.toLowerCase().trim();
+    const filtered = jugadoresArray.filter(j => 
+      j.nombreCompleto?.toLowerCase().includes(filterValue) ||
+      j.nombre?.toLowerCase().includes(filterValue) ||
+      j.cedula?.includes(filterValue)
+    );
+    
+    return filtered.slice(0, 20);
   }
 
   displayJugador(jugador: any): string {
@@ -241,7 +245,6 @@ export class TransferenciasListComponent implements OnInit {
     this.fechaDesde = '';
     this.fechaHasta = '';
     this.jugadorControl.setValue('');
-    this.searchTerm = '';
   }
 
   get filteredTransferencias(): Transferencia[] {
@@ -277,8 +280,20 @@ export class TransferenciasListComponent implements OnInit {
 
     // Filtro por jugador (autocomplete)
     const jugadorValue = this.jugadorControl.value as any;
-    if (jugadorValue && typeof jugadorValue === 'object' && jugadorValue.id) {
-      filtered = filtered.filter(t => t.jugadorId === jugadorValue.id);
+    if (jugadorValue) {
+      // Si es un objeto (jugador seleccionado), filtrar por ID exacto
+      if (typeof jugadorValue === 'object' && jugadorValue.id) {
+        filtered = filtered.filter(t => t.jugadorId === jugadorValue.id);
+      }
+      // Si es un string (está escribiendo), filtrar por coincidencia en nombre o cédula
+      else if (typeof jugadorValue === 'string' && jugadorValue.trim() !== '') {
+        const searchValue = jugadorValue.toLowerCase().trim();
+        filtered = filtered.filter(t => 
+          t.jugador?.nombreCompleto?.toLowerCase().includes(searchValue) ||
+          t.jugador?.nombre?.toLowerCase().includes(searchValue) ||
+          t.jugador?.cedula?.includes(searchValue)
+        );
+      }
     }
 
     // Filtro por fecha desde
@@ -296,16 +311,6 @@ export class TransferenciasListComponent implements OnInit {
       filtered = filtered.filter(t => {
         const fechaSolicitud = new Date(t.fechaSolicitud);
         return fechaSolicitud <= hasta;
-      });
-    }
-
-    // Filtro por búsqueda de texto
-    if (this.searchTerm.trim()) {
-      const search = this.searchTerm.toLowerCase().trim();
-      filtered = filtered.filter((t) => {
-        const nombreCompleto = t.jugador?.nombreCompleto?.toLowerCase() || '';
-        const cedula = t.jugador?.cedula?.toLowerCase() || '';
-        return nombreCompleto.includes(search) || cedula.includes(search);
       });
     }
 
@@ -334,14 +339,6 @@ export class TransferenciasListComponent implements OnInit {
       return 'rechazado';
     }
     return 'pendiente';
-  }
-
-  onSearchChange(): void {
-    // El filtrado se hace automáticamente a través del getter
-  }
-
-  clearSearch(): void {
-    this.searchTerm = '';
   }
 
   viewCedulaImage(imageUrl: string | undefined): void {
@@ -444,9 +441,37 @@ export class TransferenciasListComponent implements OnInit {
   }
 
   /**
-   * Descarga el PDF de la transferencia
+   * Verifica si el usuario puede descargar el PDF del acta de transferencia
+   * - Master y Directivo: pueden descargar cualquier PDF
+   * - Dirigente: solo puede descargar si su equipo es el destino (recibe al jugador)
+   */
+  canDownloadPdf(transferencia: Transferencia): boolean {
+    // Master y directivo pueden descargar cualquier PDF
+    if (this.permissions.isMaster() || this.permissions.isDirectivo()) {
+      return true;
+    }
+
+    // Dirigente solo puede descargar si su equipo es el destino
+    if (this.permissions.isDirigente() && this.currentEquipoId) {
+      return transferencia.equipoDestinoId === this.currentEquipoId;
+    }
+
+    return false;
+  }
+
+  /**
+   * Genera y descarga el PDF del acta de transferencia
    */
   async descargarPdf(transferencia: Transferencia): Promise<void> {
+    // Validación adicional de seguridad
+    if (!this.canDownloadPdf(transferencia)) {
+      this.errorMessage = 'No tienes permisos para descargar este PDF';
+      setTimeout(() => {
+        this.errorMessage = '';
+      }, 3000);
+      return;
+    }
+
     try {
       await this.pdfTransferenciaService.generarPdfTransferencia(transferencia);
       this.successMessage = 'PDF generado exitosamente';
@@ -466,6 +491,15 @@ export class TransferenciasListComponent implements OnInit {
    * Abre el PDF en una nueva pestaña
    */
   abrirPdf(transferencia: Transferencia): void {
+    // Validación adicional de seguridad
+    if (!this.canDownloadPdf(transferencia)) {
+      this.errorMessage = 'No tienes permisos para visualizar este PDF';
+      setTimeout(() => {
+        this.errorMessage = '';
+      }, 3000);
+      return;
+    }
+
     try {
       this.pdfTransferenciaService.abrirPdfTransferencia(transferencia);
     } catch (error) {

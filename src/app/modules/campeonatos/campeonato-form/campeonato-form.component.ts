@@ -24,6 +24,7 @@ export class CampeonatoFormComponent implements OnInit {
   ligas: Liga[] = [];
   loading = false;
   errorMessage = '';
+  successMessage = '';
   user$: Observable<any>;
 
   constructor(
@@ -99,6 +100,7 @@ export class CampeonatoFormComponent implements OnInit {
     if (this.campeonatoForm.valid) {
       this.loading = true;
       this.errorMessage = '';
+      this.successMessage = '';
       const formData = { ...this.campeonatoForm.value };
       
       if (this.campeonatoForm.get('ligaId')?.disabled) {
@@ -113,7 +115,15 @@ export class CampeonatoFormComponent implements OnInit {
 
       request.subscribe({
         next: () => {
-          this.router.navigate(['/campeonatos']);
+          this.loading = false;
+          this.successMessage = this.isEditMode 
+            ? '✓ Campeonato actualizado exitosamente'
+            : '✓ Campeonato creado exitosamente';
+          
+          // Redirigir después de 1.5 segundos para que el usuario vea el mensaje
+          setTimeout(() => {
+            this.router.navigate(['/campeonatos']);
+          }, 1500);
         },
         error: (err) => {
           this.errorMessage = err.error?.message || 'Error al guardar campeonato';

@@ -28,6 +28,7 @@ export class InscripcionFormComponent implements OnInit {
   equipos: Equipo[] = [];
   loading = false;
   errorMessage = '';
+  successMessage = '';
   isEditMode = false;
   inscripcionId: number = 0;
   campeonatoId: number = 0;
@@ -168,11 +169,22 @@ export class InscripcionFormComponent implements OnInit {
         // Cargar categorías y equipos del campeonato
         this.onCampeonatoChange();
 
+        // Convertir fecha al formato YYYY-MM-DD para el input type="date"
+        let fechaFormateada = '';
+        if (inscripcion.fechaInscripcion) {
+          const fecha = new Date(inscripcion.fechaInscripcion);
+          const year = fecha.getFullYear();
+          const month = String(fecha.getMonth() + 1).padStart(2, '0');
+          const day = String(fecha.getDate()).padStart(2, '0');
+          fechaFormateada = `${year}-${month}-${day}`;
+        }
+
         // Rellenar formulario con datos existentes
         this.inscripcionForm.patchValue({
           campeonatoId: inscripcion.campeonatoId,
           categoriaId: inscripcion.categoriaId,
           equipoId: inscripcion.equipoId,
+          fechaInscripcion: fechaFormateada,
           observaciones: inscripcion.observaciones
         });
       },
@@ -253,6 +265,7 @@ export class InscripcionFormComponent implements OnInit {
 
     this.loading = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
     // Obtener valores del formulario (incluyendo campos deshabilitados)
     const formValues = this.inscripcionForm.getRawValue();
@@ -273,9 +286,17 @@ export class InscripcionFormComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.router.navigate(['/inscripciones'], {
-          queryParams: { campeonatoId: this.campeonatoId }
-        });
+        this.loading = false;
+        this.successMessage = this.isEditMode 
+          ? '✓ Inscripción actualizada exitosamente'
+          : '✓ Inscripción creada exitosamente';
+        
+        // Redirigir después de 1.5 segundos para que el usuario vea el mensaje
+        setTimeout(() => {
+          this.router.navigate(['/inscripciones'], {
+            queryParams: { campeonatoId: this.campeonatoId }
+          });
+        }, 1500);
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Error al guardar la inscripción';

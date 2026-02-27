@@ -27,9 +27,6 @@ export class JugadorCampeonatosListComponent implements OnInit {
   loading = false;
   errorMessage = '';
   user$: Observable<any>;
-  campeonatoId: number | null = null;
-  equipoId: number | null = null;
-  campeonatoNombre = '';
   showImageModal = false;
   modalImageUrl = '';
   searchTerm = '';
@@ -62,34 +59,16 @@ export class JugadorCampeonatosListComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
     this.loadFilters();
-    
-    this.route.queryParams.subscribe(params => {
-      this.campeonatoId = params['campeonatoId'] ? +params['campeonatoId'] : null;
-      this.equipoId = params['equipoId'] ? +params['equipoId'] : null;
-      this.loadJugadorCampeonatos();
-    });
+    this.loadJugadorCampeonatos();
   }
 
   loadJugadorCampeonatos(): void {
     this.loading = true;
     this.errorMessage = '';
 
-    let request: Observable<JugadorCampeonato[]>;
-
-    if (this.campeonatoId && this.equipoId) {
-      request = this.jugadorCampeonatosService.getByCampeonatoAndEquipo(this.campeonatoId, this.equipoId);
-    } else if (this.campeonatoId) {
-      request = this.jugadorCampeonatosService.getByCampeonato(this.campeonatoId);
-    } else {
-      request = this.jugadorCampeonatosService.getAll();
-    }
-
-    request.subscribe({
+    this.jugadorCampeonatosService.getAll().subscribe({
       next: (data) => {
         this.jugadorCampeonatos = data;
-        if (data.length > 0 && data[0].campeonato) {
-          this.campeonatoNombre = data[0].campeonato.nombre;
-        }
         this.loading = false;
       },
       error: (error) => {

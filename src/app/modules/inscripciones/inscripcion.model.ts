@@ -21,6 +21,7 @@ export interface CreateInscripcionDto {
   campeonatoId: number;
   categoriaId: number;
   equipoId: number;
+  fechaInscripcion?: string;
   estado?: 'pendiente' | 'confirmada' | 'rechazada';
   observaciones?: string;
 }
