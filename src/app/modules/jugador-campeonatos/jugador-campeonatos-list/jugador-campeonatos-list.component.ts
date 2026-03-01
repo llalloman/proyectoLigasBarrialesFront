@@ -11,6 +11,7 @@ import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.c
 import { LigasService } from '../../../core/services/ligas.service';
 import { CampeonatosService } from '../../campeonatos/campeonatos.service';
 import { EquiposService } from '../../../core/services/equipos.service';
+import { PdfCarnetService } from '../../../core/services/pdf-carnet.service';
 import { Liga } from '../../../core/models/liga.model';
 import { Campeonato } from '../../campeonatos/campeonato.model';
 import { Equipo } from '../../../core/models/equipo.model';
@@ -51,7 +52,8 @@ export class JugadorCampeonatosListComponent implements OnInit {
     private router: Router,
     private ligasService: LigasService,
     private campeonatosService: CampeonatosService,
-    private equiposService: EquiposService
+    private equiposService: EquiposService,
+    private pdfCarnetService: PdfCarnetService
   ) {
     this.user$ = this.authService.user$;
   }
@@ -312,5 +314,114 @@ export class JugadorCampeonatosListComponent implements OnInit {
   closeImageModal(): void {
     this.showImageModal = false;
     this.modalImageUrl = '';
+  }
+
+  /**
+   * Verifica si el usuario puede generar carnets
+   * Solo master y directivo_liga pueden generar carnets
+   */
+  canGenerarCarnet(jugadorCampeonato: JugadorCampeonato): boolean {
+    const role = this.currentUser?.rol?.nombre;
+    const isAuthorized = role === 'master' || role === 'directivo_liga';
+    const isHabilitado = jugadorCampeonato.estado === 'habilitado';
+    return isAuthorized && isHabilitado;
+  }
+
+  /**
+   * Verifica si el usuario puede generar carnets masivos
+   */
+  canGenerarCarnetsPorEquipo(): boolean {
+    const role = this.currentUser?.rol?.nombre;
+    return role === 'master' || role === 'directivo_liga';
+  }
+
+  /**
+   * Genera y descarga el carnet individual de un jugador
+   */
+  async descargarCarnet(jugadorCampeonato: JugadorCampeonato): Promise<void> {
+    if (!this.canGenerarCarnet(jugadorCampeonato)) {
+      alert('No tienes permisos para generar este carnet o el jugador no está habilitado');
+      return;
+    }
+
+    try {
+      this.loading = true;
+      await this.pdfCarnetService.generarCarnetIndividual(jugadorCampeonato);
+      this.loading = false;
+    } catch (error) {
+      console.error('Error al generar carnet:', error);
+      alert('Error al generar el carnet del jugador');
+      this.loading = false;
+    }
+  }
+
+  /**
+   * Abre el carnet en una nueva pestaña
+   */
+  async abrirCarnet(jugadorCampeonato: JugadorCampeonato): Promise<void> {
+    if (!this.canGenerarCarnet(jugadorCampeonato)) {
+      alert('No tienes permisos para generar este carnet o el jugador no está habilitado');
+      return;
+    }
+
+    try {
+      this.loading = true;
+      await this.pdfCarnetService.abrirCarnetIndividual(jugadorCampeonato);
+      this.loading = false;
+    } catch (error) {
+      console.error('Error al abrir carnet:', error);
+      alert('Error al abrir el carnet del jugador');
+      this.loading = false;
+    }
+  }
+
+  /**
+   * Genera carnets de todos los jugadores habilitados del equipo filtrado
+   */
+  async generarCarnetsPorEquipo(): Promise<void> {
+    if (!this.canGenerarCarnetsPorEquipo()) {
+      alert('No tienes permisos para generar carnets masivos');
+      return;
+    }
+
+    if (!this.filterCampeonatoId || !this.filterEquipoId) {
+      alert('Por favor, selecciona un campeonato y un equipo primero');
+      return;
+    }
+
+    // Filtrar jugadores habilitados del equipo seleccionado
+    const jugadoresHabilitados = this.filteredJugadorCampeonatos.filter(
+      jc => jc.estado === 'habilitado'
+    );
+
+    if (jugadoresHabilitados.length === 0) {
+      alert('No hay jugadores habilitados para este equipo en el campeonato seleccionado');
+      return;
+    }
+
+    if (!confirm(`¿Desea generar ${jugadoresHabilitados.length} carnet(s) para el equipo?`)) {
+      return;
+    }
+
+    try {
+      this.loading = true;
+      await this.pdfCarnetService.generarCarnetsPorEquipo(jugadoresHabilitados);
+      this.loading = false;
+      alert(`Se generaron ${jugadoresHabilitados.length} carnet(s) exitosamente`);
+    } catch (error) {
+      console.error('Error al generar carnets por equipo:', error);
+      alert('Error al generar los carnets del equipo');
+      this.loading = false;
+    }
+  }
+
+  /**
+   * Muestra el botón de carnets por equipo
+   */
+  showCarnetsPorEquipoButton(): boolean {
+    return this.canGenerarCarnetsPorEquipo() && 
+           !!this.filterCampeonatoId && 
+           !!this.filterEquipoId &&
+           this.filteredJugadorCampeonatos.some(jc => jc.estado === 'habilitado');
   }
 }

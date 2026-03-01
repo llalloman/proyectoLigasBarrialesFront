@@ -107,15 +107,7 @@
       </div>
 
       <div class="card-actions">
-        <button
-          type="button"
-          class="btn-icon btn-info"
-          (click)="descargarPdf(transferencia)"
-          title="Descargar PDF"
-          *ngIf="transferencia.estadoEquipoOrigen !== 'rechazado' && transferencia.estadoDirectivo !== 'rechazado'"
-        >
-          📄
-        </button>
+        <!-- El botón PDF no es necesario para el equipo origen en esta etapa -->
         <button
           type="button"
           class="btn-icon btn-success"

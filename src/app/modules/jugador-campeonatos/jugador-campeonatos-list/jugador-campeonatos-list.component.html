@@ -82,6 +82,13 @@
       <div class="filter-results" *ngIf="filterLigaId || filterCampeonatoId || filterEquipoId || filterEstado">
         <span>📊 Mostrando {{ filteredJugadorCampeonatos.length }} de {{ jugadorCampeonatos.length }} habilitaciones</span>
       </div>
+
+      <!-- Botón para generar carnets por equipo -->
+      <div class="carnets-por-equipo-container" *ngIf="showCarnetsPorEquipoButton()">
+        <button class="btn-carnets-equipo" (click)="generarCarnetsPorEquipo()" title="Generar carnets de todos los jugadores habilitados del equipo">
+          🪪 Generar Carnets del Equipo
+        </button>
+      </div>
     </div>
 
     <!-- Barra de búsqueda -->
@@ -216,6 +223,12 @@
                   (click)="rechazar(jc.id)" 
                   title="Rechazar Habilitación">
             ❌
+          </button>
+          <button *ngIf="canGenerarCarnet(jc)" 
+                  class="btn-icon carnet" 
+                  (click)="descargarCarnet(jc)" 
+                  title="Descargar Carnet">
+            🪪
           </button>
           <button class="btn-icon" 
                   (click)="verHistorial(jc.jugadorId)" 

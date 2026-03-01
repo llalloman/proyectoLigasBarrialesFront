@@ -490,6 +490,15 @@
       background: #f5c6cb;
     }
   }
+
+  &.carnet {
+    background: #d1ecf1;
+    color: #0c5460;
+
+    &:hover {
+      background: #bee5eb;
+    }
+  }
 }
 
 // Sección de imágenes (foto + cédula)
@@ -721,5 +730,38 @@
     text-align: center;
     color: #2c3e50;
     font-weight: 500;
+  }
+
+  .carnets-por-equipo-container {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    .btn-carnets-equipo {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        background: #f8f9fa;
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
   }
 }
