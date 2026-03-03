@@ -11,6 +11,7 @@ import { Liga } from '../../../core/models/liga.model';
   styleUrl: './equipos-list.component.scss'
 })
 export class EquiposListComponent implements OnInit {
+  Math = Math;
   equipos: Equipo[] = [];
   filteredEquipos: Equipo[] = [];
   ligas: Liga[] = [];
@@ -20,6 +21,33 @@ export class EquiposListComponent implements OnInit {
   errorMessage = '';
   isMaster = false;
   user$ = this.authService.currentUser$;
+
+  // Paginación
+  currentPage = 1;
+  pageSize = 6;
+  pageSizeOptions = [6, 12, 24];
+
+  get paginatedEquipos(): Equipo[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredEquipos.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredEquipos.length / this.pageSize);
+  }
+
+  get totalPagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  onPageChange(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+  }
 
   constructor(
     private equiposService: EquiposService,
@@ -66,6 +94,7 @@ export class EquiposListComponent implements OnInit {
       next: (equipos) => {
         this.equipos = equipos;
         this.filteredEquipos = equipos;
+        this.currentPage = 1;
         this.loading = false;
       },
       error: (error) => {
@@ -191,12 +220,14 @@ export class EquiposListComponent implements OnInit {
     }
 
     this.filteredEquipos = filtered;
+    this.currentPage = 1;
   }
 
   clearSearch(): void {
     this.searchTerm = '';
     this.selectedLigaId = '';
     this.filteredEquipos = this.equipos;
+    this.currentPage = 1;
   }
 
   logout(): void {

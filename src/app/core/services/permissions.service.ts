@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AuthService } from './auth.service';
+import { ConfiguracionService } from './configuracion.service';
 
 /**
  * Servicio para gestionar permisos basados en roles
@@ -9,7 +10,16 @@ import { AuthService } from './auth.service';
   providedIn: 'root',
 })
 export class PermissionsService {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private configuracionService: ConfiguracionService) {}
+
+  /**
+   * Verifica si un módulo está habilitado para el dirigente actual
+   * Master y directivo_liga siempre tienen acceso independientemente de la configuración
+   */
+  private isModuloAccesible(clave: string): boolean {
+    if (!this.isDirigente()) return true;
+    return this.configuracionService.isHabilitado(clave);
+  }
 
   /**
    * Verifica si el usuario tiene uno de los roles especificados
@@ -58,7 +68,8 @@ export class PermissionsService {
    * Verifica si puede acceder al módulo de jugadores
    */
   canAccessJugadores(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_jugadores');
   }
 
   /**
@@ -114,21 +125,18 @@ export class PermissionsService {
    * Verifica si puede crear un jugador
    */
   canCreateJugador(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_jugadores');
   }
 
-  /**
-   * Verifica si puede editar un jugador
-   */
   canEditJugador(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_jugadores');
   }
 
-  /**
-   * Verifica si puede eliminar un jugador
-   */
   canDeleteJugador(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_jugadores');
   }
 
   /**
@@ -191,14 +199,13 @@ export class PermissionsService {
    * Verifica si puede acceder al módulo de inscripciones
    */
   canAccessInscripciones(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_inscripciones');
   }
 
-  /**
-   * Verifica si puede crear una inscripción
-   */
   canCreateInscripcion(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_inscripciones');
   }
 
   /**
@@ -221,21 +228,18 @@ export class PermissionsService {
    * Verifica si puede acceder al módulo de habilitación de jugadores
    */
   canAccessJugadorCampeonatos(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_inscripciones');
   }
 
-  /**
-   * Verifica si puede solicitar habilitación de jugadores
-   */
   canInscribirJugador(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_inscripciones');
   }
 
-  /**
-   * Verifica si puede editar habilitación de jugadores
-   */
   canEditJugadorCampeonato(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_inscripciones');
   }
 
   /**
@@ -258,21 +262,18 @@ export class PermissionsService {
    * Verifica si puede acceder al módulo de transferencias
    */
   canAccessTransferencias(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_transferencias');
   }
 
-  /**
-   * Verifica si puede solicitar transferencias
-   */
   canSolicitarTransferencia(): boolean {
-    return this.hasRole(['master', 'dirigente_equipo']);
+    return this.hasRole(['master', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_transferencias');
   }
 
-  /**
-   * Verifica si puede aprobar transferencias como equipo origen
-   */
   canAprobarTransferenciaEquipoOrigen(): boolean {
-    return this.hasRole(['master', 'dirigente_equipo']);
+    return this.hasRole(['master', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_transferencias');
   }
 
   /**
@@ -286,6 +287,7 @@ export class PermissionsService {
    * Verifica si puede cancelar transferencias
    */
   canCancelarTransferencia(): boolean {
-    return this.hasRole(['master', 'dirigente_equipo']);
+    return this.hasRole(['master', 'dirigente_equipo'])
+      && this.isModuloAccesible('modulo_transferencias');
   }
 }

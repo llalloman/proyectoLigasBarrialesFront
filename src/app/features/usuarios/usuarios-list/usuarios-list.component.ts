@@ -18,6 +18,33 @@ export class UsuariosListComponent implements OnInit {
   filterActive: 'all' | 'active' | 'inactive' = 'all';
   user$ = this.authService.currentUser$;
 
+  // Paginación
+  Math = Math;
+  currentPage = 1;
+  pageSize = 6;
+  pageSizeOptions = [6, 12, 24];
+
+  get paginatedUsuarios(): Usuario[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredUsuarios.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredUsuarios.length / this.pageSize);
+  }
+
+  get totalPagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+  }
+
   constructor(
     private usuariosService: UsuariosService,
     private authService: AuthService,
@@ -84,6 +111,7 @@ export class UsuariosListComponent implements OnInit {
     }
 
     this.filteredUsuarios = filtered;
+    this.currentPage = 1;
   }
 
   onSearch(): void {

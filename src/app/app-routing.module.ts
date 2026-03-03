@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './modules/auth/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RolesGuard } from './core/guards/roles.guard';
+import { ModuloGuard } from './core/guards/modulo.guard';
 
 export const routes: Routes = [
   {
@@ -38,8 +39,8 @@ export const routes: Routes = [
   },
   {
     path: 'jugadores',
-    canActivate: [AuthGuard, RolesGuard],
-    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'] },
+    canActivate: [AuthGuard, RolesGuard, ModuloGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'], modulo: 'modulo_jugadores' },
     loadChildren: () =>
       import('./modules/jugadores/jugadores.module').then((m) => m.JugadoresModule),
   },
@@ -108,8 +109,8 @@ export const routes: Routes = [
   },
   {
     path: 'inscripciones',
-    canActivate: [AuthGuard, RolesGuard],
-    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'] },
+    canActivate: [AuthGuard, RolesGuard, ModuloGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'], modulo: 'modulo_inscripciones' },
     children: [
       {
         path: '',
@@ -136,8 +137,8 @@ export const routes: Routes = [
   },
   {
     path: 'jugador-campeonatos',
-    canActivate: [AuthGuard, RolesGuard],
-    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'] },
+    canActivate: [AuthGuard, RolesGuard, ModuloGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'], modulo: 'modulo_inscripciones' },
     children: [
       {
         path: '',
@@ -171,8 +172,8 @@ export const routes: Routes = [
   },
   {
     path: 'transferencias',
-    canActivate: [AuthGuard, RolesGuard],
-    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'] },
+    canActivate: [AuthGuard, RolesGuard, ModuloGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'], modulo: 'modulo_transferencias' },
     children: [
       {
         path: '',
@@ -203,6 +204,15 @@ export const routes: Routes = [
           ),
       },
     ],
+  },
+  {
+    path: 'configuracion',
+    canActivate: [AuthGuard, RolesGuard],
+    data: { roles: ['master', 'directivo_liga'] },
+    loadChildren: () =>
+      import('./modules/configuracion/configuracion.module').then(
+        (m) => m.ConfiguracionModule
+      ),
   },
   {
     path: '**',

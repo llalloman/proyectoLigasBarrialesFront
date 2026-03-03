@@ -1,0 +1,61 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="config-container">
+    <div class="config-header">
+      <h2>⚙️ Configuración del Sistema</h2>
+      <p class="config-subtitle">
+        Habilita o deshabilita el acceso de los <strong>dirigentes de equipo</strong> a los siguientes módulos.
+        Los usuarios master y directivo de liga <strong>siempre tienen acceso</strong>.
+      </p>
+    </div>
+
+    <div class="alert alert-success" *ngIf="successMessage">
+      ✅ {{ successMessage }}
+    </div>
+    <div class="alert alert-error" *ngIf="errorMessage">
+      ❌ {{ errorMessage }}
+    </div>
+
+    <div class="loading" *ngIf="loading">
+      <p>Cargando configuración...</p>
+    </div>
+
+    <div class="modulos-grid" *ngIf="!loading">
+      <div class="modulo-card" *ngFor="let modulo of modulos" [class.disabled]="!modulo.habilitado">
+        <div class="modulo-icon">{{ modulo.icono }}</div>
+        <div class="modulo-info">
+          <h3>{{ modulo.nombre }}</h3>
+          <p>{{ modulo.descripcion }}</p>
+        </div>
+        <div class="modulo-toggle">
+          <span class="estado-label" [class.enabled]="modulo.habilitado" [class.disabled-label]="!modulo.habilitado">
+            {{ modulo.habilitado ? 'Habilitado' : 'Deshabilitado' }}
+          </span>
+          <button
+            class="toggle-btn"
+            [class.on]="modulo.habilitado"
+            [class.off]="!modulo.habilitado"
+            [disabled]="modulo.cargando"
+            (click)="toggleModulo(modulo)"
+            [title]="modulo.habilitado ? 'Deshabilitar módulo' : 'Habilitar módulo'"
+          >
+            <span class="toggle-indicator" [class.loading]="modulo.cargando">
+              {{ modulo.cargando ? '⏳' : (modulo.habilitado ? '🟢' : '🔴') }}
+            </span>
+            {{ modulo.cargando ? 'Guardando...' : (modulo.habilitado ? 'ON' : 'OFF') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

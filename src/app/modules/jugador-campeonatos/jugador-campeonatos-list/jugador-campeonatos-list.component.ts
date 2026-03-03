@@ -44,6 +44,34 @@ export class JugadorCampeonatosListComponent implements OnInit {
   equipos: Equipo[] = [];
   currentUser: any;
 
+  // Paginación
+  Math = Math;
+  currentPage = 1;
+  pageSize = 6;
+  pageSizeOptions = [6, 12, 24];
+
+  get paginatedJugadorCampeonatos(): JugadorCampeonato[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredJugadorCampeonatos.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredJugadorCampeonatos.length / this.pageSize);
+  }
+
+  get totalPagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  onPageChange(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+  }
+
   constructor(
     private jugadorCampeonatosService: JugadorCampeonatosService,
     private authService: AuthService,
@@ -184,9 +212,9 @@ export class JugadorCampeonatosListComponent implements OnInit {
   }
   
   onLigaChange(): void {
-    // Al cambiar la liga, limpiar los filtros dependientes
     this.filterCampeonatoId = '';
     this.filterEquipoId = '';
+    this.currentPage = 1;
     this.applyFilters();
   }
   
@@ -210,7 +238,7 @@ export class JugadorCampeonatosListComponent implements OnInit {
   }
   
   applyFilters(): void {
-    // Los filtros se aplican automáticamente mediante computed property
+    this.currentPage = 1;
   }
   
   clearFilters(): void {
@@ -219,6 +247,7 @@ export class JugadorCampeonatosListComponent implements OnInit {
     this.filterEquipoId = '';
     this.filterEstado = '';
     this.searchTerm = '';
+    this.currentPage = 1;
   }
   
   get filteredJugadorCampeonatos(): JugadorCampeonato[] {
@@ -261,10 +290,12 @@ export class JugadorCampeonatosListComponent implements OnInit {
 
   onSearchChange(term: string): void {
     this.searchTerm = term;
+    this.currentPage = 1;
   }
 
   clearSearch(): void {
     this.searchTerm = '';
+    this.currentPage = 1;
   }
 
   verHistorial(jugadorId: number): void {

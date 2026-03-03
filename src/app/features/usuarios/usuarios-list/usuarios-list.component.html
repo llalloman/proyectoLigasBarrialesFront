@@ -46,8 +46,12 @@
       <p>No se encontraron usuarios con los filtros aplicados.</p>
     </div>
 
+    <div class="results-info" *ngIf="!loading && filteredUsuarios.length > 0">
+      Mostrando {{ Math.min(currentPage * pageSize, filteredUsuarios.length) }} de {{ filteredUsuarios.length }} usuario(s)
+    </div>
+
     <div *ngIf="!loading && filteredUsuarios.length > 0" class="usuarios-grid">
-      <div *ngFor="let usuario of filteredUsuarios" class="usuario-card" [class.inactive]="!usuario.activo">
+      <div *ngFor="let usuario of paginatedUsuarios" class="usuario-card" [class.inactive]="!usuario.activo">
         <div class="usuario-header">
           <h3>{{ usuario.nombre }}</h3>
           <span class="status-badge" [class.active]="usuario.activo">
@@ -88,6 +92,37 @@
             🗑️
           </button>
         </div>
+      </div>
+    </div>
+
+    <div class="paginator-container" *ngIf="!loading && totalPages > 1">
+      <div class="paginator-left">
+        <label>Por página:
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </label>
+      </div>
+      <div class="paginator-center">
+        <button class="page-btn" (click)="onPageChange(1)" [disabled]="currentPage === 1">«</button>
+        <button class="page-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">‹</button>
+        <ng-container *ngFor="let page of totalPagesArray">
+          <button
+            *ngIf="page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)"
+            class="page-btn"
+            [class.active]="page === currentPage"
+            (click)="onPageChange(page)"
+          >{{ page }}</button>
+          <span
+            *ngIf="(page === 2 && currentPage > 3) || (page === totalPages - 1 && currentPage < totalPages - 2)"
+            class="page-ellipsis"
+          >…</span>
+        </ng-container>
+        <button class="page-btn" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">›</button>
+        <button class="page-btn" (click)="onPageChange(totalPages)" [disabled]="currentPage === totalPages">»</button>
+      </div>
+      <div class="paginator-right">
+        Página {{ currentPage }} de {{ totalPages }}
       </div>
     </div>
   </div>

@@ -130,8 +130,13 @@
       </button>
     </div>
 
+    <!-- Contador de resultados -->
+    <div *ngIf="!loading && filteredJugadorCampeonatos.length > 0" class="results-info">
+      Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredJugadorCampeonatos.length) }} de {{ filteredJugadorCampeonatos.length }} habilitación(es)
+    </div>
+
     <div *ngIf="!loading && jugadorCampeonatos.length > 0" class="jugador-campeonatos-grid">
-      <div *ngFor="let jc of filteredJugadorCampeonatos" class="jugador-campeonato-card" 
+      <div *ngFor="let jc of paginatedJugadorCampeonatos" class="jugador-campeonato-card" 
            [class.habilitado]="jc.estado === 'habilitado'"
            [class.pendiente]="jc.estado === 'pendiente'"
            [class.rechazado]="jc.estado === 'rechazado'"
@@ -242,6 +247,40 @@
             ✏️
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Paginador -->
+    <div *ngIf="!loading && filteredJugadorCampeonatos.length > 0" class="paginator-container">
+      <div class="paginator-left">
+        <label>Habilitaciones por página:</label>
+        <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="page-size-select">
+          <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+        </select>
+      </div>
+
+      <div class="paginator-center">
+        <button class="page-btn" (click)="onPageChange(1)" [disabled]="currentPage === 1" title="Primera página">«</button>
+        <button class="page-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1" title="Anterior">‹</button>
+
+        <ng-container *ngFor="let page of totalPagesArray">
+          <button
+            class="page-btn"
+            [class.active]="page === currentPage"
+            (click)="onPageChange(page)"
+            *ngIf="page === 1 || page === totalPages || (page >= currentPage - 2 && page <= currentPage + 2)">
+            {{ page }}
+          </button>
+          <span class="page-ellipsis"
+            *ngIf="(page === currentPage - 3 && page > 1) || (page === currentPage + 3 && page < totalPages)">…</span>
+        </ng-container>
+
+        <button class="page-btn" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages" title="Siguiente">›</button>
+        <button class="page-btn" (click)="onPageChange(totalPages)" [disabled]="currentPage === totalPages" title="Última página">»</button>
+      </div>
+
+      <div class="paginator-right">
+        Página {{ currentPage }} de {{ totalPages }}
       </div>
     </div>
 

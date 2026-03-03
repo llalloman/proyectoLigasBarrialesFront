@@ -390,3 +390,117 @@
     }
   }
 }
+
+// Contador de resultados
+.results-info {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-bottom: 1rem;
+  padding: 0 0.25rem;
+}
+
+// Paginador
+.paginator-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem 1.25rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+
+  .paginator-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #555;
+
+    label {
+      white-space: nowrap;
+    }
+
+    .page-size-select {
+      padding: 0.35rem 0.6rem;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      background: #fafafa;
+      font-size: 0.9rem;
+      cursor: pointer;
+      outline: none;
+
+      &:focus {
+        border-color: #3498db;
+      }
+    }
+  }
+
+  .paginator-center {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+
+    .page-btn {
+      min-width: 36px;
+      height: 36px;
+      padding: 0 0.5rem;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      background: white;
+      color: #333;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover:not(:disabled) {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+      }
+
+      &.active {
+        background: #3498db;
+        color: white;
+        border-color: #3498db;
+        font-weight: bold;
+      }
+
+      &:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+    }
+
+    .page-ellipsis {
+      padding: 0 0.25rem;
+      color: #999;
+      font-size: 1rem;
+      line-height: 36px;
+    }
+  }
+
+  .paginator-right {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .paginator-container {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+
+    .paginator-left,
+    .paginator-center,
+    .paginator-right {
+      display: flex;
+      justify-content: center;
+    }
+  }
+}

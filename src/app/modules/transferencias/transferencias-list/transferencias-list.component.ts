@@ -63,6 +63,33 @@ export class TransferenciasListComponent implements OnInit {
   fechaDesde: string = '';
   fechaHasta: string = '';
 
+  // Paginación
+  Math = Math;
+  currentPage = 1;
+  pageSize = 6;
+  pageSizeOptions = [6, 12, 24];
+
+  get paginatedTransferencias(): Transferencia[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredTransferencias.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredTransferencias.length / this.pageSize);
+  }
+
+  get totalPagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+  }
+
   // Autocomplete para jugadores
   jugadorControl = new FormControl('');
   filteredJugadores$!: Observable<any[]>;
@@ -170,6 +197,7 @@ export class TransferenciasListComponent implements OnInit {
     this.selectedCampeonatoId = null;
     this.selectedEquipoOrigenId = null;
     this.selectedEquipoDestinoId = null;
+    this.currentPage = 1;
 
     // Recargar equipos de la liga seleccionada
     if (this.selectedLigaId) {
@@ -193,6 +221,7 @@ export class TransferenciasListComponent implements OnInit {
   onCampeonatoChange(): void {
     this.selectedEquipoOrigenId = null;
     this.selectedEquipoDestinoId = null;
+    this.currentPage = 1;
   }
 
   private _filterJugadores(value: string | any): any[] {
@@ -245,6 +274,7 @@ export class TransferenciasListComponent implements OnInit {
     this.fechaDesde = '';
     this.fechaHasta = '';
     this.jugadorControl.setValue('');
+    this.currentPage = 1;
   }
 
   get filteredTransferencias(): Transferencia[] {
@@ -355,6 +385,7 @@ export class TransferenciasListComponent implements OnInit {
     this.transferenciasService.getAll().subscribe({
       next: (transferencias) => {
         this.transferencias = transferencias;
+        this.currentPage = 1;
         this.loading = false;
       },
       error: (error) => {

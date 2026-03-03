@@ -9,6 +9,7 @@ import {
   RegisterRequest,
   User,
 } from '../models/auth.model';
+import { ConfiguracionService } from './configuracion.service';
 
 /**
  * Servicio de autenticación
@@ -31,7 +32,7 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
   public user$ = this.currentUser$;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private configuracionService: ConfiguracionService) {}
 
   /**
    * Realiza el login del usuario
@@ -42,6 +43,8 @@ export class AuthService {
       .pipe(
         tap((response) => {
           this.saveAuthData(response);
+          // Cargar configuración global tras login
+          this.configuracionService.cargar().subscribe();
         })
       );
   }
@@ -66,6 +69,7 @@ export class AuthService {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     this.currentUserSubject.next(null);
+    this.configuracionService.reset();
     this.router.navigate(['/login']);
   }
 

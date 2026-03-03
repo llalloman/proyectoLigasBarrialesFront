@@ -17,6 +17,7 @@ import { Observable } from 'rxjs';
   styleUrl: './jugadores-list.component.scss'
 })
 export class JugadoresListComponent implements OnInit {
+  Math = Math;
   jugadores: Jugador[] = [];
   ligas: Liga[] = [];
   equipos: Equipo[] = [];
@@ -28,6 +29,33 @@ export class JugadoresListComponent implements OnInit {
   searchTerm = '';
   selectedLigaId: string = '';
   selectedEquipoId: string = '';
+
+  // Paginación
+  currentPage = 1;
+  pageSize = 6;
+  pageSizeOptions = [6, 12, 24];
+
+  get paginatedJugadores(): Jugador[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredJugadores.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredJugadores.length / this.pageSize);
+  }
+
+  get totalPagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  onPageChange(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+  }
 
   constructor(
     private jugadoresService: JugadoresService,
@@ -134,10 +162,10 @@ export class JugadoresListComponent implements OnInit {
 
   onSearchChange(term: string): void {
     this.searchTerm = term;
+    this.currentPage = 1;
   }
 
   clearSearch(): void {
-    // Llamar a clearFilters para limpiar todos los filtros y la búsqueda
     this.clearFilters();
   }
 
@@ -172,10 +200,9 @@ export class JugadoresListComponent implements OnInit {
   }
 
   onLigaChange(): void {
-    // Resetear el filtro de equipo
     this.selectedEquipoId = '';
+    this.currentPage = 1;
 
-    // Filtrar equipos de la liga seleccionada
     if (this.selectedLigaId) {
       const ligaId = Number(this.selectedLigaId);
       this.filteredEquipos = this.equipos.filter(equipo => equipo.ligaId === ligaId);
@@ -189,6 +216,7 @@ export class JugadoresListComponent implements OnInit {
     this.selectedEquipoId = '';
     this.searchTerm = '';
     this.filteredEquipos = this.equipos;
+    this.currentPage = 1;
   }
 
   canShowFilters(): boolean {
