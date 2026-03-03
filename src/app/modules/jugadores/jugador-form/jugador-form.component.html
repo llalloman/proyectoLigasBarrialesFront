@@ -93,8 +93,8 @@
           <select 
             id="equipoId" 
             formControlName="equipoId">
-            <option value="">Sin equipo</option>
-            <option *ngFor="let equipo of equipos" [value]="equipo.id">
+            <option [ngValue]="null">Sin equipo</option>
+            <option *ngFor="let equipo of equipos" [ngValue]="equipo.id">
               {{ equipo.nombre }} ({{ equipo.liga.nombre }})
             </option>
           </select>

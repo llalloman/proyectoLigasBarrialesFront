@@ -65,7 +65,7 @@ export class JugadorFormComponent implements OnInit {
       tipoDocumento: ['Cédula', Validators.required],
       cedula: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       fechaNacimiento: ['', Validators.required],
-      equipoId: [''],
+      equipoId: [null],
       descripcion: [''],
       imagen: [''],
       imagenCedula: [''],
@@ -155,7 +155,7 @@ export class JugadorFormComponent implements OnInit {
           tipoDocumento: jugador.tipoDocumento || 'Cédula',
           cedula: jugador.cedula,
           fechaNacimiento: jugador.fechaNacimiento ? new Date(jugador.fechaNacimiento).toISOString().split('T')[0] : '',
-          equipoId: jugador.equipoId || '',
+          equipoId: jugador.equipoId || null,
           descripcion: jugador.descripcion || '',
           imagen: jugador.imagen || '',
           imagenCedula: jugador.imagenCedula || '',
@@ -191,8 +191,8 @@ export class JugadorFormComponent implements OnInit {
     // Convertir fecha
     formData.fechaNacimiento = new Date(formData.fechaNacimiento);
     
-    // Si equipoId está vacío, convertir a null, si no, convertir a número
-    if (!formData.equipoId || formData.equipoId === '') {
+    // Si equipoId es null o falsy, dejarlo como null; si no, convertir a número
+    if (!formData.equipoId) {
       formData.equipoId = null;
     } else {
       formData.equipoId = Number(formData.equipoId);

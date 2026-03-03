@@ -135,7 +135,7 @@ export class PermissionsService {
   }
 
   canDeleteJugador(): boolean {
-    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo'])
+    return this.hasRole(['master', 'directivo_liga'])
       && this.isModuloAccesible('modulo_jugadores');
   }
 
