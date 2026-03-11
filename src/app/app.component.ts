@@ -1,3 +1,4 @@
+// Trigger redeploy - 11/03/2026
 import { Component } from '@angular/core';
 
 @Component({
