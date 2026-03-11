@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Campeonato, CreateCampeonatoDto } from './campeonato.model';
+import { Campeonato, CreateCampeonatoDto, MovimientoPreview, ResultadoProcesamiento } from './campeonato.model';
 
 @Injectable({
   providedIn: 'root'
@@ -38,5 +38,19 @@ export class CampeonatosService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  previewAscensosDescensos(id: number, etapa: string): Observable<MovimientoPreview[]> {
+    return this.http.get<MovimientoPreview[]>(
+      `${this.apiUrl}/${id}/preview-ascensos-descensos`,
+      { params: { etapa } }
+    );
+  }
+
+  procesarAscensosDescensos(id: number, etapa: string): Observable<ResultadoProcesamiento> {
+    return this.http.post<ResultadoProcesamiento>(
+      `${this.apiUrl}/${id}/procesar-ascensos-descensos`,
+      { etapa }
+    );
   }
 }

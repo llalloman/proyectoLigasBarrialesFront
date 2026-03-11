@@ -13,9 +13,15 @@
   <div class="inscripciones-container">
     <div class="header">
       <h2>Inscripciones</h2>
-      <button *ngIf="canCreate()" class="btn-primary" routerLink="/inscripciones/nuevo" [queryParams]="{campeonatoId: campeonatoId}">
-        <span class="icon">+</span> Nueva Inscripción
-      </button>
+      <div class="header-actions">
+        <button *ngIf="canCreate()" class="btn-primary" routerLink="/inscripciones/nuevo" [queryParams]="{campeonatoId: campeonatoId}">
+          <span class="icon">+</span> Nueva Inscripción
+        </button>
+        <button *ngIf="permissions.isDirectivo() || permissions.isMaster()" class="btn-movimiento"
+                routerLink="/inscripciones/movimiento-categoria">
+          ⬆️ Movimiento de Categoría
+        </button>
+      </div>
     </div>
 
     <div *ngIf="campeonatoNombre" class="info-panel">
@@ -45,6 +51,7 @@
            [class.confirmada]="inscripcion.estado === 'confirmada'"
            [class.pendiente]="inscripcion.estado === 'pendiente'"
            [class.rechazada]="inscripcion.estado === 'rechazada'"
+           [class.transferida]="inscripcion.estado === 'transferida'"
            [class.inactive]="!inscripcion.activo">
         <div class="inscripcion-header">
           <h3>{{ inscripcion.equipo?.nombre || 'Equipo' }}</h3>
@@ -52,7 +59,8 @@
             <span class="status-badge" 
                   [class.status-confirmed]="inscripcion.estado === 'confirmada'"
                   [class.status-pending]="inscripcion.estado === 'pendiente'"
-                  [class.status-rejected]="inscripcion.estado === 'rechazada'">
+                  [class.status-rejected]="inscripcion.estado === 'rechazada'"
+                  [class.status-transferred]="inscripcion.estado === 'transferida'">
               {{ getEstadoText(inscripcion.estado) }}
             </span>
             <span *ngIf="!inscripcion.activo" class="status-badge status-inactive">
@@ -103,6 +111,11 @@
                   (click)="eliminarInscripcion(inscripcion.id)"
                   title="Eliminar">
             🗑️
+          </button>
+          <button class="btn-icon historial"
+                  [routerLink]="['/inscripciones/historial', inscripcion.equipoId]"
+                  title="Ver historial del equipo">
+            📋
           </button>
         </div>
       </div>

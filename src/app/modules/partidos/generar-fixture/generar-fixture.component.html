@@ -1,0 +1,163 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="page-title">
+    <div class="title-with-back">
+      <a routerLink="/partidos" class="btn-back">← Volver</a>
+      <div>
+        <h2>🗓️ Generar Fixture</h2>
+        <p class="subtitle">Genera automáticamente el calendario por sistema round-robin.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  <div class="alert alert-success" *ngIf="successMessage && !fixtureGenerado">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="content-area">
+    <div class="fixture-layout">
+
+      <!-- Formulario de configuración -->
+      <div class="config-panel">
+        <div class="panel-card">
+          <div class="panel-card-header">
+            <h3>⚙️ Configuración del Fixture</h3>
+          </div>
+          <div class="panel-card-body">
+            <form [formGroup]="fixtureForm" (ngSubmit)="onSubmit()">
+
+              <div class="form-item">
+                <label>Liga *</label>
+                <select class="form-select" formControlName="ligaId">
+                  <option value="">-- Selecciona una liga --</option>
+                  <option *ngFor="let liga of ligas" [value]="liga.id">{{ liga.nombre }}</option>
+                </select>
+              </div>
+
+              <div class="form-item">
+                <label>Campeonato *</label>
+                <select class="form-select" formControlName="campeonatoId" [disabled]="!fixtureForm.get('ligaId')?.value">
+                  <option value="">-- Selecciona un campeonato --</option>
+                  <option *ngFor="let c of campeonatos" [value]="c.id">{{ c.nombre }}</option>
+                </select>
+              </div>
+
+              <div class="form-item">
+                <label>Categoría *</label>
+                <select class="form-select" formControlName="categoriaId" [disabled]="!fixtureForm.get('campeonatoId')?.value">
+                  <option value="">-- Selecciona una categoría --</option>
+                  <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+                </select>
+              </div>
+
+              <div class="form-item">
+                <label>Etapa / Fase *</label>
+                <input type="text" class="form-select" formControlName="etapa" placeholder="Ej: Fase Regular, Cuartos de Final…" />
+              </div>
+
+              <div class="form-item form-check-item">
+                <label class="check-label">
+                  <input type="checkbox" formControlName="conRevancha" />
+                  Incluir ida y vuelta (revancha)
+                </label>
+                <p class="check-hint">Cada par de equipos jugará 2 veces: local y visitante intercambiados.</p>
+              </div>
+
+              <!-- Equipos -->
+              <div class="form-item" *ngIf="fixtureForm.get('categoriaId')?.value">
+                <label>
+                  Equipos participantes
+                  <span class="count-badge">{{ equiposSeleccionados.length }} seleccionados</span>
+                </label>
+                <div class="equipo-actions">
+                  <button type="button" class="btn-select" (click)="seleccionarTodos()">Todos</button>
+                  <button type="button" class="btn-select btn-select-secondary" (click)="deseleccionarTodos()">Ninguno</button>
+                </div>
+                <div class="equipos-list">
+                  <p *ngIf="equiposDisponibles.length === 0" class="no-equipos">
+                    No hay equipos con inscripción confirmada en esta categoría.
+                  </p>
+                  <label
+                    *ngFor="let equipo of equiposDisponibles"
+                    class="equipo-item"
+                    [class.selected]="isEquipoSeleccionado(equipo.id)"
+                    (click)="toggleEquipo(equipo.id)"
+                  >
+                    <input type="checkbox" [checked]="isEquipoSeleccionado(equipo.id)" (click)="$event.stopPropagation()" />
+                    <span>{{ equipo.nombre }}</span>
+                  </label>
+                </div>
+                <p *ngIf="equiposSeleccionados.length % 2 !== 0 && equiposSeleccionados.length > 0" class="warn-bye">
+                  ⚠️ Número impar de equipos. Se agregará un BYE automáticamente.
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                class="btn-submit"
+                [disabled]="loading || fixtureForm.invalid || equiposSeleccionados.length < 2"
+              >
+                <span *ngIf="loading" class="spinner-sm"></span>
+                {{ loading ? 'Generando...' : '🗓️ Generar Fixture' }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview del fixture generado -->
+      <div class="preview-panel" *ngIf="fixtureGenerado">
+        <div class="panel-card">
+          <div class="panel-card-header success">
+            <h3>✅ Fixture Generado</h3>
+            <div class="stats-row">
+              <span class="stat-badge">{{ fixtureGenerado.totalPartidos }} partidos</span>
+              <span class="stat-badge">{{ fixtureGenerado.totalJornadas }} jornadas</span>
+            </div>
+          </div>
+          <div class="panel-card-body">
+            <p class="success-message">{{ successMessage }}</p>
+
+            <!-- Selector de jornada -->
+            <div class="jornadas-nav">
+              <button
+                *ngFor="let j of jornadasFixture"
+                type="button"
+                class="jornada-btn"
+                [class.active]="jornadaActiva === j"
+                (click)="jornadaActiva = j"
+              >
+                Jornada {{ j }}
+              </button>
+            </div>
+
+            <!-- Partidos de la jornada activa -->
+            <div class="partidos-preview">
+              <div *ngFor="let partido of partidosJornadaActiva" class="preview-partido">
+                <span class="preview-equipo text-right">{{ getEquipoNombre(partido.equipoLocalId) }}</span>
+                <span class="preview-vs">VS</span>
+                <span class="preview-equipo">{{ getEquipoNombre(partido.equipoVisitanteId) }}</span>
+              </div>
+              <p *ngIf="partidosJornadaActiva.length === 0" class="no-data">No hay partidos en esta jornada.</p>
+            </div>
+
+            <div class="preview-actions">
+              <button class="btn-ver" (click)="verFixture()">Ver Fixture Completo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -57,4 +57,8 @@ export class DashboardComponent {
   canAccessTransferencias(): boolean {
     return this.permissions.canAccessTransferencias();
   }
+
+  canAccessPartidos(): boolean {
+    return this.permissions.canAccessPartidos();
+  }
 }

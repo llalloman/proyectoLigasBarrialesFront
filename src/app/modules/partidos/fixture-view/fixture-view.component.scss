@@ -1,0 +1,410 @@
+.page-container {
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
+  min-height: 100vh;
+  background: #f4f6f8;
+}
+
+.page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+
+  h1 { margin: 0; font-size: 1.4rem; font-weight: 700; }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    .user-role { opacity: 0.8; }
+    .btn-logout {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: white;
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+      &:hover { background: rgba(255,255,255,0.3); }
+    }
+  }
+}
+
+.page-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: white;
+  border-bottom: 1px solid #e9ecef;
+
+  .title-with-back {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    h2 { margin: 0; font-size: 1.4rem; color: #2d3748; }
+    .subtitle { margin: 0.2rem 0 0; font-size: 0.9rem; color: #718096; }
+  }
+
+  .btn-back {
+    background: #f7f9fc;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    &:hover { background: #e9ecef; }
+  }
+
+  .btn-print {
+    background: white;
+    border: 1px solid #667eea;
+    color: #667eea;
+    padding: 0.5rem 1.2rem;
+    border-radius: 7px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    &:hover { background: #667eea; color: white; }
+  }
+}
+
+.alert {
+  margin: 1rem 2rem 0;
+  padding: 0.9rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  &.alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+}
+
+// ─── Filtros ────────────────────────────────────────────────────────────────
+.filters-section {
+  background: white;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.filters-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .filter-item {
+    flex: 1;
+    min-width: 180px;
+    max-width: 260px;
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+
+    .filter-select {
+      width: 100%;
+      padding: 0.45rem 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background: white;
+      color: #374151;
+      &:focus { outline: none; border-color: #667eea; }
+      &:disabled { background: #f9fafb; color: #9ca3af; cursor: not-allowed; }
+    }
+  }
+}
+
+// ─── Content ────────────────────────────────────────────────────────────────
+.content-area {
+  padding: 2rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #9ca3af;
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  p { font-size: 1rem; margin: 0 0 1.5rem; }
+  .btn-action {
+    display: inline-block;
+    padding: 0.6rem 1.4rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 7px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    &:hover { opacity: 0.88; }
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem;
+  gap: 1rem;
+  color: #6b7280;
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ─── Fixture Container ───────────────────────────────────────────────────────
+.fixture-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.fixture-header {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d6a4f 100%);
+  color: white;
+  text-align: center;
+  padding: 1.5rem 2rem;
+
+  .fixture-title {
+    margin: 0 0 0.4rem;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+  }
+
+  .fixture-categoria {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.85;
+    strong { color: #a8d8b9; }
+  }
+}
+
+// ─── Equipos Panel ──────────────────────────────────────────────────────────
+.equipos-panel {
+  padding: 1.5rem 2rem;
+  background: #f8faff;
+  border-bottom: 2px solid #e2e8f0;
+
+  .panel-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #667eea;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+}
+
+.equipos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.4rem;
+}
+
+.equipo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  background: white;
+  border-radius: 5px;
+  border: 1px solid #e2e8f0;
+
+  .equipo-num {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #667eea;
+    min-width: 20px;
+  }
+
+  .equipo-nombre {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1a202c;
+    letter-spacing: 0.02em;
+  }
+}
+
+// Resaltado del equipo del dirigente autenticado
+.equipo-item.mi-equipo,
+.ref-item.mi-equipo {
+  background: #ebf4ff;
+  border-color: #667eea;
+  font-weight: 700;
+  .equipo-nombre, .ref-nombre { color: #4c51bf; }
+}
+
+// ─── Jornadas Table ──────────────────────────────────────────────────────────
+.fixture-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fixture-title-section {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #e53e3e;
+  text-transform: uppercase;
+  padding: 1rem 2rem 0.5rem;
+  text-align: center;
+  border-top: 2px solid #1e3a5f;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8faff;
+}
+
+.jornadas-table {
+  display: flex;
+  min-width: max-content;
+  padding: 0 1rem 1.5rem;
+  gap: 0;
+  background: white;
+}
+
+.jornada-col {
+  flex: 1;
+  min-width: 160px;
+  border-right: 1px solid #e2e8f0;
+
+  &:last-child { border-right: none; }
+}
+
+.jornada-header {
+  background: #1e3a5f;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-align: center;
+  padding: 0.6rem 0.5rem;
+  text-transform: uppercase;
+}
+
+.jornada-body {
+  padding: 0.8rem 0.6rem;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.match-row {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a202c;
+  text-align: center;
+  padding: 0.2rem 0;
+  letter-spacing: 0.05em;
+}
+
+.descanso-row {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #718096;
+  text-align: center;
+  margin-top: 0.3rem;
+  font-style: italic;
+  letter-spacing: 0.03em;
+}
+
+// ─── Referencias ─────────────────────────────────────────────────────────────
+.referencias {
+  padding: 1rem 2rem 1.5rem;
+  background: #f0f4ff;
+  border-top: 1px solid #c7d2fe;
+
+  .referencias-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #4c51bf;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    text-align: center;
+  }
+}
+
+.referencias-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  justify-content: center;
+}
+
+.ref-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+
+  .ref-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #4c51bf;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .ref-nombre {
+    color: #374151;
+    font-weight: 500;
+  }
+}
+
+// ─── Print styles ─────────────────────────────────────────────────────────────
+@media print {
+  .page-header,
+  .page-title .btn-back,
+  .page-title .btn-print,
+  app-main-nav,
+  .filters-section {
+    display: none !important;
+  }
+
+  .page-title {
+    padding: 0.5rem;
+    border: none;
+    h2 { font-size: 1rem; }
+  }
+
+  .content-area { padding: 0; }
+
+  .fixture-container {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  .fixture-scroll-wrapper { overflow: visible; }
+
+  .jornadas-table { min-width: unset; flex-wrap: wrap; }
+
+  .jornada-col { min-width: 120px; page-break-inside: avoid; }
+}

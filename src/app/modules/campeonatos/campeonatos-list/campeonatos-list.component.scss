@@ -391,6 +391,13 @@
       background: #fed7d7;
     }
   }
+
+  &.finalizar {
+    background: #e6f4ea;
+    &:hover {
+      background: #c6e6cf;
+    }
+  }
 }
 
 .icon {
@@ -489,5 +496,201 @@
   .paginator-container {
     flex-direction: column;
     align-items: center;
+  }
+}
+
+/* ===== Modal Finalizar Temporada ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f7fafc;
+
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a202c;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: #718096;
+    padding: 4px 8px;
+    border-radius: 4px;
+    &:hover { background: #e2e8f0; }
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+
+  .modal-camp-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #2d3748;
+    margin-bottom: 1.25rem;
+  }
+
+  .form-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+
+    label {
+      font-size: 0.9rem;
+      color: #4a5568;
+      white-space: nowrap;
+    }
+
+    .etapa-input {
+      flex: 1;
+      min-width: 160px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      &:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 2px rgba(102,126,234,0.2); }
+    }
+
+    .btn-preview {
+      padding: 0.5rem 1rem;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      &:hover:not(:disabled) { background: #5a67d8; }
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    }
+  }
+
+  .preview-section {
+    h4 {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      color: #2d3748;
+    }
+  }
+
+  .preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+
+    th {
+      background: #edf2f7;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      color: #4a5568;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #f0f4f8;
+    }
+
+    tr.advertencia td {
+      background: #fffbeb;
+    }
+
+    .adv-badge {
+      margin-left: 4px;
+    }
+
+    .motivo-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+
+      &.ascenso { background: #c6f6d5; color: #276749; }
+      &.descenso { background: #fed7d7; color: #9b2c2c; }
+    }
+  }
+
+  .no-movimientos {
+    color: #718096;
+    font-style: italic;
+    padding: 0.75rem 0;
+  }
+
+  .resultado-ok {
+    background: #f0fff4;
+    border: 1px solid #9ae6b4;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    color: #276749;
+    font-weight: 500;
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f7fafc;
+
+  .btn-cancel {
+    padding: 0.55rem 1.25rem;
+    background: #edf2f7;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #4a5568;
+    &:hover { background: #e2e8f0; }
+  }
+
+  .btn-confirm {
+    padding: 0.55rem 1.25rem;
+    background: #38a169;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    &:hover:not(:disabled) { background: #2f855a; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
   }
 }

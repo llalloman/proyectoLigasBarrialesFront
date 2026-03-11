@@ -1,0 +1,171 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="modulo-header">
+    <h2>🏆 Tabla de Posiciones</h2>
+  </div>
+
+  <div class="inner-content">
+  <!-- Filtros -->
+  <div class="filters-card">
+    <div class="filters-grid">
+
+      <!-- Liga -->
+      <div class="filter-item">
+        <label class="filter-label">Liga</label>
+        <select
+          class="filter-select"
+          [(ngModel)]="selectedLigaId"
+          (change)="onLigaChange()"
+        >
+          <option [ngValue]="null">— Seleccionar liga —</option>
+          <option *ngFor="let liga of ligas" [ngValue]="liga.id">{{ liga.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Campeonato -->
+      <div class="filter-item">
+        <label class="filter-label">Campeonato</label>
+        <select
+          class="filter-select"
+          [(ngModel)]="selectedCampeonatoId"
+          (change)="onCampeonatoChange()"
+          [disabled]="!selectedLigaId"
+        >
+          <option [ngValue]="null">— Seleccionar campeonato —</option>
+          <option *ngFor="let c of campeonatos" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Categoría -->
+      <div class="filter-item">
+        <label class="filter-label">Categoría</label>
+        <select
+          class="filter-select"
+          [(ngModel)]="selectedCategoriaId"
+          (change)="onCategoriaChange()"
+          [disabled]="!selectedCampeonatoId"
+        >
+          <option [ngValue]="null">— Seleccionar categoría —</option>
+          <option *ngFor="let cat of categorias" [ngValue]="cat.id">{{ cat.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Etapa -->
+      <div class="filter-item">
+        <label class="filter-label">Etapa</label>
+        <select
+          class="filter-select"
+          [(ngModel)]="selectedEtapa"
+          [disabled]="!selectedCategoriaId"
+        >
+          <option value="">— Seleccionar etapa —</option>
+          <option *ngFor="let e of etapasDisponibles" [value]="e">{{ e }}</option>
+        </select>
+      </div>
+
+    </div>
+
+    <!-- Botón buscar -->
+    <div class="filters-actions">
+      <button
+        class="btn btn-primary"
+        (click)="cargarTabla()"
+        [disabled]="!puedeCargar || loading"
+      >
+        <span *ngIf="loading" class="spinner-sm"></span>
+        <span *ngIf="!loading">📊 Ver Tabla</span>
+        <span *ngIf="loading">Cargando...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <!-- Tabla de posiciones -->
+  <div class="tabla-section" *ngIf="tabla.length > 0">
+
+    <!-- Título de la tabla -->
+    <div class="tabla-titulo">
+      <h2>{{ campeonatoNombre }} — {{ categoriaNombre }}</h2>
+      <span class="etapa-badge">{{ etapaLabel }}</span>
+    </div>
+
+    <!-- Tabla desktop -->
+    <div class="tabla-wrapper">
+      <table class="tabla-posiciones">
+        <thead>
+          <tr>
+            <th class="col-pos">#</th>
+            <th class="col-equipo">Equipo</th>
+            <th class="col-stat" title="Partidos Jugados">PJ</th>
+            <th class="col-stat" title="Partidos Ganados">PG</th>
+            <th class="col-stat" title="Partidos Empatados">PE</th>
+            <th class="col-stat" title="Partidos Perdidos">PP</th>
+            <th class="col-stat" title="Goles a Favor">GF</th>
+            <th class="col-stat" title="Goles en Contra">GC</th>
+            <th class="col-stat" title="Diferencia de Goles">DG</th>
+            <th class="col-pts" title="Puntos">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let fila of tabla"
+            [class]="getPosicionClass(fila.posicion)"
+            [class.mi-equipo-row]="miEquipoId && fila.equipoId === miEquipoId"
+          >
+            <td class="col-pos">
+              <span class="posicion-badge" [class]="getPosicionClass(fila.posicion)">
+                {{ fila.posicion }}
+              </span>
+            </td>
+            <td class="col-equipo">
+              {{ fila.equipoNombre }}
+              <span *ngIf="fila.tieneSancion" class="sancion-badge" title="Este equipo tiene partidos con sanción administrativa">⚠️</span>
+            </td>
+            <td class="col-stat">{{ fila.pj }}</td>
+            <td class="col-stat pg">{{ fila.pg }}</td>
+            <td class="col-stat pe">{{ fila.pe }}</td>
+            <td class="col-stat pp">{{ fila.pp }}</td>
+            <td class="col-stat">{{ fila.gf }}</td>
+            <td class="col-stat">{{ fila.gc }}</td>
+            <td class="col-stat" [class]="getDgClass(fila.dg)">
+              {{ fila.dg > 0 ? '+' + fila.dg : fila.dg }}
+            </td>
+            <td class="col-pts">
+              <strong>{{ fila.puntos }}</strong>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="leyenda">
+      <span class="leyenda-item"><span class="dot pos-1"></span> 1° lugar</span>
+      <span class="leyenda-item"><span class="dot pos-2"></span> 2° lugar</span>
+      <span class="leyenda-item"><span class="dot pos-3"></span> 3° lugar</span>
+      <span class="leyenda-sep">|</span>
+      <span class="leyenda-item">PJ: Jugados · PG: Ganados · PE: Empatados · PP: Perdidos · GF: Goles Favor · GC: Goles Contra · DG: Diferencia</span>
+    </div>
+
+  </div>
+
+  <!-- Estado vacío (si se buscó pero no hay datos) -->
+  <div class="empty-state" *ngIf="!loading && tablaCargada && tabla.length === 0 && !errorMessage">
+    <div class="empty-icon">📋</div>
+    <p>No hay partidos jugados para esta categoría y etapa.</p>
+  </div>
+
+  </div>
+</div>

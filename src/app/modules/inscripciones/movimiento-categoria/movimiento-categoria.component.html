@@ -1,0 +1,120 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="content-area">
+    <div class="title-with-back">
+      <a routerLink="/inscripciones" class="btn-back">← Volver</a>
+      <div class="page-title">
+        <h2>⬆️ Movimiento de Categoría</h2>
+        <p class="subtitle">Registra el ascenso o descenso de un equipo a media temporada.</p>
+      </div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+    <div class="alert alert-error"   *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <div class="info-card">
+      <div class="info-card-body">
+        <p>
+          <strong>¿Cómo funciona?</strong><br/>
+          Al registrar un movimiento, la inscripción actual del equipo queda marcada como
+          <span class="badge-transferida">transferida</span> (historial) y se crea una nueva
+          inscripción <span class="badge-confirmada">confirmada</span> en la categoría destino.
+          El equipo lo verá reflejado en los nuevos fixtures de esa categoría.
+        </p>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-header">
+        <h3>📋 Datos del Movimiento</h3>
+      </div>
+      <div class="form-card-body">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="form-grid">
+
+            <!-- Liga -->
+            <div class="form-item">
+              <label>Liga *</label>
+              <select class="form-select" formControlName="ligaId">
+                <option value="">-- Selecciona --</option>
+                <option *ngFor="let l of ligas" [value]="l.id">{{ l.nombre }}</option>
+              </select>
+            </div>
+
+            <!-- Campeonato -->
+            <div class="form-item">
+              <label>Campeonato *</label>
+              <select class="form-select" formControlName="campeonatoId"
+                      [attr.disabled]="!form.get('ligaId')?.value ? '' : null">
+                <option value="">-- Selecciona --</option>
+                <option *ngFor="let c of campeonatos" [value]="c.id">{{ c.nombre }}</option>
+              </select>
+            </div>
+
+            <!-- Equipo -->
+            <div class="form-item form-item-full">
+              <label>Equipo *</label>
+              <select class="form-select" formControlName="equipoId"
+                      [attr.disabled]="!form.get('campeonatoId')?.value ? '' : null">
+                <option value="">-- Selecciona equipo --</option>
+                <option *ngFor="let e of equiposDisponibles" [value]="e.id">
+                  {{ e.nombre }} <span *ngIf="e.categoriaActual">(actualmente en: {{ e.categoriaActual }})</span>
+                </option>
+              </select>
+              <span class="hint" *ngIf="equiposDisponibles.length === 0 && form.get('campeonatoId')?.value">
+                No hay equipos con inscripción confirmada en este campeonato.
+              </span>
+            </div>
+
+            <!-- Categoría destino -->
+            <div class="form-item">
+              <label>Categoría Destino *</label>
+              <select class="form-select" formControlName="categoriaNuevaId"
+                      [attr.disabled]="!form.get('equipoId')?.value ? '' : null">
+                <option value="">-- Selecciona categoría --</option>
+                <option *ngFor="let cat of categoriasDestino" [value]="cat.id">{{ cat.nombre }}</option>
+              </select>
+            </div>
+
+            <!-- Motivo -->
+            <div class="form-item">
+              <label>Motivo *</label>
+              <select class="form-select" formControlName="motivo">
+                <option value="ascenso">⬆️ Ascenso</option>
+                <option value="descenso">⬇️ Descenso</option>
+              </select>
+            </div>
+
+            <!-- Observaciones -->
+            <div class="form-item form-item-full">
+              <label>Observaciones</label>
+              <textarea class="form-input" formControlName="observaciones"
+                        rows="2" placeholder="Notas adicionales sobre el movimiento..."></textarea>
+            </div>
+
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary-action"
+                    [disabled]="loading || form.invalid">
+              <span *ngIf="loading" class="spinner-sm"></span>
+              Registrar Movimiento
+            </button>
+            <a routerLink="/inscripciones" class="btn-cancel">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

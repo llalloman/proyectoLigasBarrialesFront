@@ -58,6 +58,18 @@
           <h3>Transferencias</h3>
           <p>Gestionar transferencias de jugadores entre equipos</p>
         </a>
+
+        <a *ngIf="canAccessPartidos()" routerLink="/partidos" class="action-card">
+          <span class="action-icon">📅</span>
+          <h3>Partidos</h3>
+          <p>Ver fixture y registrar resultados de los partidos</p>
+        </a>
+
+        <a *ngIf="canAccessPartidos()" routerLink="/tabla-posiciones" class="action-card">
+          <span class="action-icon">🏆</span>
+          <h3>Tabla de Posiciones</h3>
+          <p>Clasificación de equipos por categoría y etapa</p>
+        </a>
         
         <a *ngIf="canAccessUsuarios()" routerLink="/usuarios" class="action-card">
           <span class="action-icon">👤</span>

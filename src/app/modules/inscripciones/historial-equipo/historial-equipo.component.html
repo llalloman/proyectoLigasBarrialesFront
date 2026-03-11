@@ -1,0 +1,132 @@
+<app-main-nav></app-main-nav>
+
+<div class="historial-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <button class="btn-back" (click)="volver()">← Volver</button>
+    <div class="header-info">
+      <h1 class="page-title">
+        📋 Historial de Participaciones
+      </h1>
+      <p class="page-subtitle" *ngIf="equipoNombre">{{ equipoNombre }}</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando historial...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage && !loading" class="error-card">
+    <span>⚠️ {{ errorMessage }}</span>
+    <button class="btn-retry" (click)="cargarHistorial()">Reintentar</button>
+  </div>
+
+  <!-- Sin datos -->
+  <div *ngIf="!loading && !errorMessage && historial.length === 0" class="empty-state">
+    <span class="empty-icon">📭</span>
+    <p>Este equipo no tiene historial de inscripciones registrado.</p>
+  </div>
+
+  <!-- Estadísticas rápidas -->
+  <div *ngIf="!loading && historial.length > 0" class="stats-row">
+    <div class="stat-card">
+      <span class="stat-value">{{ totalParticipaciones }}</span>
+      <span class="stat-label">Participaciones</span>
+    </div>
+    <div class="stat-card confirmadas">
+      <span class="stat-value">{{ totalConfirmadas }}</span>
+      <span class="stat-label">Activas (confirmadas)</span>
+    </div>
+    <div class="stat-card ascensos">
+      <span class="stat-value">{{ totalAscensos }}</span>
+      <span class="stat-label">Ascensos</span>
+    </div>
+    <div class="stat-card descensos">
+      <span class="stat-value">{{ totalDescensos }}</span>
+      <span class="stat-label">Descensos</span>
+    </div>
+  </div>
+
+  <!-- Historial agrupado por campeonato -->
+  <div *ngIf="!loading && grupos.length > 0" class="grupos-container">
+    <div *ngFor="let grupo of grupos" class="grupo-campeonato">
+
+      <!-- Cabecera del campeonato -->
+      <div class="grupo-header">
+        <div class="grupo-titulo">
+          <span class="grupo-icono">🏆</span>
+          <div>
+            <h2 class="grupo-nombre">{{ grupo.campeonatoNombre }}</h2>
+            <span *ngIf="grupo.ligaNombre" class="grupo-liga">{{ grupo.ligaNombre }}</span>
+          </div>
+        </div>
+        <span class="grupo-count">{{ grupo.inscripciones.length }} registro(s)</span>
+      </div>
+
+      <!-- Línea de tiempo de inscripciones del campeonato -->
+      <div class="timeline">
+        <div *ngFor="let insc of grupo.inscripciones; let last = last"
+             class="timeline-item"
+             [class.last]="last">
+
+          <!-- Punto de la línea de tiempo -->
+          <div class="timeline-dot"
+               [class.dot-confirmada]="insc.estado === 'confirmada'"
+               [class.dot-pendiente]="insc.estado === 'pendiente'"
+               [class.dot-rechazada]="insc.estado === 'rechazada'"
+               [class.dot-transferida]="insc.estado === 'transferida'">
+          </div>
+          <div class="timeline-line" *ngIf="!last"></div>
+
+          <!-- Contenido de la tarjeta -->
+          <div class="timeline-card"
+               [class.card-confirmada]="insc.estado === 'confirmada'"
+               [class.card-pendiente]="insc.estado === 'pendiente'"
+               [class.card-rechazada]="insc.estado === 'rechazada'"
+               [class.card-transferida]="insc.estado === 'transferida'">
+
+            <div class="card-top">
+              <div class="card-left">
+                <!-- Categoría -->
+                <span class="categoria-nombre">
+                  {{ insc.categoria?.nombre || 'Sin categoría' }}
+                </span>
+                <!-- Motivo de movimiento -->
+                <span *ngIf="insc.motivo" class="motivo-badge"
+                      [class.motivo-ascenso]="insc.motivo === 'ascenso'"
+                      [class.motivo-descenso]="insc.motivo === 'descenso'">
+                  {{ getMotivoIcon(insc.motivo) }} {{ getMotivoText(insc.motivo) }}
+                </span>
+              </div>
+
+              <!-- Estado badge -->
+              <span class="estado-badge"
+                    [class.badge-confirmada]="insc.estado === 'confirmada'"
+                    [class.badge-pendiente]="insc.estado === 'pendiente'"
+                    [class.badge-rechazada]="insc.estado === 'rechazada'"
+                    [class.badge-transferida]="insc.estado === 'transferida'">
+                {{ getEstadoText(insc.estado) }}
+              </span>
+            </div>
+
+            <div class="card-bottom">
+              <span class="fecha-label">
+                📅 {{ insc.fechaInscripcion | date:'dd/MM/yyyy' }}
+              </span>
+              <span *ngIf="insc.observaciones" class="observaciones-label">
+                💬 {{ insc.observaciones }}
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

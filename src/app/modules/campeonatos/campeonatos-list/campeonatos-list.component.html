@@ -127,6 +127,9 @@
           <button class="btn-icon" (click)="verInscripciones(campeonato.id)" title="Ver Inscripciones">
             📝
           </button>
+          <button *ngIf="canEdit() && campeonato.estado === 'en_curso'" class="btn-icon finalizar" (click)="abrirModalFinalizar(campeonato)" title="Finalizar Temporada">
+            🏁
+          </button>
           <button *ngIf="canEdit()" class="btn-icon" (click)="editarCampeonato(campeonato.id)" title="Editar">
             ✏️
           </button>
@@ -169,6 +172,79 @@
       <div class="paginator-right">
         Página {{ currentPage }} de {{ totalPages }}
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Finalizar Temporada -->
+<div class="modal-overlay" *ngIf="modalCampeonato" (click)="cerrarModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>🏁 Finalizar Temporada</h3>
+      <button class="modal-close" (click)="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-camp-name">{{ modalCampeonato?.nombre }}</p>
+
+      <div *ngIf="!modalResultado">
+        <div class="form-row">
+          <label>Etapa final (ej: clausura, fase final):</label>
+          <input type="text" [(ngModel)]="etapaModal" placeholder="nombre de la etapa" class="etapa-input" />
+          <button class="btn-preview" (click)="cargarPreviewModal()" [disabled]="!etapaModal.trim() || previewCargando">
+            {{ previewCargando ? 'Cargando...' : 'Vista previa' }}
+          </button>
+        </div>
+
+        <div *ngIf="previewMovimientos.length > 0" class="preview-section">
+          <h4>Movimientos a procesar ({{ previewMovimientos.length }})</h4>
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Equipo</th>
+                <th>Desde</th>
+                <th>Hacia</th>
+                <th>Motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let mov of previewMovimientos" [class.advertencia]="mov.advertencia">
+                <td>{{ mov.posicion }}</td>
+                <td>{{ mov.equipoNombre }}</td>
+                <td>{{ mov.categoriaOrigenNombre }}</td>
+                <td>
+                  {{ mov.categoriaDestinoNombre }}
+                  <span *ngIf="mov.advertencia" class="adv-badge" [title]="mov.advertencia">⚠️</span>
+                </td>
+                <td>
+                  <span class="motivo-badge" [class.ascenso]="mov.motivo === 'ascenso'" [class.descenso]="mov.motivo === 'descenso'">
+                    {{ mov.motivo === 'ascenso' ? '⬆️ Ascenso' : '⬇️ Descenso' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="!previewCargando && etapaModal && previewMovimientos.length === 0" class="no-movimientos">
+          No hay movimientos para procesar en esta etapa.
+        </div>
+      </div>
+
+      <div *ngIf="modalResultado" class="resultado-ok">
+        ✅ {{ modalResultado }}
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModal()">Cancelar</button>
+      <button
+        *ngIf="!modalResultado"
+        class="btn-confirm"
+        (click)="confirmarFinalizar()"
+        [disabled]="procesandoFinalizar || !etapaModal.trim()">
+        {{ procesandoFinalizar ? 'Procesando...' : '🏁 Confirmar Finalización' }}
+      </button>
+      <button *ngIf="modalResultado" class="btn-confirm" (click)="cerrarModal()">Cerrar</button>
     </div>
   </div>
 </div>

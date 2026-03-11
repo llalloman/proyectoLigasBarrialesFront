@@ -25,3 +25,21 @@ export interface CreateCampeonatoDto {
   estado?: 'inscripcion_abierta' | 'en_curso' | 'finalizado' | 'cancelado';
   maxJugadoresHabilitados?: number;
 }
+
+export interface MovimientoPreview {
+  equipoId: number;
+  equipoNombre: string;
+  categoriaOrigenId: number;
+  categoriaOrigenNombre: string;
+  categoriaDestinoId: number | null;
+  categoriaDestinoNombre: string;
+  motivo: 'ascenso' | 'descenso';
+  posicion: number;
+  advertencia?: string;
+}
+
+export interface ResultadoProcesamiento {
+  procesados: number;
+  saltados: number;
+  detalle: MovimientoPreview[];
+}

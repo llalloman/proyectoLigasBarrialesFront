@@ -11,7 +11,9 @@ export interface Inscripcion {
   equipoId: number;
   equipo?: Equipo;
   fechaInscripcion: string;
-  estado: 'pendiente' | 'confirmada' | 'rechazada';
+  estado: 'pendiente' | 'confirmada' | 'rechazada' | 'transferida';
+  motivo?: 'ascenso' | 'descenso' | null;
+  categoriaOrigenId?: number | null;
   observaciones?: string;
   activo: boolean;
   creadoEn: string;
@@ -23,5 +25,13 @@ export interface CreateInscripcionDto {
   equipoId: number;
   fechaInscripcion?: string;
   estado?: 'pendiente' | 'confirmada' | 'rechazada';
+  observaciones?: string;
+}
+
+export interface MovimientoCategoriaDto {
+  campeonatoId: number;
+  equipoId: number;
+  categoriaNuevaId: number;
+  motivo: 'ascenso' | 'descenso';
   observaciones?: string;
 }

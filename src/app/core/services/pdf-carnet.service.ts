@@ -124,7 +124,7 @@ export class PdfCarnetService {
 
     console.log('Todas las imágenes cargadas. Construyendo carnets...');
 
-    // Agrupar jugadores de 2 en 2
+    // 2 carnets por página, centrados uno debajo del otro (igual que ejemplo del proveedor)
     for (let i = 0; i < jugadoresCampeonato.length; i += 2) {
       const jugador1 = jugadoresCampeonato[i];
       const imagenes1 = imagenesJugadores[i];
@@ -139,7 +139,19 @@ export class PdfCarnetService {
         imagenFondo
       );
 
-      // Si hay un segundo jugador, construir su contenido
+      const bloqueContenido: any[] = [
+        // Carnet 1: desplazado ~3cm a la izq, bajado 1mm
+        {
+          columns: [
+            { width: 66.83, text: '' },
+            { stack: [contenido1], width: 238.15 },
+            { width: '*', text: '' }
+          ],
+          margin: [0, 2.83, 0, 0],
+          unbreakable: true
+        }
+      ];
+
       if (jugador2 && imagenes2) {
         const contenido2 = this.construirContenidoCarnet(
           jugador2,
@@ -149,28 +161,31 @@ export class PdfCarnetService {
           imagenFondo
         );
 
-        // Agrupar ambos carnets en un solo bloque unbreakable con separación
-        contenidosCompletos.push({
-          stack: [
-            contenido1, 
-            { text: '', margin: [0, 6, 0, 6] },  // Separación entre carnets
-            contenido2
+        // Espacio entre los 2 carnets: reducido 1mm para subir el carnet 2
+        bloqueContenido.push({ text: '', margin: [0, 17.17, 0, 0] });
+
+        // Carnet 2: desplazado ~3cm a la izq, subido 1mm
+        bloqueContenido.push({
+          columns: [
+            { width: 66.83, text: '' },
+            { stack: [contenido2], width: 238.15 },
+            { width: '*', text: '' }
           ],
-          unbreakable: true,
-          pageBreak: i + 2 < jugadoresCampeonato.length ? 'after' : undefined
+          unbreakable: true
         });
-      } else {
-        // Solo hay un carnet en esta página
-        contenidosCompletos.push(contenido1);
       }
+
+      contenidosCompletos.push({
+        stack: bloqueContenido,
+        // Salto de página después de cada grupo de 2, excepto el último
+        pageBreak: i + 2 < jugadoresCampeonato.length ? 'after' : undefined
+      });
     }
 
     return {
-      pageSize: {
-        width: 240.98,   // 8.5 cm
-        height: 340      // Aumentado para acomodar 2 carnets con mejor spacing
-      },
-      pageMargins: [3, 3, 3, 3],
+      pageSize: 'A4',              // 210 x 297 mm
+      pageOrientation: 'portrait',
+      pageMargins: [28, 29, 28, 40],  // top reducido 4mm (~11pts), carnets desplazados ~3cm a la izq
       content: contenidosCompletos
     };
   }
@@ -361,17 +376,17 @@ export class PdfCarnetService {
         stack: [
           {
             image: imagenFondo,
-            width: 235,
-            height: 153
+            width: 232.17,
+            height: 147.33
           },
           {
             stack: contenido,
-            margin: [0, -153, 0, 0]
+            margin: [0, -147.33, 0, 0]
           }
         ],
-        // Forzar que todo el carnet ocupe exactamente 153 de altura
+        // Forzar que todo el carnet ocupe exactamente 147.33 de altura
         margin: [0, 0, 0, 0],
-        height: 153
+        height: 147.33
       };
     }
 

@@ -1,0 +1,134 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="page-title">
+    <div class="title-with-back">
+      <a routerLink="/partidos" class="btn-back">← Volver</a>
+      <div>
+        <h2>📋 Fixture</h2>
+        <p class="subtitle">Calendario de partidos por categoría y etapa.</p>
+      </div>
+    </div>
+    <button class="btn-print" (click)="imprimir()" *ngIf="jornadas.length > 0">
+      🖨️ Imprimir
+    </button>
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <!-- Filtros -->
+  <div class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-item">
+        <label>Liga</label>
+        <select class="filter-select" [(ngModel)]="selectedLigaId" (change)="onLigaChange()">
+          <option [ngValue]="null">-- Selecciona --</option>
+          <option *ngFor="let liga of ligas" [ngValue]="liga.id">{{ liga.nombre }}</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Campeonato</label>
+        <select class="filter-select" [(ngModel)]="selectedCampeonatoId" (change)="onCampeonatoChange()" [disabled]="!selectedLigaId">
+          <option [ngValue]="null">-- Selecciona --</option>
+          <option *ngFor="let c of campeonatos" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Categoría</label>
+        <select class="filter-select" [(ngModel)]="selectedCategoriaId" (change)="onCategoriaChange()" [disabled]="!selectedCampeonatoId">
+          <option [ngValue]="null">-- Selecciona --</option>
+          <option *ngFor="let cat of categorias" [ngValue]="cat.id">{{ cat.nombre }}</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Etapa / Fase</label>
+        <select class="filter-select" [(ngModel)]="selectedEtapa" (change)="onEtapaChange()" [disabled]="!selectedCategoriaId">
+          <option value="">-- Selecciona --</option>
+          <option *ngFor="let e of etapas" [value]="e">{{ e }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- Estado inicial -->
+    <div class="empty-state" *ngIf="!loading && jornadas.length === 0 && !selectedEtapa">
+      <div class="empty-icon">📋</div>
+      <p>Selecciona un campeonato, categoría y etapa para ver el fixture.</p>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Cargando fixture...</p>
+    </div>
+
+    <!-- Fixture generado -->
+    <div class="fixture-container" *ngIf="!loading && jornadas.length > 0">
+
+      <!-- Cabecera del cartel -->
+      <div class="fixture-header">
+        <h2 class="fixture-title">{{ campeonatoNombre | uppercase }}</h2>
+        <p class="fixture-categoria">Categoría: <strong>{{ categoriaNombre }}</strong> &nbsp;|&nbsp; Etapa: <strong>{{ selectedEtapa }}</strong></p>
+      </div>
+
+      <!-- Lista de equipos -->
+      <div class="equipos-panel">
+        <div class="panel-title">EQUIPOS PARTICIPANTES</div>
+        <div class="equipos-grid">
+          <div class="equipo-item" [class.mi-equipo]="miEquipoId && equipo.id === miEquipoId" *ngFor="let equipo of equipos">
+            <span class="equipo-num">{{ equipo.numero }}.</span>
+            <span class="equipo-nombre">{{ equipo.nombre | uppercase }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de fixture -->
+      <div class="fixture-scroll-wrapper">
+        <div class="fixture-title-section">FIXTURE</div>
+        <div class="jornadas-table">
+          <div class="jornada-col" *ngFor="let jornada of jornadas">
+            <div class="jornada-header">{{ getNombreJornada(jornada.numero) }}</div>
+            <div class="jornada-body">
+              <div class="match-row" *ngFor="let partido of jornada.partidos">
+                {{ partido.localNum }} - {{ partido.visitanteNum }}
+              </div>
+              <div class="descanso-row" *ngIf="jornada.descanso">
+                DESCANSA {{ jornada.descanso.numero }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Referencias -->
+      <div class="referencias">
+        <div class="referencias-title">REFERENCIAS</div>
+        <div class="referencias-grid">
+          <div class="ref-item" [class.mi-equipo]="miEquipoId && equipo.id === miEquipoId" *ngFor="let equipo of equipos">
+            <span class="ref-num">{{ equipo.numero }}</span>
+            <span class="ref-nombre">{{ equipo.nombre }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sin partidos -->
+    <div class="empty-state" *ngIf="!loading && selectedEtapa && jornadas.length === 0">
+      <div class="empty-icon">🗓️</div>
+      <p>No hay fixture generado para esta etapa aún.</p>
+      <a routerLink="/partidos/generar-fixture" class="btn-action">Generar Fixture</a>
+    </div>
+  </div>
+</div>

@@ -6,6 +6,8 @@
   <a *ngIf="permissions.canAccessCampeonatos()" routerLink="/campeonatos" routerLinkActive="active">🏅 Campeonatos</a>
   <a *ngIf="permissions.canAccessJugadorCampeonatos()" routerLink="/jugador-campeonatos" routerLinkActive="active">✅ Habilitaciones</a>
   <a *ngIf="permissions.canAccessTransferencias()" routerLink="/transferencias" routerLinkActive="active">🔄 Transferencias</a>
+  <a *ngIf="permissions.canAccessPartidos()" routerLink="/partidos" routerLinkActive="active">📅 Partidos</a>
+  <a *ngIf="permissions.canAccessPartidos()" routerLink="/tabla-posiciones" routerLinkActive="active">🏆 Tabla</a>
   <a *ngIf="permissions.canAccessUsuarios()" routerLink="/usuarios" routerLinkActive="active">👤 Usuarios</a>
   <a *ngIf="permissions.canAccessUsuarios()" routerLink="/configuracion" routerLinkActive="active">⚙️ Configuración</a>
 </nav>

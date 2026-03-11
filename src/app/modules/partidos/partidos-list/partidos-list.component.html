@@ -1,0 +1,273 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="page-title">
+    <h2>📅 Partidos</h2>
+    <div class="header-actions">
+      <button
+        type="button"
+        class="btn btn-outline"
+        routerLink="/partidos/fixture"
+      >
+        📋 Ver Fixture
+      </button>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        routerLink="/partidos/generar-fixture"
+        *ngIf="permissions.canGenerarFixture()"
+      >
+        🗓️ Generar Fixture
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        routerLink="/partidos/nuevo"
+        *ngIf="permissions.canEditPartido()"
+      >
+        + Nuevo Partido
+      </button>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <!-- Filtros -->
+  <div class="filters-section">
+    <div class="filters-header">
+      <h3>🔍 Filtros</h3>
+      <button
+        *ngIf="permissions.canDeletePartido() && selectedEtapa && selectedCategoriaId"
+        type="button"
+        class="btn-clear-filters btn-danger-outline"
+        (click)="eliminarFixture()"
+      >
+        🗑️ Eliminar fixture "{{ selectedEtapa }}"
+      </button>
+    </div>
+    <div class="filters-grid">
+      <div class="filter-item">
+        <label>Liga</label>
+        <select class="filter-select" [(ngModel)]="selectedLigaId" (change)="onLigaChange()">
+          <option [ngValue]="null">-- Todas --</option>
+          <option *ngFor="let liga of ligas" [ngValue]="liga.id">{{ liga.nombre }}</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Campeonato</label>
+        <select class="filter-select" [(ngModel)]="selectedCampeonatoId" (change)="onCampeonatoChange()" [disabled]="!selectedLigaId">
+          <option [ngValue]="null">-- Todos --</option>
+          <option *ngFor="let c of campeonatos" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Categoría</label>
+        <select class="filter-select" [(ngModel)]="selectedCategoriaId" (change)="onFiltroChange()" [disabled]="!selectedCampeonatoId">
+          <option [ngValue]="null">-- Todas --</option>
+          <option *ngFor="let cat of categorias" [ngValue]="cat.id">{{ cat.nombre }}</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Etapa / Fase</label>
+        <select class="filter-select" [(ngModel)]="selectedEtapa" (change)="onFiltroChange()">
+          <option value="">-- Todas --</option>
+          <option *ngFor="let e of etapas" [value]="e">{{ e }}</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Jornada</label>
+        <select class="filter-select" [(ngModel)]="selectedJornada" (change)="onFiltroChange()">
+          <option [ngValue]="null">-- Todas --</option>
+          <option *ngFor="let j of jornadas" [ngValue]="j">Jornada {{ j }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="content-area">
+
+    <!-- Cargando -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando partidos…</p>
+    </div>
+
+    <!-- Sin campeonato -->
+    <div *ngIf="!loading && !selectedCampeonatoId" class="empty-state">
+      <span class="empty-icon">📅</span>
+      <h3>Selecciona un campeonato</h3>
+      <p>Elige una liga y un campeonato para ver el fixture.</p>
+    </div>
+
+    <!-- Sin resultados -->
+    <div *ngIf="!loading && selectedCampeonatoId && partidosFiltrados.length === 0" class="empty-state">
+      <span class="empty-icon">🔍</span>
+      <h3>No hay partidos</h3>
+      <p>No se encontraron partidos con los filtros seleccionados.</p>
+      <button
+        *ngIf="permissions.canGenerarFixture()"
+        class="btn btn-primary mt-2"
+        routerLink="/partidos/generar-fixture"
+      >
+        🗓️ Generar Fixture
+      </button>
+    </div>
+
+    <!-- Fixture por jornadas -->
+    <div *ngIf="!loading && partidosFiltrados.length > 0">
+      <div *ngFor="let jornada of jornadasOrdenadas" class="jornada-section">
+        <div class="jornada-header">
+          <span class="jornada-badge">Jornada {{ jornada }}</span>
+          <span class="jornada-count">{{ (partidosPorJornada.get(jornada) ?? []).length }} partido(s)</span>
+        </div>
+
+        <div class="partidos-grid">
+          <div
+            *ngFor="let partido of partidosPorJornada.get(jornada)"
+            class="partido-card"
+            [class.estado-jugado]="partido.estado === 'jugado'"
+            [class.estado-suspendido]="partido.estado === 'suspendido'"
+            [class.estado-cancelado]="partido.estado === 'cancelado'"
+          >
+            <!-- Estado + fecha -->
+            <div class="partido-meta">
+              <span class="estado-badge estado-{{ partido.estado }}">{{ partido.estado }}</span>
+              <span class="partido-fecha">
+                {{ partido.fechaPartido ? (partido.fechaPartido | date:'dd/MM/yyyy') : 'Sin fecha' }}
+                {{ partido.horaPartido ? ' · ' + partido.horaPartido : '' }}
+              </span>
+            </div>
+
+            <!-- Equipos y marcador -->
+            <div class="partido-equipos">
+              <div class="equipo equipo-local">
+                <span class="equipo-nombre">{{ partido.equipoLocal?.nombre ?? 'BYE' }}</span>
+              </div>
+              <div class="marcador">
+                <span *ngIf="partido.estado === 'jugado'" class="marcador-resultado">
+                  {{ partido.golesLocal }} — {{ partido.golesVisitante }}
+                </span>
+                <span *ngIf="partido.estado !== 'jugado'" class="marcador-vs">VS</span>
+              </div>
+              <div class="equipo equipo-visitante">
+                <span class="equipo-nombre">{{ partido.equipoVisitante?.nombre ?? 'BYE' }}</span>
+              </div>
+            </div>
+
+            <!-- Cancha -->
+            <div *ngIf="partido.cancha" class="partido-cancha">
+              📍 {{ partido.cancha }}
+            </div>
+
+            <!-- Bonificaciones -->
+            <div
+              *ngIf="partido.estado === 'jugado' && ((partido.bonificacionLocal ?? 0) > 0 || (partido.bonificacionVisitante ?? 0) > 0)"
+              class="partido-bonus"
+            >
+              ⭐ Puntos extra: +{{ partido.bonificacionLocal ?? 0 }} / +{{ partido.bonificacionVisitante ?? 0 }}
+            </div>
+
+            <!-- Sanción administrativa -->
+            <div
+              *ngIf="partido.estado === 'jugado' && partido.sancionado && partido.sancionado !== 'ninguno'"
+              class="partido-sancion"
+            >
+              🚫 Sancionado:
+              <strong *ngIf="partido.sancionado === 'local'">{{ partido.equipoLocal?.nombre ?? 'Local' }}</strong>
+              <strong *ngIf="partido.sancionado === 'visitante'">{{ partido.equipoVisitante?.nombre ?? 'Visitante' }}</strong>
+            </div>
+
+            <!-- Acciones -->
+            <div class="partido-acciones" *ngIf="permissions.canEditPartido()">
+              <button
+                *ngIf="partido.equipoLocalId && partido.equipoVisitanteId"
+                class="btn-accion btn-resultado"
+                (click)="abrirModalResultado(partido)"
+              >
+                ⚽ Resultado
+              </button>
+              <a [routerLink]="['/partidos/editar', partido.id]" class="btn-accion btn-editar">
+                ✏️ Editar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Resultado -->
+<div class="modal-overlay" *ngIf="resultadoModal.visible" (click)="cerrarModalResultado()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>⚽ Registrar Resultado</h3>
+      <button class="modal-close" (click)="cerrarModalResultado()">✕</button>
+    </div>
+    <div class="modal-body" *ngIf="resultadoModal.partido">
+      <div class="modal-equipos">
+        <span>{{ resultadoModal.partido.equipoLocal?.nombre }}</span>
+        <span class="vs">vs</span>
+        <span>{{ resultadoModal.partido.equipoVisitante?.nombre }}</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-item">
+          <label>Goles Local</label>
+          <input type="number" [(ngModel)]="resultadoForm.golesLocal" min="0" class="form-input" />
+        </div>
+        <div class="form-item">
+          <label>Goles Visitante</label>
+          <input type="number" [(ngModel)]="resultadoForm.golesVisitante" min="0" class="form-input" />
+        </div>
+        <div class="form-item">
+          <label>Puntos extra Local</label>
+          <input type="number" [(ngModel)]="resultadoForm.bonificacionLocal" min="0" class="form-input" />
+        </div>
+        <div class="form-item">
+          <label>Puntos extra Visitante</label>
+          <input type="number" [(ngModel)]="resultadoForm.bonificacionVisitante" min="0" class="form-input" />
+        </div>
+        <div class="form-item form-item-full">
+          <label>Observaciones</label>
+          <textarea [(ngModel)]="resultadoForm.observaciones" rows="2" class="form-input"></textarea>
+        </div>
+        <div class="form-item form-item-full">
+          <label>Sanción administrativa</label>
+          <div class="sancion-group">
+            <label class="sancion-option">
+              <input type="radio" [(ngModel)]="resultadoForm.sancionado" value="ninguno" />
+              Ninguna
+            </label>
+            <label class="sancion-option sancion-local">
+              <input type="radio" [(ngModel)]="resultadoForm.sancionado" value="local" />
+              Sancionar al local
+            </label>
+            <label class="sancion-option sancion-visitante">
+              <input type="radio" [(ngModel)]="resultadoForm.sancionado" value="visitante" />
+              Sancionar al visitante
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cerrarModalResultado()">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardarResultado()" [disabled]="savingResultado">
+        <span *ngIf="savingResultado" class="spinner-sm"></span>
+        Guardar Resultado
+      </button>
+    </div>
+  </div>
+</div>

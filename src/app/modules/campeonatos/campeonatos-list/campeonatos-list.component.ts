@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { CampeonatosService } from '../campeonatos.service';
-import { Campeonato } from '../campeonato.model';
+import { Campeonato, MovimientoPreview } from '../campeonato.model';
 import { LigasService } from '../../../core/services/ligas.service';
 import { Liga } from '../../../core/models/liga.model';
 import { PermissionsService } from '../../../core/services/permissions.service';
@@ -30,6 +30,14 @@ export class CampeonatosListComponent implements OnInit {
   selectedEstado: string = '';
   isMaster = false;
   user$: Observable<any>;
+
+  // Modal finalizar temporada
+  modalCampeonato: Campeonato | null = null;
+  previewMovimientos: MovimientoPreview[] = [];
+  etapaModal: string = '';
+  previewCargando = false;
+  procesandoFinalizar = false;
+  modalResultado: string | null = null;
 
   // Paginación
   currentPage = 1;
@@ -254,5 +262,54 @@ export class CampeonatosListComponent implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     const rolNombre = currentUser?.rol?.nombre;
     return rolNombre === 'master' || rolNombre === 'directivo_liga';
+  }
+
+  abrirModalFinalizar(campeonato: Campeonato): void {
+    this.modalCampeonato = campeonato;
+    this.previewMovimientos = [];
+    this.etapaModal = '';
+    this.previewCargando = false;
+    this.procesandoFinalizar = false;
+    this.modalResultado = null;
+  }
+
+  cerrarModal(): void {
+    this.modalCampeonato = null;
+    this.previewMovimientos = [];
+    this.etapaModal = '';
+    this.modalResultado = null;
+  }
+
+  cargarPreviewModal(): void {
+    if (!this.modalCampeonato || !this.etapaModal.trim()) return;
+    this.previewCargando = true;
+    this.previewMovimientos = [];
+    this.campeonatosService.previewAscensosDescensos(this.modalCampeonato.id, this.etapaModal.trim()).subscribe({
+      next: (movimientos) => {
+        this.previewMovimientos = movimientos;
+        this.previewCargando = false;
+      },
+      error: (err) => {
+        this.errorMessage = 'Error al cargar preview: ' + (err.error?.message || 'Error desconocido');
+        this.previewCargando = false;
+      }
+    });
+  }
+
+  confirmarFinalizar(): void {
+    if (!this.modalCampeonato || !this.etapaModal.trim()) return;
+    if (!confirm(`¿Confirmar finalización del campeonato "${this.modalCampeonato.nombre}"? Esta acción procesará los ascensos/descensos y no se puede deshacer.`)) return;
+    this.procesandoFinalizar = true;
+    this.campeonatosService.procesarAscensosDescensos(this.modalCampeonato.id, this.etapaModal.trim()).subscribe({
+      next: (resultado) => {
+        this.procesandoFinalizar = false;
+        this.modalResultado = `Temporada finalizada. Procesados: ${resultado.procesados}, Saltados: ${resultado.saltados}.`;
+        this.loadCampeonatos();
+      },
+      error: (err) => {
+        this.procesandoFinalizar = false;
+        this.errorMessage = 'Error al finalizar: ' + (err.error?.message || 'Error desconocido');
+      }
+    });
   }
 }

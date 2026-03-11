@@ -1,0 +1,440 @@
+.page-container {
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
+}
+
+.page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h1 { margin: 0; font-size: 1.5rem; }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .user-role { opacity: 0.9; font-size: 0.9rem; }
+
+    .btn-logout {
+      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+      &:hover { background: rgba(255,255,255,0.3); }
+    }
+  }
+}
+
+.page-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem;
+  background: white;
+  border-bottom: 1px solid #eee;
+
+  h2 { margin: 0; color: #2c3e50; font-size: 2rem; }
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &.btn-primary {
+    background: #3498db;
+    color: white;
+    &:hover { background: #2980b9; transform: translateY(-1px); }
+  }
+  &.btn-secondary {
+    background: #95a5a6;
+    color: white;
+    &:hover { background: #7f8c8d; transform: translateY(-1px); }
+  }
+  &.btn-outline {
+    background: white;
+    color: #667eea;
+    border: 1px solid #667eea;
+    &:hover { background: #667eea; color: white; transform: translateY(-1px); }
+  }
+  &.mt-2 { margin-top: 0.5rem; }
+}
+
+.alert {
+  padding: 1rem 2rem;
+  border-left: 4px solid;
+  margin: 0;
+  &.alert-success { background: #d4edda; border-color: #28a745; color: #155724; }
+  &.alert-error    { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+}
+
+// ─── Filtros ───
+.filters-section {
+  padding: 1.5rem 2rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+
+  .filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+
+    h3 { margin: 0; color: #2c3e50; font-size: 1.1rem; font-weight: 600; }
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    label { font-weight: 600; color: #2c3e50; font-size: 0.88rem; }
+  }
+
+  .filter-select {
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    &:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52,152,219,0.15);
+    }
+    &:disabled { background: #e9ecef; }
+  }
+
+  .btn-clear-filters {
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    &.btn-danger-outline {
+      background: white;
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+      &:hover { background: #e74c3c; color: white; }
+    }
+  }
+}
+
+// ─── Contenido ───
+.content-area {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #7f8c8d;
+
+  .empty-icon { font-size: 4rem; display: block; margin-bottom: 1rem; }
+  h3 { font-size: 1.4rem; color: #2c3e50; }
+  p  { font-size: 1rem; }
+
+  .spinner {
+    width: 40px; height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #3498db;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ─── Jornadas ───
+.jornada-section {
+  margin-bottom: 2.5rem;
+}
+
+.jornada-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-left: 0.75rem;
+  border-left: 4px solid #3498db;
+
+  .jornada-badge {
+    background: #3498db;
+    color: white;
+    padding: 0.35rem 0.9rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .jornada-count { color: #7f8c8d; font-size: 0.9rem; }
+}
+
+.partidos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+// ─── Tarjeta de partido ───
+.partido-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.09); }
+  &.estado-jugado   { border-left: 4px solid #27ae60; }
+  &.estado-suspendido { border-left: 4px solid #f39c12; opacity: 0.85; }
+  &.estado-cancelado  { border-left: 4px solid #e74c3c; opacity: 0.7; }
+}
+
+.partido-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.estado-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  text-transform: capitalize;
+
+  &.estado-programado  { background: #ecf0f1; color: #7f8c8d; }
+  &.estado-jugado      { background: #d5f5e3; color: #1e8449; }
+  &.estado-suspendido  { background: #fef9e7; color: #b7950b; }
+  &.estado-cancelado   { background: #fadbd8; color: #922b21; }
+}
+
+.partido-fecha { font-size: 0.8rem; color: #95a5a6; }
+
+.partido-equipos {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .equipo {
+    flex: 1;
+    .equipo-nombre { font-weight: 600; font-size: 0.95rem; color: #2c3e50; }
+  }
+  .equipo-local  { text-align: right; }
+  .equipo-visitante { text-align: left; }
+
+  .marcador {
+    min-width: 54px;
+    text-align: center;
+    .marcador-resultado {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+    .marcador-vs {
+      font-size: 0.8rem;
+      color: #bdc3c7;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+  }
+}
+
+.partido-cancha { font-size: 0.82rem; color: #7f8c8d; text-align: center; }
+.partido-bonus  { font-size: 0.82rem; color: #f39c12; text-align: center; }
+.partido-sancion { font-size: 0.82rem; color: #e74c3c; text-align: center; margin-top: 0.2rem; }
+
+.partido-acciones {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.btn-accion {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &.btn-resultado {
+    background: white;
+    color: #27ae60;
+    border-color: #27ae60;
+    &:hover { background: #27ae60; color: white; }
+  }
+  &.btn-editar {
+    background: white;
+    color: #7f8c8d;
+    border-color: #bdc3c7;
+    &:hover { background: #ecf0f1; }
+  }
+}
+
+// ─── Modal ───
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: #2c3e50;
+  color: white;
+
+  h3 { margin: 0; font-size: 1.1rem; }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.8;
+    &:hover { opacity: 1; }
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+
+  .modal-equipos {
+    text-align: center;
+    margin-bottom: 1.25rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    .vs { color: #bdc3c7; font-weight: 400; margin: 0 0.5rem; }
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  .form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    label { font-size: 0.88rem; font-weight: 600; color: #2c3e50; }
+
+    &.form-item-full { grid-column: 1 / -1; }
+  }
+
+  .form-input {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    &:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,0.15); }
+  }
+}
+
+.sancion-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.sancion-option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.45rem 1rem;
+  border: 2px solid #dee2e6;
+  border-radius: 20px;
+  transition: all 0.2s;
+
+  input[type="radio"] { cursor: pointer; }
+
+  &:has(input:checked) { border-color: #3498db; background: #ebf5fb; color: #1a5276; }
+
+  &.sancion-local:has(input:checked) { border-color: #e74c3c; background: #fdf2f2; color: #922b21; }
+  &.sancion-visitante:has(input:checked) { border-color: #e67e22; background: #fef5ec; color: #873600; }
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.spinner-sm {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 0.4rem;
+}

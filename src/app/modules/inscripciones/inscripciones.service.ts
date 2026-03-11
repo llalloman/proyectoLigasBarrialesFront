@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Inscripcion, CreateInscripcionDto } from './inscripcion.model';
+import { Inscripcion, CreateInscripcionDto, MovimientoCategoriaDto } from './inscripcion.model';
 
 @Injectable({
   providedIn: 'root'
@@ -46,5 +46,13 @@ export class InscripcionesService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  registrarMovimientoCategoria(dto: MovimientoCategoriaDto): Observable<Inscripcion> {
+    return this.http.post<Inscripcion>(`${this.apiUrl}/movimiento-categoria`, dto);
+  }
+
+  getByEquipo(equipoId: number): Observable<Inscripcion[]> {
+    return this.http.get<Inscripcion[]>(`${this.apiUrl}/equipo/${equipoId}`);
   }
 }

@@ -195,6 +195,11 @@ export class UsuarioFormComponent implements OnInit {
       if (!updateData.password) {
         delete updateData.password;
       }
+      // Si el campo liga no es visible en el formulario, no enviarlo
+      // para evitar sobreescribir el valor existente con null
+      if (!this.showLigaField) {
+        delete updateData.ligaId;
+      }
 
       this.usuariosService.updateUsuario(this.usuarioId, updateData).subscribe({
         next: () => {

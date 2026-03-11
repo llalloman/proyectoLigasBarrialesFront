@@ -112,7 +112,8 @@ export class InscripcionesListComponent implements OnInit {
     const texts: any = {
       'pendiente': 'Pendiente',
       'confirmada': 'Confirmada',
-      'rechazada': 'Rechazada'
+      'rechazada': 'Rechazada',
+      'transferida': 'Transferida'
     };
     return texts[estado] || estado;
   }

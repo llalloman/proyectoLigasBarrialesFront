@@ -133,6 +133,20 @@ export const routes: Routes = [
             (m) => m.InscripcionFormComponent
           ),
       },
+      {
+        path: 'movimiento-categoria',
+        loadComponent: () =>
+          import('./modules/inscripciones/movimiento-categoria/movimiento-categoria.component').then(
+            (m) => m.MovimientoCategoriaComponent
+          ),
+      },
+      {
+        path: 'historial/:equipoId',
+        loadComponent: () =>
+          import('./modules/inscripciones/historial-equipo/historial-equipo.component').then(
+            (m) => m.HistorialEquipoComponent
+          ),
+      },
     ],
   },
   {
@@ -204,6 +218,62 @@ export const routes: Routes = [
           ),
       },
     ],
+  },
+  {
+    path: 'partidos',
+    canActivate: [AuthGuard, RolesGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'] },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./modules/partidos/partidos-list/partidos-list.component').then(
+            (m) => m.PartidosListComponent
+          ),
+      },
+      {
+        path: 'generar-fixture',
+        canActivate: [RolesGuard],
+        data: { roles: ['master', 'directivo_liga'] },
+        loadComponent: () =>
+          import('./modules/partidos/generar-fixture/generar-fixture.component').then(
+            (m) => m.GenerarFixtureComponent
+          ),
+      },
+      {
+        path: 'nuevo',
+        canActivate: [RolesGuard],
+        data: { roles: ['master', 'directivo_liga'] },
+        loadComponent: () =>
+          import('./modules/partidos/partido-form/partido-form.component').then(
+            (m) => m.PartidoFormComponent
+          ),
+      },
+      {
+        path: 'editar/:id',
+        canActivate: [RolesGuard],
+        data: { roles: ['master', 'directivo_liga'] },
+        loadComponent: () =>
+          import('./modules/partidos/partido-form/partido-form.component').then(
+            (m) => m.PartidoFormComponent
+          ),
+      },
+      {
+        path: 'fixture',
+        loadComponent: () =>
+          import('./modules/partidos/fixture-view/fixture-view.component').then(
+            (m) => m.FixtureViewComponent
+          ),
+      },
+    ],
+  },
+  {
+    path: 'tabla-posiciones',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./modules/tabla-posiciones/tabla-posiciones/tabla-posiciones.component').then(
+        (m) => m.TablaPosicionesComponent
+      ),
   },
   {
     path: 'configuracion',

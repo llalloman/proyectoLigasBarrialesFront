@@ -1,0 +1,128 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="page-title">
+    <div class="title-with-back">
+      <a routerLink="/partidos" class="btn-back">← Volver</a>
+      <div>
+        <h2>{{ isEditMode ? '✏️ Editar Partido' : '➕ Nuevo Partido' }}</h2>
+        <p class="subtitle">{{ isEditMode ? 'Modifica los datos del partido.' : 'Registra un nuevo partido en el sistema.' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="content-area">
+    <div class="form-card">
+      <div class="form-card-header">
+        <h3>📋 Datos del Partido</h3>
+      </div>
+      <div class="form-card-body">
+        <form [formGroup]="partidoForm" (ngSubmit)="onSubmit()">
+
+          <div class="form-grid">
+            <div class="form-item">
+              <label>Liga <span *ngIf="isEditMode" class="field-locked" title="No editable">🔒</span></label>
+              <select class="form-select" formControlName="ligaId">
+                <option value="">-- Selecciona --</option>
+                <option *ngFor="let liga of ligas" [value]="liga.id">{{ liga.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label>Campeonato * <span *ngIf="isEditMode" class="field-locked" title="No editable">🔒</span></label>
+              <select class="form-select" formControlName="campeonatoId">
+                <option value="">-- Selecciona --</option>
+                <option *ngFor="let c of campeonatos" [value]="c.id">{{ c.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label>Categoría * <span *ngIf="isEditMode" class="field-locked" title="No editable">🔒</span></label>
+              <select class="form-select" formControlName="categoriaId">
+                <option value="">-- Selecciona --</option>
+                <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label>Etapa / Fase * <span *ngIf="isEditMode" class="field-locked" title="No editable">🔒</span></label>
+              <input type="text" class="form-input" formControlName="etapa" placeholder="Ej: Fase Regular" />
+            </div>
+
+            <div class="form-item form-item-sm">
+              <label>Jornada * <span *ngIf="isEditMode" class="field-locked" title="No editable">🔒</span></label>
+              <input type="number" class="form-input" formControlName="jornada" min="1" />
+            </div>
+
+            <div class="form-item">
+              <label>Estado</label>
+              <select class="form-select" formControlName="estado">
+                <option *ngFor="let est of estadosOpciones" [value]="est.value">{{ est.label }}</option>
+              </select>
+            </div>
+
+            <div class="form-item form-item-full">
+              <div class="form-grid">
+                <div class="form-item">
+                  <label>Equipo Local * <span *ngIf="isEditMode" class="field-locked" title="No editable">🔒</span></label>
+                  <select class="form-select" formControlName="equipoLocalId">
+                    <option value="">-- Selecciona --</option>
+                    <option *ngFor="let e of equipos" [value]="e.id">{{ e.nombre }}</option>
+                  </select>
+                </div>
+                <div class="form-item">
+                  <label>Equipo Visitante * <span *ngIf="isEditMode" class="field-locked" title="No editable">🔒</span></label>
+                  <select class="form-select" formControlName="equipoVisitanteId">
+                    <option value="">-- Selecciona --</option>
+                    <option *ngFor="let e of equipos" [value]="e.id">{{ e.nombre }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-item">
+              <label>Fecha</label>
+              <input type="date" class="form-input" formControlName="fechaPartido" />
+            </div>
+
+            <div class="form-item form-item-sm">
+              <label>Hora</label>
+              <input type="time" class="form-input" formControlName="horaPartido" />
+            </div>
+
+            <div class="form-item">
+              <label>Cancha / Lugar</label>
+              <input type="text" class="form-input" formControlName="cancha" placeholder="Ej: Estadio Municipal" />
+            </div>
+
+            <div class="form-item form-item-full">
+              <label>Observaciones</label>
+              <textarea class="form-input" formControlName="observaciones" rows="2" placeholder="Notas adicionales…"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary-action" [disabled]="loading || partidoForm.invalid">
+              <span *ngIf="loading" class="spinner-sm"></span>
+              {{ isEditMode ? 'Guardar Cambios' : 'Crear Partido' }}
+            </button>
+            <a routerLink="/partidos" class="btn-cancel">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

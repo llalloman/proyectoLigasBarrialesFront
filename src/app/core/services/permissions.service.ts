@@ -290,4 +290,42 @@ export class PermissionsService {
     return this.hasRole(['master', 'dirigente_equipo'])
       && this.isModuloAccesible('modulo_transferencias');
   }
+
+  // ==================== PARTIDOS / FIXTURE ====================
+
+  /**
+   * Verifica si puede acceder al módulo de partidos
+   * Los tres roles pueden ver el fixture
+   */
+  canAccessPartidos(): boolean {
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+  }
+
+  /**
+   * Solo master y directivo pueden generar/regenerar el fixture
+   */
+  canGenerarFixture(): boolean {
+    return this.hasRole(['master', 'directivo_liga']);
+  }
+
+  /**
+   * Solo master y directivo pueden crear o editar partidos individuales
+   */
+  canEditPartido(): boolean {
+    return this.hasRole(['master', 'directivo_liga']);
+  }
+
+  /**
+   * Solo master y directivo pueden registrar resultados
+   */
+  canRegistrarResultado(): boolean {
+    return this.hasRole(['master', 'directivo_liga']);
+  }
+
+  /**
+   * Solo master y directivo pueden eliminar partidos
+   */
+  canDeletePartido(): boolean {
+    return this.hasRole(['master', 'directivo_liga']);
+  }
 }
