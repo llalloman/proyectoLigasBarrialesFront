@@ -348,12 +348,14 @@ export class PdfCarnetService {
           margin: [0, 2, 0, 0]
         },
         // Texto del nombre sobre el fondo (fontSize adaptable según longitud)
+        // margin bottom ajustado según fontSize para mantener el mismo espacio vertical
+        // y evitar desajuste del logo/nombre del equipo debajo
         {
           text: nombreCompleto.toUpperCase(),
           fontSize: this.getFontSizeAdaptable(nombreCompleto, 12, 10, 8),
           bold: true,
           alignment: 'center',
-          margin: [0, -16, 0, 2],
+          margin: [0, -16, 0, this.getFontSizeAdaptable(nombreCompleto, 2, 4, 6)],
           color: 'white'
         }
       ]
