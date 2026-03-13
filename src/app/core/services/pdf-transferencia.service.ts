@@ -64,6 +64,20 @@ export class PdfTransferenciaService {
   }
 
   /**
+   * Formatea un string de fecha pura (YYYY-MM-DD) como DD/MM/YYYY sin conversión de zona horaria.
+   * Evita el desfase de un día que ocurre cuando JavaScript interpreta la fecha como UTC.
+   */
+  private formatearFechaSolo(fecha: string | Date | null | undefined): string {
+    if (!fecha) return 'N/A';
+    const str = typeof fecha === 'string' ? fecha : fecha.toISOString();
+    // Tomar solo la parte de fecha (YYYY-MM-DD) antes de cualquier 'T'
+    const soloFecha = str.split('T')[0];
+    const partes = soloFecha.split('-');
+    if (partes.length !== 3) return soloFecha;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+
+  /**
    * Construye la definición del documento PDF
    * @param transferencia Datos de la transferencia
    * @param logoBase64 Logo en formato base64 (opcional)
@@ -79,8 +93,9 @@ export class PdfTransferenciaService {
       : 'Pendiente';
 
     const liga = transferencia.campeonato?.liga;
+    // Usar formatearFechaSolo para evitar desfase de zona horaria en fecha de fundación
     const fechaFundacion = liga?.fechaFundacion 
-      ? new Date(liga.fechaFundacion).toLocaleDateString('es-EC')
+      ? this.formatearFechaSolo(liga.fechaFundacion)
       : '';
 
     return {
@@ -178,8 +193,9 @@ export class PdfTransferenciaService {
                       ],
                       [
                         { text: 'F. Nacimiento:', bold: true, fontSize: 9, fillColor: '#f5f5f5' },
+                        // Usar formatearFechaSolo para evitar desfase de un día por zona horaria UTC
                         { text: transferencia.jugador?.fechaNacimiento 
-                            ? new Date(transferencia.jugador.fechaNacimiento).toLocaleDateString('es-EC')
+                            ? this.formatearFechaSolo(transferencia.jugador.fechaNacimiento)
                             : 'N/A',
                           fontSize: 9 
                         }

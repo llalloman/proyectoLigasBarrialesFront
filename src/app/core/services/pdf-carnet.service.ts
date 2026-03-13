@@ -11,6 +11,18 @@ import { JugadorCampeonato } from '../../modules/jugador-campeonatos/jugador-cam
 })
 export class PdfCarnetService {
 
+  // =============================================
+  // FONDOS DISPONIBLES PARA EL CARNET
+  // Para cambiar el fondo, modificar fondoActivo
+  // =============================================
+  private readonly FONDO_1_ORIGINAL = 'https://res.cloudinary.com/dqmc8b9j5/image/upload/v1772380181/fondoCarnet_sbbhmh.jpg';
+  private readonly FONDO_2_AZUL_ICONOS = 'https://res.cloudinary.com/dqmc8b9j5/image/upload/v1773373697/fondo-azul-del-f%C3%BAtbol-con-los-diversos-iconos-y-futbolistas-109474249_pmanty.jpg';
+  private readonly FONDO_3_GEOMETRICO = 'https://res.cloudinary.com/dqmc8b9j5/image/upload/v1773373697/football-soccer-background-design-soccer-ball-illustration-lines-and-stripes-style-geometric-decoration-sport-background-with-soccer-ball-vector_tf9xla.jpg';
+
+  // 👇 CAMBIAR AQUÍ para seleccionar el fondo activo
+  private fondoActivo = this.FONDO_3_GEOMETRICO;
+  // =============================================
+
   constructor() { }
 
   /**
@@ -101,7 +113,7 @@ export class PdfCarnetService {
     const contenidosCompletos: any[] = [];
 
     // Cargar imagen de fondo
-    const imagenFondo = await this.obtenerImagenBase64('https://res.cloudinary.com/dqmc8b9j5/image/upload/v1772380181/fondoCarnet_sbbhmh.jpg');
+    const imagenFondo = await this.obtenerImagenBase64(this.fondoActivo);
 
     // Pre-cargar todas las imágenes de todos los jugadores
     console.log('Cargando imágenes de', jugadoresCampeonato.length, 'jugadores...');
@@ -191,6 +203,20 @@ export class PdfCarnetService {
   }
 
   /**
+   * Retorna un tamaño de fuente adaptable según la longitud del texto.
+   * Evita que nombres largos rompan el layout del carnet.
+   * @param texto Texto a evaluar
+   * @param tamanoBase Tamaño base cuando el texto es corto
+   * @param tamanoMedio Tamaño cuando el texto es mediano (26-32 chars)
+   * @param tamanoLargo Tamaño cuando el texto es largo (>32 chars)
+   */
+  private getFontSizeAdaptable(texto: string, tamanoBase: number, tamanoMedio: number, tamanoLargo: number): number {
+    if (texto.length > 32) return tamanoLargo;
+    if (texto.length > 25) return tamanoMedio;
+    return tamanoBase;
+  }
+
+  /**
    * Construye el contenido visual del carnet
    * @param jugadorCampeonato Datos del jugador
    * @param logoLiga Logo de la liga en base64
@@ -232,9 +258,10 @@ export class PdfCarnetService {
     if (logoLiga) {
       encabezado.columns.push({
         image: logoLiga,
-        width: 32,
-        height: 32,
-        alignment: 'right'
+        width: 28,        // reducido de 32 → 28 para que no se salga del borde del carnet
+        height: 28,       // reducido de 32 → 28 proporcional
+        alignment: 'right',
+        margin: [0, 2, 3, 0]  // [izq, top, der, bot]: 3px de separación del borde derecho, 2px del borde superior
       });
     }
 
@@ -320,10 +347,10 @@ export class PdfCarnetService {
           ],
           margin: [0, 2, 0, 0]
         },
-        // Texto del nombre sobre el fondo
+        // Texto del nombre sobre el fondo (fontSize adaptable según longitud)
         {
           text: nombreCompleto.toUpperCase(),
-          fontSize: 12,
+          fontSize: this.getFontSizeAdaptable(nombreCompleto, 12, 10, 8),
           bold: true,
           alignment: 'center',
           margin: [0, -16, 0, 2],
@@ -362,7 +389,7 @@ export class PdfCarnetService {
 
     pie.columns.push({
       text: nombreEquipo.toUpperCase(),
-      fontSize: 13,
+      fontSize: this.getFontSizeAdaptable(nombreEquipo, 13, 11, 9),  // adaptable según longitud
       bold: true,
       margin: [logoEquipo ? 2 : 0, 7, 0, 0],
       color: 'white'
