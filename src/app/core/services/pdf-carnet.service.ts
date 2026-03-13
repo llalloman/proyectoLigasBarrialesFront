@@ -330,9 +330,16 @@ export class PdfCarnetService {
     contenido.push(seccionCentral);
 
     // NOMBRE DEL JUGADOR con fondo semitransparente para mejor legibilidad
-    // El stack tiene margin bottom fijo [0,2,0,2] para que el bloque siempre
-    // ocupe el mismo alto, sin importar el fontSize del nombre (evita que el
-    // segundo carnet suba cuando el nombre es largo y la fuente se reduce)
+    // Cálculo dinámico de márgenes del texto para que la asignación de espacio
+    // sea siempre 0, independientemente del fontSize, manteniendo el bloque total
+    // en exactamente 20pt (canvas 18pt + 2pt margin top del canvas).
+    // Fórmula: topMargin + (fontSize * 1.2) + bottomMargin = 0
+    //   → topMargin = -(11 + fontSize * 0.6)  [centra el texto en el canvas de 18pt]
+    //   → bottomMargin = 11 - fontSize * 0.6  [cancela la asignación restante]
+    const fontSizeNombre = this.getFontSizeAdaptable(nombreCompleto, 12, 10, 8);
+    const topMarginNombre = -Math.round(11 + fontSizeNombre * 0.6);
+    const bottomMarginNombre = Math.round(11 - fontSizeNombre * 0.6);
+
     contenido.push({
       stack: [
         // Rectángulo de fondo negro semitransparente (alto fijo h:18)
@@ -351,18 +358,16 @@ export class PdfCarnetService {
           margin: [0, 2, 0, 0]
         },
         // Texto del nombre sobre el fondo (fontSize adaptable según longitud)
-        // margin bottom FIJO en 2 para que el bloque total no varíe de alto
+        // Sus márgenes se calculan para que su aportación al alto del flow sea 0
         {
           text: nombreCompleto.toUpperCase(),
-          fontSize: this.getFontSizeAdaptable(nombreCompleto, 12, 10, 8),
+          fontSize: fontSizeNombre,
           bold: true,
           alignment: 'center',
-          margin: [0, -16, 0, 2],
+          margin: [0, topMarginNombre, 0, bottomMarginNombre],
           color: 'white'
         }
       ],
-      // Margen fijo del stack completo: garantiza que este bloque siempre
-      // ocupe el mismo espacio vertical en el carnet
       margin: [0, 0, 0, 2]
     });
 
