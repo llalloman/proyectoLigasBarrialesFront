@@ -113,7 +113,7 @@ export class EquipoFormComponent implements OnInit {
           // FIX: { emitEvent: false } evita disparar valueChanges que borraría el dirigenteId
           if (this.ligas.length > 0) {
             this.equipoForm.get('ligaId')?.setValue(this.ligas[0].id, { emitEvent: false });
-            this.equipoForm.get('ligaId')?.disable();
+            this.equipoForm.get('ligaId')?.disable({ emitEvent: false });
           }
         },
         error: (error) => {
@@ -132,7 +132,7 @@ export class EquipoFormComponent implements OnInit {
                   this.ligas = [liga];
                   // FIX: { emitEvent: false } evita disparar valueChanges que borraría el dirigenteId
                   this.equipoForm.get('ligaId')?.setValue(liga.id, { emitEvent: false });
-                  this.equipoForm.get('ligaId')?.disable();
+                  this.equipoForm.get('ligaId')?.disable({ emitEvent: false });
                 },
                 error: (error) => {
                   console.error('Error loading liga:', error);
@@ -154,6 +154,16 @@ export class EquipoFormComponent implements OnInit {
       this.ligasService.getAll().subscribe({
         next: (ligas) => {
           this.ligas = ligas.filter(liga => liga.activo);
+
+          // FIX: Cuando loadLigas() llega después de loadEquipo(), reemplazar el array
+          // destruye y recrea los <option> en el DOM. Si ya hay un ligaId seteado
+          // (modo edición), forzamos la re-renderización y re-aplicamos el valor
+          // para que el <select> muestre la opción correcta.
+          const ligaActual = this.equipoForm.get('ligaId')?.value;
+          if (ligaActual) {
+            this.cdr.detectChanges();
+            this.equipoForm.get('ligaId')?.setValue(ligaActual, { emitEvent: false });
+          }
         },
         error: (error) => {
           console.error('Error loading ligas:', error);
@@ -241,7 +251,7 @@ export class EquipoFormComponent implements OnInit {
         // Deshabilitar campo liga para dirigente_equipo en modo edición
         const currentUser = this.authService.getCurrentUser();
         if (currentUser?.rol?.nombre === 'dirigente_equipo') {
-          this.equipoForm.get('ligaId')?.disable();
+          this.equipoForm.get('ligaId')?.disable({ emitEvent: false });
         }
         
         // Cargar dirigentes de la liga del equipo y luego agregar el actual
