@@ -7,7 +7,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { Liga } from '../../../core/models/liga.model';
 import { Usuario } from '../../../core/models/usuario.model';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 @Component({
@@ -53,7 +54,6 @@ export class EquipoFormComponent implements OnInit {
     }
 
     this.checkUserRole();
-    this.loadLigas();
     this.initForm();
 
     // Escuchar cambios en el campo ligaId para recargar dirigentes
@@ -68,9 +68,15 @@ export class EquipoFormComponent implements OnInit {
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
+      // MODO EDICIÓN: usamos forkJoin para cargar ligas Y equipo en paralelo
+      // pero esperando a que AMBOS terminen antes de setear valores.
+      // Esto elimina completamente la race condition.
       this.isEditMode = true;
       this.equipoId = +id;
-      this.loadEquipo(this.equipoId);
+      this.loadEquipoYLigas(this.equipoId);
+    } else {
+      // MODO CREAR: solo cargamos las ligas
+      this.loadLigas();
     }
   }
 
@@ -225,11 +231,50 @@ export class EquipoFormComponent implements OnInit {
     });
   }
 
-  loadEquipo(id: number): void {
+  /**
+   * SOLUCIÓN DEFINITIVA para la race condition entre loadLigas y loadEquipo.
+   * Usa forkJoin para ejecutar ambas peticiones HTTP en paralelo y esperar
+   * a que las DOS terminen antes de tocar el formulario. Así garantizamos
+   * que la lista de opciones del <select> ya existe cuando asignamos el valor.
+   */
+  loadEquipoYLigas(id: number): void {
     this.loading = true;
-    this.equiposService.getById(id).subscribe({
-      next: (equipo) => {
-        // FIX: Seteamos todos los campos excepto ligaId y dirigenteId primero
+    const currentUser = this.authService.getCurrentUser();
+    const rolNombre = currentUser?.rol?.nombre;
+
+    // Construimos el observable de ligas según el rol del usuario
+    let ligas$: Observable<Liga[]>;
+    if (rolNombre === 'master') {
+      ligas$ = this.ligasService.getAll().pipe(map(ligas => ligas.filter(l => l.activo)));
+    } else if (rolNombre === 'directivo_liga' && currentUser?.ligaId) {
+      ligas$ = this.ligasService.getAll().pipe(
+        map(ligas => ligas.filter(l => l.activo && l.id === currentUser.ligaId))
+      );
+    } else {
+      // Para dirigente_equipo u otros roles, la liga la tomaremos del equipo
+      ligas$ = of([]);
+    }
+
+    // forkJoin espera a que TODOS los observables completen antes de continuar
+    forkJoin({
+      ligas: ligas$,
+      equipo: this.equiposService.getById(id)
+    }).subscribe({
+      next: ({ ligas, equipo }) => {
+        // 1. Llenamos la lista de ligas
+        this.ligas = ligas;
+
+        // Asegurar que la liga del equipo esté en la lista
+        if (equipo.liga && !this.ligas.find(l => l.id === equipo.liga.id)) {
+          this.ligas = [equipo.liga, ...this.ligas];
+        }
+
+        // 2. Deshabilitar campo liga según el rol
+        if (rolNombre === 'directivo_liga' || rolNombre === 'dirigente_equipo') {
+          this.equipoForm.get('ligaId')?.disable({ emitEvent: false });
+        }
+
+        // 3. Seteamos los campos del formulario
         this.equipoForm.patchValue({
           nombre: equipo.nombre,
           representante: equipo.representante || '',
@@ -238,50 +283,30 @@ export class EquipoFormComponent implements OnInit {
           imagen: equipo.imagen || '',
         });
 
-        // FIX: Seteamos ligaId con { emitEvent: false } para NO disparar el valueChanges
-        // Si no hacemos esto, el valueChanges llama a loadDirigentesByLiga() que
-        // inmediatamente hace patchValue({ dirigenteId: '' }) borrando el valor.
+        // 4. detectChanges garantiza que Angular renderice las <option> ANTES
+        //    de asignar el valor seleccionado. Con forkJoin, las opciones ya
+        //    existen en this.ligas, así que este paso es seguro y determinista.
+        this.cdr.detectChanges();
         this.equipoForm.get('ligaId')?.setValue(equipo.ligaId, { emitEvent: false });
 
-        // Agregar liga actual al listado si no está presente
-        if (equipo.liga && !this.ligas.find(l => l.id === equipo.liga.id)) {
-          this.ligas = [equipo.liga, ...this.ligas];
-        }
-        
-        // Deshabilitar campo liga para dirigente_equipo en modo edición
-        const currentUser = this.authService.getCurrentUser();
-        if (currentUser?.rol?.nombre === 'dirigente_equipo') {
-          this.equipoForm.get('ligaId')?.disable({ emitEvent: false });
-        }
-        
-        // Cargar dirigentes de la liga del equipo y luego agregar el actual
+        // 5. Cargamos dirigentes y luego seteamos dirigenteId
         if (equipo.ligaId) {
           this.authService.getDirigentesDisponiblesByLiga(equipo.ligaId).subscribe({
             next: (usuarios) => {
               this.dirigentes = usuarios;
-              
-              // Agregar dirigente actual al listado si no está presente
               if (equipo.dirigente && !this.dirigentes.find(d => d.id === equipo.dirigente.id)) {
                 this.dirigentes = [equipo.dirigente, ...this.dirigentes];
               }
-
-              // FIX: detectChanges() le dice a Angular "renderiza YA las <option>"
-              // antes de asignar el valor. Así el <select> siempre encuentra la opción
-              // y la muestra correctamente, sin depender de timings del browser.
               this.cdr.detectChanges();
-              this.equipoForm.get('ligaId')?.setValue(equipo.ligaId, { emitEvent: false });
               this.equipoForm.patchValue({ dirigenteId: equipo.dirigenteId });
-
               this.loading = false;
             },
             error: (error) => {
-              console.error('Error loading dirigentes by liga:', error);
-              // Aún así agregar el dirigente actual si existe
+              console.error('Error loading dirigentes:', error);
               if (equipo.dirigente) {
                 this.dirigentes = [equipo.dirigente];
               }
               this.cdr.detectChanges();
-              this.equipoForm.get('ligaId')?.setValue(equipo.ligaId, { emitEvent: false });
               this.equipoForm.patchValue({ dirigenteId: equipo.dirigenteId });
               this.loading = false;
             }
@@ -291,7 +316,7 @@ export class EquipoFormComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error loading equipo:', error);
+        console.error('Error loading equipo y ligas:', error);
         this.errorMessage = 'Error al cargar el equipo';
         this.loading = false;
       }
