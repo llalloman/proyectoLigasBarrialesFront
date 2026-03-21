@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EquiposService } from '../../../core/services/equipos.service';
@@ -34,7 +34,8 @@ export class EquipoFormComponent implements OnInit {
     private authService: AuthService,
     public permissions: PermissionsService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.user$ = this.authService.user$;
   }
@@ -109,9 +110,10 @@ export class EquipoFormComponent implements OnInit {
         next: (ligas) => {
           this.ligas = ligas.filter(liga => liga.activo && liga.id === currentUser.ligaId);
           // Pre-seleccionar la liga del directivo
+          // FIX: { emitEvent: false } evita disparar valueChanges que borraría el dirigenteId
           if (this.ligas.length > 0) {
-            this.equipoForm.patchValue({ ligaId: this.ligas[0].id });
-            this.equipoForm.get('ligaId')?.disable(); // Deshabilitar cambio de liga
+            this.equipoForm.get('ligaId')?.setValue(this.ligas[0].id, { emitEvent: false });
+            this.equipoForm.get('ligaId')?.disable();
           }
         },
         error: (error) => {
@@ -128,8 +130,9 @@ export class EquipoFormComponent implements OnInit {
               this.ligasService.getById(equipo.ligaId).subscribe({
                 next: (liga) => {
                   this.ligas = [liga];
-                  this.equipoForm.patchValue({ ligaId: liga.id });
-                  this.equipoForm.get('ligaId')?.disable(); // Deshabilitar cambio de liga
+                  // FIX: { emitEvent: false } evita disparar valueChanges que borraría el dirigenteId
+                  this.equipoForm.get('ligaId')?.setValue(liga.id, { emitEvent: false });
+                  this.equipoForm.get('ligaId')?.disable();
                 },
                 error: (error) => {
                   console.error('Error loading liga:', error);
@@ -252,8 +255,11 @@ export class EquipoFormComponent implements OnInit {
                 this.dirigentes = [equipo.dirigente, ...this.dirigentes];
               }
 
-              // FIX: Seteamos dirigenteId AQUÍ, después de que la lista de dirigentes
-              // ya esté cargada. Así el <select> encuentra la opción y la muestra correctamente.
+              // FIX: detectChanges() le dice a Angular "renderiza YA las <option>"
+              // antes de asignar el valor. Así el <select> siempre encuentra la opción
+              // y la muestra correctamente, sin depender de timings del browser.
+              this.cdr.detectChanges();
+              this.equipoForm.get('ligaId')?.setValue(equipo.ligaId, { emitEvent: false });
               this.equipoForm.patchValue({ dirigenteId: equipo.dirigenteId });
 
               this.loading = false;
@@ -264,6 +270,8 @@ export class EquipoFormComponent implements OnInit {
               if (equipo.dirigente) {
                 this.dirigentes = [equipo.dirigente];
               }
+              this.cdr.detectChanges();
+              this.equipoForm.get('ligaId')?.setValue(equipo.ligaId, { emitEvent: false });
               this.equipoForm.patchValue({ dirigenteId: equipo.dirigenteId });
               this.loading = false;
             }
