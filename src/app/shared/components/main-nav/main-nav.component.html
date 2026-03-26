@@ -8,6 +8,9 @@
   <a *ngIf="permissions.canAccessTransferencias()" routerLink="/transferencias" routerLinkActive="active">🔄 Transferencias</a>
   <a *ngIf="permissions.canAccessPartidos()" routerLink="/partidos" routerLinkActive="active">📅 Partidos</a>
   <a *ngIf="permissions.canAccessPartidos()" routerLink="/tabla-posiciones" routerLinkActive="active">🏆 Tabla</a>
+  <a *ngIf="permissions.canAccessGoleadores()" routerLink="/goleadores" routerLinkActive="active">⚽ Goleadores</a>
+  <a *ngIf="permissions.canAccessSanciones()" routerLink="/sanciones" routerLinkActive="active">🟨 Sanciones</a>
+  <a *ngIf="permissions.canAccessTribunal()" routerLink="/tribunal-penas" routerLinkActive="active">⚖️ Tribunal</a>
   <a *ngIf="permissions.canAccessUsuarios()" routerLink="/usuarios" routerLinkActive="active">👤 Usuarios</a>
   <a *ngIf="permissions.canAccessUsuarios()" routerLink="/configuracion" routerLinkActive="active">⚙️ Configuración</a>
 </nav>

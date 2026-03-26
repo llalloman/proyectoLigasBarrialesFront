@@ -146,6 +146,17 @@ export class GenerarFixtureComponent implements OnInit {
     return this.equiposSeleccionados.includes(equipoId);
   }
 
+  getOrdenSeleccion(equipoId: number): number | null {
+    const index = this.equiposSeleccionados.indexOf(equipoId);
+    return index === -1 ? null : index + 1;
+  }
+
+  get equiposSeleccionadosDetalle(): any[] {
+    return this.equiposSeleccionados
+      .map((equipoId) => this.equiposDisponibles.find((equipo) => equipo.id === equipoId))
+      .filter((equipo): equipo is any => !!equipo);
+  }
+
   seleccionarTodos(): void {
     this.equiposSeleccionados = this.equiposDisponibles.map((e) => e.id);
   }
@@ -181,11 +192,12 @@ export class GenerarFixtureComponent implements OnInit {
     this.fixtureGenerado = null;
 
     const formValue = this.fixtureForm.getRawValue();
+    const equipoIdsOrdenados = [...this.equiposSeleccionados];
     this.partidosService
       .generarFixture({
         campeonatoId: +formValue.campeonatoId,
         categoriaId: +formValue.categoriaId,
-        equipoIds: this.equiposSeleccionados,
+        equipoIds: equipoIdsOrdenados,
         etapa: formValue.etapa,
         conRevancha: formValue.conRevancha,
       })

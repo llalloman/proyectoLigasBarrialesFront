@@ -1,0 +1,140 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="page-content">
+
+    <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+    <div class="alert alert-success" *ngIf="exito">{{ exito }}</div>
+
+    <div class="form-card">
+      <div class="form-card-header">
+        <h2>Datos de la sanción</h2>
+      </div>
+      <div class="form-card-body">
+        <form [formGroup]="form" (ngSubmit)="guardar()">
+
+          <!-- Bloque 1: Tipo y campeonato -->
+          <p class="section-label">¿Qué tipo de sanción y en qué campeonato?</p>
+          <div class="form-grid">
+
+            <div class="form-item">
+              <label>Tipo de sanción *</label>
+              <select class="form-select" formControlName="tipoSancionId">
+                <option value="">-- Selecciona --</option>
+                <option *ngFor="let t of tipos" [value]="t.id">
+                  {{ t.nombre }}
+                  <ng-container *ngIf="t.aplicaA"> ({{ t.aplicaA }})</ng-container>
+                </option>
+              </select>
+              <span class="field-error" *ngIf="form.get('tipoSancionId')?.invalid && form.get('tipoSancionId')?.touched">
+                Selecciona el tipo de sanción.
+              </span>
+            </div>
+
+            <!-- Causa / Regla del reglamento (se muestra si el tipo tiene reglas configuradas) -->
+            <div class="form-item wide" *ngIf="reglas.length > 0">
+              <label>Causa según el reglamento</label>
+              <select class="form-select" formControlName="reglaSancionId">
+                <option value="">-- Sin causa específica --</option>
+                <option *ngFor="let r of reglas" [value]="r.id">
+                  {{ r.descripcion || ('Regla #' + r.id) }}
+                  <ng-container *ngIf="r.partidosSuspension"> — {{ r.partidosSuspension }} partido(s)</ng-container>
+                </option>
+              </select>
+              <span class="field-hint">Al seleccionar la causa, los partidos de suspensión se autocompletarán.</span>
+            </div>
+
+            <div class="form-item">
+              <label>Campeonato *</label>
+              <select class="form-select" formControlName="campeonatoId">
+                <option value="">-- Selecciona --</option>
+                <option *ngFor="let c of campeonatos" [value]="c.id">{{ c.nombre }}</option>
+              </select>
+              <span class="field-error" *ngIf="form.get('campeonatoId')?.invalid && form.get('campeonatoId')?.touched">
+                Selecciona el campeonato.
+              </span>
+            </div>
+
+            <div class="form-item">
+              <label>Partido (opcional)</label>
+              <select class="form-select" formControlName="partidoId">
+                <option value="">-- Sin partido específico --</option>
+                <option *ngFor="let p of partidos" [value]="p.id">{{ labelPartido(p) }}</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label>Fecha de sanción</label>
+              <input class="form-input" type="date" formControlName="fechaSancion">
+            </div>
+
+          </div>
+
+          <!-- Bloque 2: Sancionado -->
+          <p class="section-label">¿A quién se sanciona?</p>
+          <div class="form-grid">
+
+            <!-- Equipo (siempre visible) -->
+            <div class="form-item">
+              <label>Equipo</label>
+              <select class="form-select" formControlName="equipoId">
+                <option value="">-- Sin equipo --</option>
+                <option *ngFor="let e of equipos" [value]="e.id">{{ e.nombre }}</option>
+              </select>
+              <span class="field-hint">Selecciona el equipo para filtrar jugadores</span>
+            </div>
+
+            <!-- Jugador (visible si aplica a jugador o equipo) -->
+            <div class="form-item" *ngIf="aplicaASeleccionado === 'jugador' || aplicaASeleccionado === ''">
+              <label>Jugador (opcional)</label>
+              <select class="form-select" formControlName="jugadorId"
+                [attr.disabled]="!form.get('equipoId')?.value ? true : null">
+                <option value="">-- Sin jugador --</option>
+                <option *ngFor="let j of jugadores" [value]="j.id">
+                  {{ j.nombre }} {{ j.apellido ?? '' }}
+                </option>
+              </select>
+            </div>
+
+          </div>
+
+          <!-- Bloque 3: Suspensión -->
+          <p class="section-label">Suspensión</p>
+          <div class="form-grid">
+
+            <div class="form-item">
+              <label>Partidos de suspensión</label>
+              <input class="form-input" type="number" formControlName="partidosSuspension" min="0" placeholder="0">
+              <span class="field-hint">0 = sin suspensión (solo registro)</span>
+            </div>
+
+            <div class="form-item wide">
+              <label>Descripción / observaciones</label>
+              <textarea class="form-textarea" formControlName="descripcion" rows="3"
+                placeholder="Motivo o detalle adicional..."></textarea>
+            </div>
+
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary-action" [disabled]="guardando">
+              {{ guardando ? 'Guardando...' : 'Registrar sanción' }}
+            </button>
+            <button type="button" class="btn-cancel" (click)="cancelar()">Cancelar</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>

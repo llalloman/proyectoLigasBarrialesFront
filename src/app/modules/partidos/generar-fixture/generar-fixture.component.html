@@ -93,9 +93,31 @@
                     [class.selected]="isEquipoSeleccionado(equipo.id)"
                     (click)="toggleEquipo(equipo.id)"
                   >
-                    <input type="checkbox" [checked]="isEquipoSeleccionado(equipo.id)" (click)="$event.stopPropagation()" />
-                    <span>{{ equipo.nombre }}</span>
+                    <input
+                      type="checkbox"
+                      [checked]="isEquipoSeleccionado(equipo.id)"
+                      (click)="$event.stopPropagation(); toggleEquipo(equipo.id)"
+                    />
+                    <span class="equipo-nombre">{{ equipo.nombre }}</span>
+                    <span
+                      *ngIf="getOrdenSeleccion(equipo.id) as orden"
+                      class="equipo-orden"
+                      title="Orden de selección para generar el fixture"
+                    >
+                      {{ orden }}
+                    </span>
                   </label>
+                </div>
+                <p *ngIf="equiposSeleccionados.length > 0" class="selection-hint">
+                  El fixture se generará siguiendo este orden de selección.
+                </p>
+                <div *ngIf="equiposSeleccionadosDetalle.length > 0" class="selection-preview">
+                  <div class="selection-preview-title">Orden que se enviarÃ¡ al fixture</div>
+                  <div class="selection-preview-list">
+                    <span *ngFor="let equipo of equiposSeleccionadosDetalle; let i = index" class="selection-chip">
+                      {{ i + 1 }}. {{ equipo.nombre }}
+                    </span>
+                  </div>
                 </div>
                 <p *ngIf="equiposSeleccionados.length % 2 !== 0 && equiposSeleccionados.length > 0" class="warn-bye">
                   ⚠️ Número impar de equipos. Se agregará un BYE automáticamente.

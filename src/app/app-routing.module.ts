@@ -265,6 +265,24 @@ export const routes: Routes = [
             (m) => m.FixtureViewComponent
           ),
       },
+      {
+        path: ':partidoId/acta',
+        canActivate: [RolesGuard],
+        data: { roles: ['master', 'directivo_liga'] },
+        loadComponent: () =>
+          import('./modules/acta-partido/acta-partido/acta-partido.component').then(
+            (m) => m.ActaPartidoComponent
+          ),
+      },
+      {
+        path: ':partidoId/acta/imprimir',
+        canActivate: [RolesGuard],
+        data: { roles: ['master', 'directivo_liga'] },
+        loadComponent: () =>
+          import('./modules/acta-partido/acta-imprimir/acta-imprimir.component').then(
+            (m) => m.ActaImprimirComponent
+          ),
+      },
     ],
   },
   {
@@ -273,6 +291,65 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./modules/tabla-posiciones/tabla-posiciones/tabla-posiciones.component').then(
         (m) => m.TablaPosicionesComponent
+      ),
+  },
+  {
+    path: 'goleadores',
+    canActivate: [AuthGuard, RolesGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'] },
+    loadComponent: () =>
+      import('./modules/goleadores/goleadores-list/goleadores-list.component').then(
+        (m) => m.GoleadoresListComponent
+      ),
+  },
+  {
+    path: 'sanciones',
+    canActivate: [AuthGuard, RolesGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'] },
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./modules/sanciones/sanciones-list/sanciones-list.component').then(
+            (m) => m.SancionesListComponent
+          ),
+      },
+      {
+        path: 'nueva',
+        canActivate: [RolesGuard],
+        data: { roles: ['master', 'directivo_liga'] },
+        loadComponent: () =>
+          import('./modules/sanciones/sancion-form/sancion-form.component').then(
+            (m) => m.SancionFormComponent
+          ),
+      },
+      {
+        path: 'tipos',
+        canActivate: [RolesGuard],
+        data: { roles: ['master', 'directivo_liga'] },
+        loadComponent: () =>
+          import('./modules/sanciones/tipos-sancion/tipos-sancion.component').then(
+            (m) => m.TiposSancionComponent
+          ),
+      },
+      {
+        path: 'reglas',
+        canActivate: [RolesGuard],
+        data: { roles: ['master', 'directivo_liga'] },
+        loadComponent: () =>
+          import('./modules/sanciones/reglas-sancion/reglas-sancion.component').then(
+            (m) => m.ReglasSancionComponent
+          ),
+      },
+    ],
+  },
+  {
+    path: 'tribunal-penas',
+    canActivate: [AuthGuard, RolesGuard],
+    data: { roles: ['master', 'directivo_liga'] },
+    loadComponent: () =>
+      import('./modules/acta-partido/tribunal-penas/tribunal-penas.component').then(
+        (m) => m.TribunalPenasComponent
       ),
   },
   {

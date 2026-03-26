@@ -1,0 +1,263 @@
+﻿<div class="page-container">
+
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="page-content">
+
+    <!-- ── CABECERA ─────────────────────────────────────────────────────── -->
+    <div class="section-header">
+      <button class="btn-back" (click)="volver()">← Volver a partidos</button>
+      <div class="header-title">
+        <h2>📋 Acta de Partido</h2>
+        <p class="header-subtitle" *ngIf="partido">
+          {{ partido.equipoLocal?.nombre }} vs {{ partido.equipoVisitante?.nombre }}
+          &nbsp;|&nbsp;
+          {{ partido.fechaPartido | date:'dd/MM/yyyy' }}
+          <span *ngIf="partido.horaPartido">&nbsp;{{ partido.horaPartido }}</span>
+          <span *ngIf="partido.cancha">&nbsp;— {{ partido.cancha }}</span>
+        </p>
+      </div>
+      <a class="btn-imprimir-acta" [routerLink]="['/partidos', partidoId, 'acta', 'imprimir']" title="Generar PDF para imprimir y llenar a mano">
+        🖨️ Imprimir Acta
+      </a>
+    </div>
+
+    <!-- ── TABS ───────────────────────────────────────────────────────────── -->
+    <div class="tab-bar">
+      <button class="tab-btn" [class.activa]="tabActiva === 'planilla'" (click)="tabActiva = 'planilla'">
+        📋 Planilla
+      </button>
+      <button class="tab-btn" [class.activa]="tabActiva === 'informe'" (click)="tabActiva = 'informe'">
+        ⚠️ Incidencias Vocal
+        <span class="tab-badge" *ngIf="filasIncidencias.length > 0">{{ filasIncidencias.length }}</span>
+      </button>
+      <span class="informe-estado" *ngIf="informe">{{ estadoInformeLabel }}</span>
+    </div>
+
+    <!-- ══════════════════════ TAB 1: PLANILLA ══════════════════════════ -->
+    <ng-container *ngIf="tabActiva === 'planilla'">
+
+      <div class="loading-box" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Cargando jugadores del partido...</span>
+      </div>
+
+      <div class="alert alert-error" *ngIf="error && !loading">⚠️ {{ error }}</div>
+
+      <ng-container *ngIf="!loading && !error">
+
+        <div class="alert alert-success" *ngIf="guardado">✅ Planilla guardada correctamente</div>
+
+        <div class="empty-state" *ngIf="filasLocal.length === 0 && filasVisitante.length === 0">
+          <p>No se encontraron jugadores habilitados para este partido.</p>
+          <small>Verificá que los equipos tengan jugadores habilitados en este campeonato/categoría.</small>
+        </div>
+
+        <div class="planilla-grid" *ngIf="filasLocal.length > 0 || filasVisitante.length > 0">
+
+          <div class="equipo-panel">
+            <div class="equipo-header equipo-local">
+              <span class="equipo-badge">Local</span>
+              <span class="equipo-nombre">{{ partido?.equipoLocal?.nombre }}</span>
+              <span class="equipo-conteo">{{ filasLocal.length }} jugadores</span>
+            </div>
+            <div class="jugadores-list">
+              <div class="jugador-fila" *ngFor="let fila of filasLocal" [class]="getEstadoClass(fila.estadoSeleccionado)">
+                <div class="jugador-info">
+                  <span class="jugador-numero" *ngIf="fila.numeroCancha">#{{ fila.numeroCancha }}</span>
+                  <span class="jugador-nombre">{{ fila.nombreCompleto }}</span>
+                  <span class="sancion-badge" *ngIf="fila.sancionActiva">🚫 Sancionado</span>
+                </div>
+                <div class="jugador-controles">
+                  <select [(ngModel)]="fila.estadoSeleccionado" [class]="'estado-select ' + getEstadoClass(fila.estadoSeleccionado)">
+                    <option *ngFor="let e of estados" [value]="e">{{ estadoLabels[e] }}</option>
+                  </select>
+                  <input type="text" class="obs-input" placeholder="Observación..." [(ngModel)]="fila.observaciones" maxlength="300" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="equipo-panel">
+            <div class="equipo-header equipo-visitante">
+              <span class="equipo-badge">Visitante</span>
+              <span class="equipo-nombre">{{ partido?.equipoVisitante?.nombre }}</span>
+              <span class="equipo-conteo">{{ filasVisitante.length }} jugadores</span>
+            </div>
+            <div class="jugadores-list">
+              <div class="jugador-fila" *ngFor="let fila of filasVisitante" [class]="getEstadoClass(fila.estadoSeleccionado)">
+                <div class="jugador-info">
+                  <span class="jugador-numero" *ngIf="fila.numeroCancha">#{{ fila.numeroCancha }}</span>
+                  <span class="jugador-nombre">{{ fila.nombreCompleto }}</span>
+                  <span class="sancion-badge" *ngIf="fila.sancionActiva">🚫 Sancionado</span>
+                </div>
+                <div class="jugador-controles">
+                  <select [(ngModel)]="fila.estadoSeleccionado" [class]="'estado-select ' + getEstadoClass(fila.estadoSeleccionado)">
+                    <option *ngFor="let e of estados" [value]="e">{{ estadoLabels[e] }}</option>
+                  </select>
+                  <input type="text" class="obs-input" placeholder="Observación..." [(ngModel)]="fila.observaciones" maxlength="300" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-footer" *ngIf="filasLocal.length > 0 || filasVisitante.length > 0">
+          <div class="resumen">
+            <span>Total jugaron: <strong>{{ totalJugaron }}</strong></span>
+            <span class="texto-gris">Suspendidos: <strong>{{ totalSuspendidos }}</strong></span>
+          </div>
+          <div class="acciones">
+            <button class="btn-secondary" (click)="volver()">Cancelar</button>
+            <button class="btn-primary" (click)="guardar()" [disabled]="guardando">
+              <span *ngIf="!guardando">💾 Guardar planilla</span>
+              <span *ngIf="guardando">Guardando...</span>
+            </button>
+          </div>
+        </div>
+
+      </ng-container>
+
+    </ng-container>
+
+    <!-- ══════════════════════ TAB 2: INFORME VOCAL ══════════════════════ -->
+    <ng-container *ngIf="tabActiva === 'informe'">
+
+      <div class="informe-wrapper">
+
+        <div class="alert alert-success" *ngIf="guardadoInforme">✅ Informe guardado correctamente</div>
+        <div class="alert alert-error" *ngIf="errorInforme">⚠️ {{ errorInforme }}</div>
+
+        <div class="alert alert-info" *ngIf="informe && informe.estado !== 'borrador'">
+          {{ estadoInformeLabel }} — Las incidencias pendientes solo pueden ser editadas mientras el informe esté en borrador.
+        </div>
+
+        <div class="seccion-card">
+          <h3 class="seccion-titulo">📝 Datos Generales del Partido</h3>
+          <div class="form-row">
+            <label>Nombre del árbitro</label>
+            <input type="text" [(ngModel)]="nombreArbitro" placeholder="Ej: Juan Pérez" maxlength="200" class="form-control" />
+          </div>
+          <div class="form-row">
+            <label>Observaciones del vocal</label>
+            <textarea [(ngModel)]="observacionesVocal" placeholder="Describa el desarrollo del partido..." rows="4" maxlength="2000" class="form-control"></textarea>
+          </div>
+          <div class="form-row">
+            <label>Observaciones del árbitro</label>
+            <textarea [(ngModel)]="observacionesArbitro" placeholder="Comentarios del árbitro..." rows="3" maxlength="2000" class="form-control"></textarea>
+          </div>
+          <div class="form-row">
+            <label>Vocal responsable <small>(equipo, jugador o directivo)</small></label>
+            <div class="vocal-row">
+              <input type="text" [(ngModel)]="vocalNombre" placeholder="Ej: SPARTA, Juan Pérez, Directivos Liga..." maxlength="200" class="form-control" />
+              <select [(ngModel)]="vocalEquipoId" class="form-control vocal-equipo-select">
+                <option [ngValue]="null">— Equipo del vocal (opcional) —</option>
+                <option *ngFor="let eq of equiposVocal" [ngValue]="eq.id">{{ eq.nombre }}</option>
+                <option [ngValue]="0">Directivos Liga</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="seccion-card">
+          <div class="seccion-header">
+            <h3 class="seccion-titulo">⚠️ Incidencias Disciplinarias</h3>
+            <small class="seccion-nota">Solo los HECHOS — el Tribunal de Penas decide las sanciones</small>
+            <button class="btn-agregar" (click)="agregarIncidencia()" *ngIf="!informe || informe.estado === 'borrador'">
+              + Agregar incidencia
+            </button>
+          </div>
+
+          <div class="empty-incidencias" *ngIf="filasIncidencias.length === 0">
+            <p>No se registraron incidencias disciplinarias en este partido.</p>
+          </div>
+
+          <div class="incidencias-list">
+            <div class="incidencia-fila" *ngFor="let fila of filasIncidencias; let i = index">
+              <div class="incidencia-numero">{{ i + 1 }}</div>
+              <div class="incidencia-campos">
+                <div class="campo-grupo">
+                  <label>Equipo</label>
+                  <select [(ngModel)]="fila.equipoId" class="form-control-sm">
+                    <option [value]="partido?.equipoLocalId">{{ partido?.equipoLocal?.nombre ?? 'Local' }}</option>
+                    <option [value]="partido?.equipoVisitanteId">{{ partido?.equipoVisitante?.nombre ?? 'Visitante' }}</option>
+                  </select>
+                </div>
+                <div class="campo-grupo">
+                  <label>Jugador <small>(opcional)</small></label>
+                  <select [(ngModel)]="fila.jugadorId" class="form-control-sm">
+                    <option [ngValue]="null">— colectivo del equipo —</option>
+                    <option *ngFor="let j of todosLosJugadores" [ngValue]="j.jugadorId" [disabled]="j.equipoId !== fila.equipoId" [style.color]="j.equipoId !== fila.equipoId ? '#ccc' : ''">
+                      {{ j.nombre }}
+                    </option>
+                  </select>
+                </div>
+                <div class="campo-grupo">
+                  <label>Tipo</label>
+                  <select [(ngModel)]="fila.tipoIncidencia" class="form-control-sm">
+                    <option *ngFor="let t of tiposIncidencia" [value]="t">{{ tipoLabels[t] }}</option>
+                  </select>
+                </div>
+                <div class="campo-grupo campo-corto">
+                  <label>Minuto</label>
+                  <input type="number" [(ngModel)]="fila.minuto" placeholder="—" min="1" max="120" class="form-control-sm" />
+                </div>
+                <div class="campo-grupo campo-largo">
+                  <label>Descripción del hecho</label>
+                  <input type="text" [(ngModel)]="fila.descripcion" placeholder="Qué ocurrió..." maxlength="500" class="form-control-sm" />
+                </div>
+              </div>
+              <button class="btn-quitar" (click)="quitarIncidencia(i)" title="Quitar incidencia" *ngIf="!informe || informe.estado === 'borrador'">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="seccion-card" *ngIf="incidenciasGuardadas.length > 0">
+          <h3 class="seccion-titulo">📌 Historial de incidencias guardadas</h3>
+          <div class="incidencias-historial">
+            <div class="historial-fila" *ngFor="let inc of incidenciasGuardadas"
+              [class.resuelta-sancionado]="inc.estadoResolucion === 'sancionado'"
+              [class.resuelta-absuelto]="inc.estadoResolucion === 'absuelto'">
+              <span class="hist-tipo">{{ tipoLabels[inc.tipoIncidencia] }}</span>
+              <span class="hist-jugador" *ngIf="inc.jugador">{{ inc.jugador?.nombres }} {{ inc.jugador?.apellidos }}</span>
+              <span class="hist-equipo">{{ inc.equipo?.nombre }}</span>
+              <span class="hist-min" *ngIf="inc.minuto">min.{{ inc.minuto }}</span>
+              <span class="hist-estado">
+                <ng-container [ngSwitch]="inc.estadoResolucion">
+                  <span *ngSwitchCase="'pendiente'"  class="badge-pendiente">⏳ Pendiente tribunal</span>
+                  <span *ngSwitchCase="'sancionado'" class="badge-sancionado">🔴 Sancionado</span>
+                  <span *ngSwitchCase="'absuelto'"   class="badge-absuelto">✅ Absuelto</span>
+                </ng-container>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="informe-footer">
+          <button class="btn-secondary" (click)="guardarInforme(false)" [disabled]="guardandoInforme" *ngIf="!informe || informe.estado === 'borrador'">
+            <span *ngIf="!guardandoInforme">💾 Guardar borrador</span>
+            <span *ngIf="guardandoInforme">Guardando...</span>
+          </button>
+          <button class="btn-primary btn-enviar" (click)="guardarInforme(true)" [disabled]="guardandoInforme" *ngIf="puedeEnviarTribunal" title="Enviar al Tribunal de Penas para que resuelva las incidencias">
+            <span *ngIf="!guardandoInforme">📤 Guardar y enviar al Tribunal</span>
+            <span *ngIf="guardandoInforme">Enviando...</span>
+          </button>
+        </div>
+
+      </div>
+
+    </ng-container>
+
+  </div>
+
+</div>

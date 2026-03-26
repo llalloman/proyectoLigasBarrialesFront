@@ -1,0 +1,177 @@
+﻿<div class="page-container">
+
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="page-content">
+
+    <div class="section-header">
+      <h2>⚖️ Tribunal de Penas</h2>
+      <p class="header-subtitle">Revisión y resolución de incidencias disciplinarias de los partidos</p>
+    </div>
+
+    <div class="filtro-bar">
+      <div class="filtro-grupo">
+        <label>Campeonato</label>
+        <select [(ngModel)]="campeonatoIdSeleccionado" (change)="cargarIncidencias()" class="select-campeonato">
+          <option [ngValue]="null">— Seleccionar campeonato —</option>
+          <option *ngFor="let c of campeonatos" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="loading-box" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Cargando incidencias...</span>
+    </div>
+
+    <div class="alert alert-error" *ngIf="error">⚠️ {{ error }}</div>
+    <div class="alert alert-success" *ngIf="mensajeOk">{{ mensajeOk }}</div>
+
+    <div class="sin-datos" *ngIf="!loading && !error && campeonatoIdSeleccionado && incidencias.length === 0">
+      <div class="sin-datos-icon">✅</div>
+      <p>No hay incidencias pendientes de resolución para este campeonato.</p>
+      <small>Todas las incidencias registradas por los vocales ya fueron procesadas.</small>
+    </div>
+
+    <div class="sin-seleccion" *ngIf="!campeonatoIdSeleccionado && !loading">
+      <p>Seleccioná un campeonato para ver las incidencias pendientes.</p>
+    </div>
+
+    <div class="tabla-wrapper" *ngIf="!loading && incidencias.length > 0">
+
+      <div class="tabla-header">
+        <span>{{ incidencias.length }} incidencia{{ incidencias.length !== 1 ? 's' : '' }} pendiente{{ incidencias.length !== 1 ? 's' : '' }}</span>
+      </div>
+
+      <div class="incidencias-tabla">
+        <div class="tabla-head">
+          <span>Partido</span>
+          <span>Incidencia</span>
+          <span>Jugador / Equipo</span>
+          <span>Detalle</span>
+          <span>Acciones</span>
+        </div>
+
+        <div class="tabla-fila" *ngFor="let inc of incidencias">
+          <div class="col-partido">
+            <span class="partido-id">Partido #{{ inc.partidoId }}</span>
+          </div>
+          <div class="col-incidencia">
+            <span class="tipo-badge">{{ tipoLabels[inc.tipoIncidencia] }}</span>
+            <span class="minuto" *ngIf="inc.minuto"> min.{{ inc.minuto }}</span>
+          </div>
+          <div class="col-jugador">
+            <span class="jugador-nombre" *ngIf="inc.jugador">{{ inc.jugador?.nombres }} {{ inc.jugador?.apellidos }}</span>
+            <span class="colectivo" *ngIf="!inc.jugador">Equipo colectivo</span>
+            <span class="equipo-nombre">{{ inc.equipo?.nombre }}</span>
+          </div>
+          <div class="col-detalle">
+            <span *ngIf="inc.descripcion" class="descripcion">{{ inc.descripcion }}</span>
+            <span *ngIf="!inc.descripcion" class="sin-desc">—</span>
+          </div>
+          <div class="col-acciones">
+            <button class="btn-resolver" (click)="abrirResolucion(inc)">⚖️ Resolver</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" *ngIf="incidenciaAbierta" (click)="cerrarPanel()"></div>
+
+    <div class="panel-resolucion" *ngIf="incidenciaAbierta">
+
+      <div class="panel-header">
+        <h2>⚖️ Resolver Incidencia</h2>
+        <button class="btn-cerrar" (click)="cerrarPanel()">✕</button>
+      </div>
+
+      <div class="panel-resumen">
+        <div class="resumen-item">
+          <span class="resumen-label">Incidencia</span>
+          <span class="tipo-badge grande">{{ tipoLabels[incidenciaAbierta.tipoIncidencia] }}</span>
+        </div>
+        <div class="resumen-item" *ngIf="incidenciaAbierta.jugador">
+          <span class="resumen-label">Jugador</span>
+          <span>{{ incidenciaAbierta.jugador?.nombres }} {{ incidenciaAbierta.jugador?.apellidos }}</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-label">Equipo</span>
+          <span>{{ incidenciaAbierta.equipo?.nombre }}</span>
+        </div>
+        <div class="resumen-item" *ngIf="incidenciaAbierta.descripcion">
+          <span class="resumen-label">Descripción</span>
+          <span class="descripcion-txt">{{ incidenciaAbierta.descripcion }}</span>
+        </div>
+      </div>
+
+      <div class="alert alert-error" *ngIf="errorResolucion">⚠️ {{ errorResolucion }}</div>
+
+      <div class="panel-form">
+
+        <div class="form-row">
+          <label>Decisión del Tribunal</label>
+          <div class="decision-btns">
+            <button class="btn-decision" [class.activa]="form.decision === 'sancionar'" (click)="form.decision = 'sancionar'">🔴 Sancionar</button>
+            <button class="btn-decision absolver" [class.activa]="form.decision === 'absolver'" (click)="form.decision = 'absolver'">✅ Absolver</button>
+          </div>
+        </div>
+
+        <ng-container *ngIf="form.decision === 'sancionar'">
+          <div class="form-row">
+            <label>Tipo de sanción <span class="requerido">*</span></label>
+            <select [(ngModel)]="form.tipoSancionId" class="form-control">
+              <option [ngValue]="undefined">— Seleccionar —</option>
+              <option *ngFor="let t of tiposSancion" [ngValue]="t.id">{{ t.nombre }}</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Partidos de suspensión</label>
+            <input type="number" [(ngModel)]="form.partidosSuspension" min="0" max="99" class="form-control input-short" />
+            <small class="form-hint">0 = amonestación sin suspensión</small>
+          </div>
+          <div class="form-row">
+            <label>Fecha de la sanción</label>
+            <input type="date" [(ngModel)]="form.fechaSancion" class="form-control input-medium" />
+          </div>
+          <div class="form-row">
+            <label>Descripción de la sanción</label>
+            <input type="text" [(ngModel)]="form.descripcion" placeholder="Motivo de la sanción..." maxlength="500" class="form-control" />
+          </div>
+        </ng-container>
+
+        <div class="form-row">
+          <label>Observaciones del Tribunal</label>
+          <textarea [(ngModel)]="form.observacionesTribunal" placeholder="Fundamentos de la decisión..." rows="3" maxlength="1000" class="form-control"></textarea>
+        </div>
+
+      </div>
+
+      <div class="panel-footer">
+        <button class="btn-cancelar" (click)="cerrarPanel()" [disabled]="resolviendo">Cancelar</button>
+        <button
+          class="btn-confirmar"
+          [class.absolver]="form.decision === 'absolver'"
+          (click)="resolver()"
+          [disabled]="resolviendo"
+        >
+          <span *ngIf="!resolviendo">
+            {{ form.decision === 'sancionar' ? '🔴 Confirmar Sanción' : '✅ Confirmar Absolución' }}
+          </span>
+          <span *ngIf="resolviendo">Procesando...</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

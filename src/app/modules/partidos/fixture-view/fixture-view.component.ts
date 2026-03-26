@@ -210,21 +210,36 @@ export class FixtureViewComponent implements OnInit {
   private buildFixtureTable(partidos: Partido[]): void {
     // Recopilar equipos únicos con nombres
     const teamMap = new Map<number, string>();
+    const teamOrderMap = new Map<number, number>();
     partidos.forEach(p => {
       if (p.equipoLocalId && p.equipoLocal?.nombre) {
         teamMap.set(p.equipoLocalId, p.equipoLocal.nombre);
+        if (p.equipoLocalOrden) {
+          teamOrderMap.set(p.equipoLocalId, p.equipoLocalOrden);
+        }
       }
       if (p.equipoVisitanteId && p.equipoVisitante?.nombre) {
         teamMap.set(p.equipoVisitanteId, p.equipoVisitante.nombre);
+        if (p.equipoVisitanteOrden) {
+          teamOrderMap.set(p.equipoVisitanteId, p.equipoVisitanteOrden);
+        }
       }
     });
 
-    // Ordenar por nombre y asignar número
-    const sorted = Array.from(teamMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+    const hasStoredOrder = teamOrderMap.size === teamMap.size && teamMap.size > 0;
+    const sorted = Array.from(teamMap.entries()).sort((a, b) => {
+      if (hasStoredOrder) {
+        return (teamOrderMap.get(a[0]) ?? Number.MAX_SAFE_INTEGER)
+          - (teamOrderMap.get(b[0]) ?? Number.MAX_SAFE_INTEGER);
+      }
+      return a[1].localeCompare(b[1]);
+    });
+
     const numMap = new Map<number, number>();
     this.equipos = sorted.map(([id, nombre], i) => {
-      numMap.set(id, i + 1);
-      return { id, nombre, numero: i + 1 };
+      const numero = hasStoredOrder ? (teamOrderMap.get(id) ?? i + 1) : i + 1;
+      numMap.set(id, numero);
+      return { id, nombre, numero };
     });
 
     // Agrupar por jornada

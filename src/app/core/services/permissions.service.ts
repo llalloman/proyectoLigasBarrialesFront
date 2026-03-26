@@ -302,6 +302,14 @@ export class PermissionsService {
   }
 
   /**
+   * Verifica si puede acceder al módulo de goleadores.
+   * Los tres roles pueden ver la tabla de goleadores.
+   */
+  canAccessGoleadores(): boolean {
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+  }
+
+  /**
    * Solo master y directivo pueden generar/regenerar el fixture
    */
   canGenerarFixture(): boolean {
@@ -326,6 +334,24 @@ export class PermissionsService {
    * Solo master y directivo pueden eliminar partidos
    */
   canDeletePartido(): boolean {
+    return this.hasRole(['master', 'directivo_liga']);
+  }
+
+  // ==================== SANCIONES ====================
+
+  canAccessSanciones(): boolean {
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+  }
+
+  canGestionarSanciones(): boolean {
+    return this.hasRole(['master', 'directivo_liga']);
+  }
+
+  canAccessTribunal(): boolean {
+    return this.hasRole(['master', 'directivo_liga']);
+  }
+
+  canConfigureSanciones(): boolean {
     return this.hasRole(['master', 'directivo_liga']);
   }
 }

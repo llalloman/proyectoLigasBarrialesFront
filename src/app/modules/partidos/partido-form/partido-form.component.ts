@@ -167,7 +167,7 @@ export class PartidoFormComponent implements OnInit {
                   next: (inscripciones) => {
                     const seen = new Set<number>();
                     this.equipos = inscripciones
-                      .filter((i) => i.estado === 'confirmada' && i.equipo)
+                      .filter((i) => (i.estado === 'confirmada' || i.estado === 'transferida') && i.equipo)
                       .filter((i) => {
                         if (seen.has(i.equipoId)) return false;
                         seen.add(i.equipoId);

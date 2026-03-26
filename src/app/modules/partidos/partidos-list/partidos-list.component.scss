@@ -307,6 +307,13 @@
     border-color: #27ae60;
     &:hover { background: #27ae60; color: white; }
   }
+  &.btn-acta {
+    background: white;
+    color: #3498db;
+    border-color: #3498db;
+    text-decoration: none;
+    &:hover { background: #3498db; color: white; }
+  }
   &.btn-editar {
     background: white;
     color: #7f8c8d;
@@ -418,6 +425,99 @@
 
   &.sancion-local:has(input:checked) { border-color: #e74c3c; background: #fdf2f2; color: #922b21; }
   &.sancion-visitante:has(input:checked) { border-color: #e67e22; background: #fef5ec; color: #873600; }
+}
+
+// ─── Autores de goles ─────────────────────────────────────────────────────────
+.autores-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  label { font-weight: 600; color: #2c3e50; }
+
+  .optional-tag {
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: #95a5a6;
+    margin-left: 0.4rem;
+  }
+}
+
+.btn-toggle-autores {
+  background: none;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.82rem;
+  color: #5d6d7e;
+  cursor: pointer;
+  &:hover { background: #f0f4f8; }
+}
+
+.autores-section {
+  border: 1px solid #e0e6ed;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fafbfc;
+  margin-top: 0.5rem;
+}
+
+.autores-info {
+  font-size: 0.82rem;
+  color: #7f8c8d;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #eaf4fb;
+  border-radius: 5px;
+  border-left: 3px solid #3498db;
+}
+
+.autores-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.autor-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .filter-select { flex: 2; min-width: 0; font-size: 0.88rem; padding: 0.4rem 0.6rem; }
+  .tipo-select   { flex: 1; min-width: 80px; }
+  .minuto-input  { width: 65px; flex: none; font-size: 0.88rem; padding: 0.4rem 0.6rem; }
+
+  .btn-remove-gol {
+    background: none;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    color: #c0392b;
+    cursor: pointer;
+    padding: 0.3rem 0.55rem;
+    font-size: 0.85rem;
+    &:hover { background: #fdf2f2; }
+  }
+}
+
+.autores-acciones {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-add-gol {
+  padding: 0.4rem 0.9rem;
+  border-radius: 5px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px dashed #3498db;
+  background: #eaf4fb;
+  color: #2980b9;
+  transition: all 0.2s;
+  &:hover { background: #d6eaf8; border-style: solid; }
 }
 
 .modal-footer {

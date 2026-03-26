@@ -1,0 +1,132 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="page-content">
+
+    <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+    <div class="alert alert-success" *ngIf="exito">{{ exito }}</div>
+
+    <!-- Acciones de gestión -->
+    <div class="actions-bar" *ngIf="permissions.canGestionarSanciones()">
+      <div class="action-links">
+        <a routerLink="/sanciones/nueva" class="btn-primary-action">+ Registrar sanción</a>
+        <a routerLink="/sanciones/tipos" class="btn-secondary-action">⚙️ Tipos</a>
+        <a routerLink="/sanciones/reglas" class="btn-secondary-action">📋 Reglas</a>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-card">
+      <div class="filtros-grid">
+
+        <div class="filtro-item">
+          <label>Campeonato</label>
+          <select class="form-select" [(ngModel)]="filtroCampeonatoId">
+            <option [ngValue]="null">Todos</option>
+            <option *ngFor="let c of campeonatos" [ngValue]="c.id">{{ c.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="filtro-item">
+          <label>Tipo de sanción</label>
+          <select class="form-select" [(ngModel)]="filtroTipoId">
+            <option [ngValue]="null">Todos</option>
+            <option *ngFor="let t of tipos" [ngValue]="t.id">{{ t.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="filtro-item checkbox-item">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="soloActivas">
+            Solo suspensiones activas
+          </label>
+        </div>
+
+        <div class="filtro-actions">
+          <button class="btn-filtrar" (click)="aplicarFiltros()">Filtrar</button>
+          <button class="btn-limpiar" (click)="limpiarFiltros()">Limpiar</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Estado cargando -->
+    <div class="loading-state" *ngIf="cargando">
+      <div class="spinner"></div>
+      <p>Cargando sanciones...</p>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="!cargando && sanciones.length === 0">
+      <p>🟨 No se encontraron sanciones con los filtros seleccionados.</p>
+      <a *ngIf="permissions.canGestionarSanciones()" routerLink="/sanciones/nueva" class="btn-primary-action">
+        Registrar primera sanción
+      </a>
+    </div>
+
+    <!-- Lista -->
+    <div class="sanciones-grid" *ngIf="!cargando && sanciones.length > 0">
+      <div class="sancion-card" *ngFor="let s of sanciones"
+        [class.inactiva]="!s.activo"
+        [style.borderLeftColor]="colorTipo(s.tipoSancion?.aplicaA ?? '')">
+
+        <div class="sancion-header">
+          <div class="sancion-tipo">
+            <span class="tipo-badge" [style.background]="colorTipo(s.tipoSancion?.aplicaA ?? '') + '22'"
+              [style.color]="colorTipo(s.tipoSancion?.aplicaA ?? '')">
+              {{ s.tipoSancion?.nombre ?? 'Sanción' }}
+            </span>
+            <span class="aplica-badge">{{ s.tipoSancion?.aplicaA ?? '' }}</span>
+          </div>
+          <span class="estado-badge" [class.activa]="s.suspensionActiva" [class.cumplida]="!s.suspensionActiva && s.activo"
+            [class.anulada]="!s.activo">
+            {{ !s.activo ? 'Anulada' : s.suspensionActiva ? 'Suspensión activa' : 'Sin suspensión activa' }}
+          </span>
+        </div>
+
+        <div class="sancion-body">
+          <p class="sancionado">
+            <strong>{{ sancionadoLabel(s) }}</strong>
+            <span *ngIf="s.equipo && s.jugador"> — {{ s.equipo.nombre }}</span>
+            <span *ngIf="s.equipo && !s.jugador"> (equipo)</span>
+          </p>
+          <p class="campeonato-info" *ngIf="s.campeonato">
+            📅 {{ s.campeonato.nombre }}
+            <ng-container *ngIf="s.partido"> · J{{ s.partido.jornada }}</ng-container>
+          </p>
+          <p class="regla-motivo" *ngIf="s.reglaSancion?.descripcion">
+            📋 {{ s.reglaSancion!.descripcion }}
+          </p>
+          <p class="descripcion" *ngIf="s.descripcion">{{ s.descripcion }}</p>
+        </div>
+
+        <div class="sancion-footer">
+          <div class="suspension-info" *ngIf="s.partidosSuspension > 0">
+            <span class="pts">{{ s.partidosCumplidos }}/{{ s.partidosSuspension }} partidos cumplidos</span>
+            <div class="progreso-bar">
+              <div class="progreso-fill"
+                [style.width.%]="(s.partidosCumplidos / s.partidosSuspension) * 100"></div>
+            </div>
+          </div>
+
+          <span class="fecha" *ngIf="s.fechaSancion">{{ s.fechaSancion | date:'dd/MM/yyyy' }}</span>
+
+          <div class="card-actions" *ngIf="permissions.canGestionarSanciones() && s.activo">
+            <button class="btn-anular" (click)="anular(s)">Anular</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

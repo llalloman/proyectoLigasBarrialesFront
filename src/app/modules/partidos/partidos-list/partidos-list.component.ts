@@ -8,8 +8,10 @@ import { AuthService } from '../../../core/services/auth.service';
 import { LigasService } from '../../../core/services/ligas.service';
 import { CampeonatosService } from '../../campeonatos/campeonatos.service';
 import { CategoriasService } from '../../categorias/categorias.service';
+import { JugadorCampeonatosService } from '../../jugador-campeonatos/jugador-campeonatos.service';
+import { GoleadoresService } from '../../goleadores/goleadores.service';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
-import { Partido, RegistrarResultadoDto } from '../partido.model';
+import { Partido, RegistrarResultadoDto, AutorGolDto } from '../partido.model';
 
 @Component({
   selector: 'app-partidos-list',
@@ -43,11 +45,19 @@ export class PartidosListComponent implements OnInit {
   resultadoForm: RegistrarResultadoDto = { golesLocal: 0, golesVisitante: 0, sancionado: 'ninguno' };
   savingResultado = false;
 
+  // Autores de goles
+  jugadoresLocal: any[] = [];
+  jugadoresVisitante: any[] = [];
+  autoresGoles: AutorGolDto[] = [];
+  mostrarAutores = false; // Desplegable para el usuario
+
   constructor(
     private partidosService: PartidosService,
     private ligasService: LigasService,
     private campeonatosService: CampeonatosService,
     private categoriasService: CategoriasService,
+    private jugadorCampeonatosService: JugadorCampeonatosService,
+    private goleadoresService: GoleadoresService,
     public permissions: PermissionsService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -179,17 +189,66 @@ export class PartidosListComponent implements OnInit {
       observaciones: partido.observaciones ?? '',
       sancionado: partido.sancionado ?? 'ninguno',
     };
+    // Resetear autores de goles
+    this.autoresGoles = [];
+    this.mostrarAutores = false;
+    this.jugadoresLocal = [];
+    this.jugadoresVisitante = [];
+    // Cargar goles ya registrados para este partido
+    this.goleadoresService.getGolesPorPartido(partido.id).subscribe({
+      next: (goles) => {
+        if (goles.length > 0) {
+          this.autoresGoles = goles.map((g: any) => ({
+            jugadorId: g.jugadorId,
+            equipoDelJugadorId: g.equipoId,
+            tipo: g.tipo ?? 'normal',
+            minuto: g.minuto ?? undefined,
+          }));
+          this.mostrarAutores = true; // Expandir automáticamente si hay goles
+        }
+      },
+    });
+    // Cargar jugadores habilitados de cada equipo en esta categoría
+    if (partido.equipoLocalId && partido.campeonatoId) {
+      this.jugadorCampeonatosService
+        .getByCampeonatoAndEquipo(partido.campeonatoId, partido.equipoLocalId)
+        .subscribe({
+          next: (data) =>
+            (this.jugadoresLocal = data
+              .filter((jc) => jc.estado === 'habilitado')
+              .map((jc) => ({ id: jc.jugador?.id, nombre: jc.jugador?.nombre, equipoId: partido.equipoLocalId }))),
+        });
+    }
+    if (partido.equipoVisitanteId && partido.campeonatoId) {
+      this.jugadorCampeonatosService
+        .getByCampeonatoAndEquipo(partido.campeonatoId, partido.equipoVisitanteId)
+        .subscribe({
+          next: (data) =>
+            (this.jugadoresVisitante = data
+              .filter((jc) => jc.estado === 'habilitado')
+              .map((jc) => ({ id: jc.jugador?.id, nombre: jc.jugador?.nombre, equipoId: partido.equipoVisitanteId }))),
+        });
+    }
   }
 
   cerrarModalResultado(): void {
     this.resultadoModal = { visible: false, partido: null };
+    this.autoresGoles = [];
+    this.mostrarAutores = false;
+    this.jugadoresLocal = [];
+    this.jugadoresVisitante = [];
   }
 
   guardarResultado(): void {
     if (!this.resultadoModal.partido) return;
     this.savingResultado = true;
+    // Incluir autores de goles solo si el usuario los ingresó
+    const dto: RegistrarResultadoDto = {
+      ...this.resultadoForm,
+      autoresGoles: this.autoresGoles.length > 0 ? this.autoresGoles : undefined,
+    };
     this.partidosService
-      .registrarResultado(this.resultadoModal.partido.id, this.resultadoForm)
+      .registrarResultado(this.resultadoModal.partido.id, dto)
       .subscribe({
         next: (partidoActualizado) => {
           const idx = this.partidos.findIndex((p) => p.id === partidoActualizado.id);
@@ -204,6 +263,23 @@ export class PartidosListComponent implements OnInit {
           this.savingResultado = false;
         },
       });
+  }
+
+  // ===== Autores de goles =====
+
+  agregarGol(equipoId: number): void {
+    this.autoresGoles.push({ jugadorId: 0, equipoDelJugadorId: equipoId, tipo: 'normal' });
+  }
+
+  eliminarGol(index: number): void {
+    this.autoresGoles.splice(index, 1);
+  }
+
+  /** Jugadores del equipo para un gol en el array autoresGoles */
+  getJugadoresPorEquipo(equipoId: number): any[] {
+    if (equipoId === this.resultadoModal.partido?.equipoLocalId) return this.jugadoresLocal;
+    if (equipoId === this.resultadoModal.partido?.equipoVisitanteId) return this.jugadoresVisitante;
+    return [];
   }
 
   // ===== Eliminar fixture =====

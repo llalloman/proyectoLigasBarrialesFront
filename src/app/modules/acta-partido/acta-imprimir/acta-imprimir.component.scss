@@ -1,0 +1,830 @@
+// ─── Variables de color (igual que el acta física) ───────────────────────────
+$header-bg:    #c8a000;   // amarillo dorado para encabezado
+$seccion-bg:   #d4e8c2;   // verde claro para títulos de sección
+$border-color: #333;
+$font-main:    'Arial', sans-serif;
+$font-size-base: 8pt;
+
+// ─── Barra de herramientas (solo pantalla) ────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #1a3a5c;
+  color: #fff;
+  gap: 12px;
+
+  h2 {
+    font-size: 16px;
+    margin: 0;
+    flex: 1;
+  }
+
+  .toolbar-vocal {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+
+    .input-vocal {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: none;
+      font-size: 13px;
+      width: 220px;
+      background: rgba(255,255,255,0.95);
+      color: #1a3a5c;
+    }
+  }
+
+  .btn-volver, .btn-imprimir {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .btn-volver {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+  }
+
+  .btn-imprimir {
+    background: #f39c12;
+    color: #fff;
+  }
+}
+
+.loading-box, .error-box {
+  padding: 24px;
+  text-align: center;
+  font-size: 16px;
+  color: #666;
+}
+
+.error-box { color: #c0392b; }
+
+.vocalia-editor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 16px 24px;
+  background: #eef3f8;
+  border-top: 1px solid #d6dde6;
+  border-bottom: 1px solid #d6dde6;
+}
+
+.vocalia-card {
+  background: white;
+  border: 1px solid #d6dde6;
+  border-radius: 8px;
+  padding: 14px;
+
+  h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: #1a3a5c;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  input {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 7px 9px;
+    font-size: 13px;
+  }
+}
+
+.extras-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.extra-row {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  gap: 8px;
+}
+
+.total-preview {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+// ─── Contenedor del acta ──────────────────────────────────────────────────────
+#acta-print {
+  background: #e0e0e0;
+  padding: 8px;
+}
+
+.acta-page {
+  background: #fff;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto 10px;
+  padding: 4mm 4.5mm 4mm;
+  box-sizing: border-box;
+  font-family: $font-main;
+  font-size: $font-size-base;
+  color: #000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.pagina-1-top {
+  display: flex;
+  flex-direction: column;
+}
+
+.pagina-1-bottom {
+  margin-top: 8mm;
+}
+
+// ─── ENCABEZADO ───────────────────────────────────────────────────────────────
+.acta-encabezado {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid $border-color;
+  margin-bottom: 2px;
+  padding: 1.5mm 0;
+
+  .enc-logo {
+    width: 31mm;
+    min-height: 38mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid $border-color;
+
+    .logo-img {
+      width: 25mm;
+      height: 31mm;
+      object-fit: contain;
+    }
+
+    .logo-placeholder {
+      width: 18mm;
+      height: 18mm;
+      background: #f5f5f5;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7pt;
+      color: #999;
+    }
+  }
+
+  .enc-logo-derecho {
+    border-right: none;
+    border-left: 1px solid $border-color;
+  }
+
+    .enc-centro {
+      flex: 1;
+      padding: 3px 10px 2px;
+      text-align: center;
+
+      .liga-nombre {
+      font-size: 16.8pt;
+        font-weight: bold;
+        color: #0f62b3;
+        letter-spacing: 0.3px;
+        line-height: 1.05;
+      }
+
+    .liga-fundada {
+      font-size: 9pt;
+      color: #11883a;
+      margin: 3px 0 0;
+      font-weight: 700;
+      line-height: 1.05;
+    }
+
+      .liga-slogan {
+      font-size: 10pt;
+        font-style: normal;
+        color: #19a0e6;
+        font-weight: 700;
+        margin: 2px 0 0;
+        line-height: 1.05;
+      }
+
+      .acta-titulo-texto {
+      font-size: 15pt;
+        font-weight: bold;
+        margin-top: 5px;
+        letter-spacing: 0.4px;
+        line-height: 1.05;
+    }
+  }
+}
+
+// ─── BARRA INFO DEL PARTIDO ───────────────────────────────────────────────────
+.info-partido {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: none;
+  padding: 4px 0 2px;
+  font-size: 8.3pt;
+  margin-bottom: 3px;
+  background: transparent;
+  font-weight: 700;
+  white-space: nowrap;
+
+  .info-item {
+    white-space: nowrap;
+  }
+
+  .info-lbl {
+    font-weight: bold;
+    color: #000;
+  }
+
+  .info-sep {
+    margin: 0 3px;
+    color: #000;
+  }
+
+  .info-val {
+    font-weight: 700;
+  }
+
+  .info-val-azul {
+    color: #355f9f;
+  }
+
+  .info-val-naranja {
+    color: #ff6c0a;
+  }
+}
+
+// ─── TABLA DE JUGADORES ───────────────────────────────────────────────────────
+.equipos-wrapper {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 3px;
+  min-height: 149mm;
+}
+
+.equipo-bloque {
+  flex: 1;
+  border: 1px solid $border-color;
+  display: flex;
+  flex-direction: column;
+
+  .equipo-titulo {
+    background: #f0f0f0;
+    border-bottom: 1px solid $border-color;
+    min-height: 8mm;
+    padding: 1px 6px;
+    font-size: 9pt;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    strong {
+      text-transform: uppercase;
+      flex: 1;
+      text-align: center;
+      font-size: 10pt;
+      letter-spacing: 0.3px;
+    }
+  }
+}
+
+.tabla-jugadores {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7.5pt;
+  table-layout: fixed;
+  height: 100%;
+
+  th, td {
+    border: 1px solid #888;
+    padding: 1px 2px;
+    vertical-align: middle;
+  }
+
+  thead tr {
+    background: #e8f4e8;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  thead th {
+    height: 6mm;
+    vertical-align: middle;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .th-num  { width: 16px; text-align: center; }
+  .th-nombre { text-align: center; }
+  .th-stat { width: 20px; text-align: center; }
+
+  .td-num  { text-align: center; font-size: 6.8pt; }
+  .td-nombre { text-align: left; height: 11px; font-size: 7pt; }
+  .td-stat { text-align: center; }
+
+  .fila-jugador td {
+    height: 11px;
+  }
+
+  .fila-total {
+    background: #f0f0f0;
+    font-weight: bold;
+    font-size: 9pt;
+    height: 6mm;
+
+    .total-lbl {
+      text-align: center;
+      padding-left: 0;
+      vertical-align: middle;
+    }
+  }
+}
+
+// ─── VALORES VOCALIA ──────────────────────────────────────────────────────────
+.valores-wrapper {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 3px;
+  min-height: 31mm;
+}
+
+.valores-bloque {
+  flex: 1;
+  border: 1px solid $border-color;
+}
+
+.tabla-valores {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.8pt;
+
+  th, td {
+    border: 1px solid #888;
+    padding: 1px 3px;
+    vertical-align: middle;
+  }
+
+  tbody tr td {
+    height: 14px;
+  }
+
+  .valores-titulo {
+    background: #e8f4e8;
+    font-weight: bold;
+    text-align: center;
+    font-size: 9.8pt;
+  }
+
+  .valores-col-val {
+    background: #e8f4e8;
+    font-weight: bold;
+    text-align: center;
+    width: 30px;
+    font-size: 9pt;
+  }
+
+  .val-lbl {
+    text-align: left;
+  }
+
+  .val-monto {
+    text-align: right;
+    width: 35px;
+    font-weight: bold;
+  }
+
+  .total-valores-lbl {
+    font-weight: bold;
+    background: #f0f0f0;
+    text-align: right;
+    font-size: 9.2pt;
+    white-space: nowrap;
+  }
+
+  tfoot td {
+    background: #f0f0f0;
+    font-weight: bold;
+    font-size: 9.2pt;
+    white-space: nowrap;
+  }
+}
+
+// ─── FIRMAS CAPITANES ─────────────────────────────────────────────────────────
+.firmas-capitanes {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 3px;
+  min-height: 30mm;
+}
+
+.firma-capitan-box {
+  flex: 1;
+  border: 1px solid $border-color;
+  padding: 4px 6px 2px;
+  min-height: 20mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  .firma-cap-titulo {
+    font-weight: bold;
+    font-size: 10.5pt;
+    text-align: center;
+    margin: 6mm 0 auto;
+  }
+
+  .firma-cap-linea {
+    font-size: 9.4pt;
+    margin-top: 0;
+    padding-bottom: 1px;
+  }
+}
+
+// ─── PÁGINA 2 ─────────────────────────────────────────────────────────────────
+.pagina-2 {
+  page-break-before: always;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+// ─── TABLAS DE SECCIÓN (vocal, árbitro, tribunal, impugnación) ────────────────
+.tabla-seccion {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0;
+  font-size: 7.5pt;
+
+  th, td {
+    border: 1px solid #888;
+    padding: 2px 3px;
+    vertical-align: top;
+  }
+
+  .seccion-titulo {
+    background: $seccion-bg;
+    font-weight: bold;
+    text-align: center;
+    font-size: 9pt;
+    letter-spacing: 0.5px;
+    padding: 3px;
+  }
+
+  .seccion-sub th {
+    background: #f5f5f5;
+    font-weight: bold;
+    font-size: 7.5pt;
+  }
+
+  .sc-lbl { font-weight: bold; }
+  .sc-val { text-align: center; }
+  .sc-sep {
+    border-left: 2px solid $border-color !important;
+    border-right: 2px solid $border-color !important;
+    width: 2px;
+    padding: 0;
+  }
+
+  .celda-dato {
+    min-width: 20mm;
+    height: 12px;
+  }
+
+  .celda-obs {
+    min-height: 12px;
+  }
+
+  .fila-obs-alta td {
+    height: 24px;
+  }
+
+  .fila-firmas-vocal td {
+    height: 18px;
+    vertical-align: bottom;
+  }
+
+  .fila-sancion-vacia td {
+    height: 16px;
+  }
+
+  .fila-total-trib td {
+    background: #f0f0f0;
+    font-size: 7.5pt;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .celda-obs-larga {
+    height: 38px;
+  }
+}
+
+.tabla-impugnacion {
+  margin-top: 0;
+
+  td {
+    font-size: 7.5pt;
+    padding: 3px;
+  }
+}
+
+// ─── PIE DE APROBACIÓN ────────────────────────────────────────────────────────
+.aprobacion-footer {
+  margin-top: auto;
+  font-size: 7.5pt;
+  border-top: 1px solid $border-color;
+  padding-top: 4px;
+
+  p { margin: 2px 0 8px; }
+}
+
+.firmas-tribunal {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 16px;
+}
+
+.firma-tribunal-box {
+  text-align: center;
+
+  .firma-linea-trib {
+    font-size: 10pt;
+    color: #555;
+    border-bottom: 1px solid #333;
+    margin-bottom: 4px;
+    padding: 0 20px;
+  }
+
+  .firma-cargo {
+    font-size: 7.5pt;
+    font-weight: bold;
+  }
+}
+
+// ─── ESTILOS DE IMPRESIÓN ─────────────────────────────────────────────────────
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  #acta-print {
+    background: #fff;
+    padding: 0;
+  }
+
+  .acta-page {
+    box-shadow: none;
+    margin: 0;
+    padding: 4mm 4.5mm 4mm;
+    width: 210mm;
+    min-height: 297mm;
+    page-break-after: always;
+
+    &:last-child {
+      page-break-after: auto;
+    }
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+}
+
+.tabla-informe-vocal {
+  font-size: 8pt;
+  min-height: 49mm;
+
+  .col-vocal-a { width: 16%; }
+  .col-vocal-b { width: 34%; }
+  .col-vocal-c { width: 16%; }
+  .col-vocal-d { width: 16%; }
+  .col-vocal-e { width: 8%; }
+  .col-vocal-f { width: 10%; }
+
+  th, td {
+    padding: 1px 3px;
+    vertical-align: middle;
+  }
+
+  .seccion-titulo {
+    font-size: 9.2pt;
+    padding: 2px 3px;
+  }
+
+  .seccion-sub th {
+    background: #fff;
+    font-size: 7.7pt;
+    padding-top: 1px;
+    padding-bottom: 1px;
+  }
+
+  .sc-lbl,
+  .sc-val {
+    font-weight: 700;
+  }
+
+  .vocal-balon-amplio {
+    text-align: center;
+  }
+
+  .sc-sep {
+    display: none;
+  }
+
+  .equipo-der-label,
+  .equipo-der-bloque {
+    border-left: 2px solid #000 !important;
+  }
+
+  .obs-unica-lbl,
+  .obs-unica {
+    border-left: 1px solid #888 !important;
+  }
+
+  .obs-unica-lbl {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    height: 14px;
+    line-height: 1;
+  }
+
+  .celda-dato {
+    height: 15px;
+    min-width: 22mm;
+  }
+
+  .celda-obs {
+    min-height: 12px;
+  }
+
+  .fila-obs-linea td {
+    height: 14px;
+    vertical-align: top;
+  }
+
+  .fila-firmas-vocal td {
+    height: 30px;
+    vertical-align: middle;
+    font-size: 8pt;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .fila-valores-header td {
+    height: 6px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .valores-header {
+    text-align: right;
+    font-weight: 700;
+    font-size: 6.9pt;
+    padding-right: 2px;
+    vertical-align: bottom;
+  }
+
+  .valor-lbl {
+    text-align: right;
+    font-size: 6.8pt;
+    padding-right: 2px;
+    white-space: nowrap;
+  }
+
+  .valor-lbl + .celda-dato {
+    height: 8px;
+  }
+
+  .fila-valor-item td {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .fila-entrega-vocal td {
+    height: 13px;
+    font-size: 7.1pt;
+    padding-top: 0;
+    padding-bottom: 0;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .entrega-vocal-full {
+    padding: 2px 4px !important;
+  }
+
+  .entrega-vocal-grid {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .entrega-vocal-lbl {
+    font-size: 7.1pt;
+  }
+
+  .entrega-vocal-linea {
+    flex: 0 0 84px;
+    text-align: left;
+  }
+
+  .entrega-vocal-total {
+    margin-left: auto;
+    font-size: 7.1pt;
+  }
+
+  .entrega-vocal-linea-corta {
+    flex-basis: 34px;
+  }
+
+  .firma-vocal-item {
+    white-space: nowrap;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .fila-firmas-vocal td.firma-vocal-item {
+    font-size: 7.2pt;
+  }
+
+  .firma-vocal-full {
+    padding: 8px 10px !important;
+  }
+
+  .firma-vocal-grid {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .firma-vocal-slot {
+    display: block;
+    white-space: nowrap;
+    font-size: 8.2pt;
+  }
+
+  .firma-vocal-nombre {
+    flex: 1.2;
+  }
+
+  .firma-vocal-firma {
+    flex: 2.2;
+  }
+
+  .firma-vocal-equipo {
+    flex: 1.2;
+  }
+}
+
+.pagina-2 .tabla-seccion:nth-of-type(2) {
+  min-height: 51mm;
+}
+
+.pagina-2 .tabla-seccion:nth-of-type(3) {
+  min-height: 47mm;
+}
+
+.pagina-2 .tabla-impugnacion {
+  min-height: 20mm;
+}

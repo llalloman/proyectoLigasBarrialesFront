@@ -212,10 +212,65 @@
     &:hover { background: #f0f4ff; }
     &.selected { background: #e8f0fe; border: 1px solid #667eea; }
 
-    input[type="checkbox"] { pointer-events: none; }
+    .equipo-nombre {
+      flex: 1;
+    }
+
+    .equipo-orden {
+      min-width: 1.8rem;
+      height: 1.8rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #667eea;
+      color: white;
+      font-size: 0.78rem;
+      font-weight: 700;
+      box-shadow: 0 1px 4px rgba(102, 126, 234, 0.25);
+    }
   }
 
   .no-equipos { color: #9ca3af; font-size: 0.85rem; text-align: center; padding: 0.75rem; }
+}
+
+.selection-hint {
+  color: #4c51bf;
+  font-size: 0.8rem;
+  margin: 0.45rem 0 0;
+}
+
+.selection-preview {
+  margin-top: 0.6rem;
+  padding: 0.75rem;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  background: #f8faff;
+}
+
+.selection-preview-title {
+  color: #3730a3;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+}
+
+.selection-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.selection-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: white;
+  border: 1px solid #c7d2fe;
+  color: #4338ca;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .warn-bye {

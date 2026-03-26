@@ -1,0 +1,153 @@
+<div class="page-container">
+  <!-- Header igual a todos los módulos -->
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="modulo-header">
+    <h2>⚽ Tabla de Goleadores</h2>
+  </div>
+
+  <div class="inner-content">
+
+    <!-- Filtros: Liga → Campeonato → Categoría -->
+    <div class="filters-card">
+      <div class="filters-grid">
+
+        <!-- Liga -->
+        <div class="filter-item">
+          <label class="filter-label">Liga</label>
+          <select
+            class="filter-select"
+            [(ngModel)]="selectedLigaId"
+            (change)="onLigaChange()"
+          >
+            <option [ngValue]="null">— Seleccionar liga —</option>
+            <option *ngFor="let liga of ligas" [ngValue]="liga.id">{{ liga.nombre }}</option>
+          </select>
+        </div>
+
+        <!-- Campeonato -->
+        <div class="filter-item">
+          <label class="filter-label">Campeonato</label>
+          <select
+            class="filter-select"
+            [(ngModel)]="selectedCampeonatoId"
+            (change)="onCampeonatoChange()"
+            [disabled]="!selectedLigaId"
+          >
+            <option [ngValue]="null">— Seleccionar campeonato —</option>
+            <option *ngFor="let c of campeonatos" [ngValue]="c.id">{{ c.nombre }}</option>
+          </select>
+        </div>
+
+        <!-- Categoría -->
+        <div class="filter-item">
+          <label class="filter-label">Categoría</label>
+          <select
+            class="filter-select"
+            [(ngModel)]="selectedCategoriaId"
+            (change)="onCategoriaChange()"
+            [disabled]="!selectedCampeonatoId"
+          >
+            <option [ngValue]="null">— Seleccionar categoría —</option>
+            <option *ngFor="let cat of categorias" [ngValue]="cat.id">{{ cat.nombre }}</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Botón buscar -->
+      <div class="filters-actions">
+        <button
+          class="btn btn-primary"
+          (click)="cargarGoleadores()"
+          [disabled]="!puedeCargar || loading"
+        >
+          <span *ngIf="loading" class="spinner-sm"></span>
+          <span *ngIf="!loading">⚽ Ver Goleadores</span>
+          <span *ngIf="loading">Cargando...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <!-- Tabla de goleadores -->
+    <div class="tabla-section" *ngIf="goleadores.length > 0">
+
+      <!-- Título -->
+      <div class="tabla-titulo">
+        <h2>{{ campeonatoNombre }} — {{ categoriaNombre }}</h2>
+        <span class="categoria-badge">Goleadores</span>
+      </div>
+
+      <!-- Tabla -->
+      <div class="tabla-wrapper">
+        <table class="tabla-goleadores">
+          <thead>
+            <tr>
+              <th class="col-pos">#</th>
+              <th class="col-jugador">Jugador</th>
+              <th class="col-equipo">Equipo</th>
+              <th class="col-stat" title="Total de goles (sin autogoles)">Goles</th>
+              <th class="col-stat" title="Goles de penal">Penales</th>
+              <th class="col-stat" title="Autogoles (informativos)">AG</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let fila of goleadores"
+              [class]="getPosicionClass(fila.posicion)"
+            >
+              <td class="col-pos">
+                <span class="posicion-badge" [class]="getPosicionClass(fila.posicion)">
+                  {{ getPosicionEmoji(fila.posicion) }}
+                </span>
+              </td>
+              <td class="col-jugador">{{ fila.jugadorNombre }}</td>
+              <td class="col-equipo">{{ fila.equipoNombre }}</td>
+              <td class="col-stat goles-total">
+                <strong>{{ fila.total }}</strong>
+              </td>
+              <td class="col-stat">
+                <span *ngIf="fila.penales > 0" class="penal-badge">{{ fila.penales }}p</span>
+                <span *ngIf="fila.penales === 0" class="text-muted">—</span>
+              </td>
+              <td class="col-stat">
+                <span *ngIf="fila.autogoles > 0" class="autogol-badge">{{ fila.autogoles }}</span>
+                <span *ngIf="fila.autogoles === 0" class="text-muted">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Leyenda -->
+      <div class="leyenda">
+        <span class="leyenda-item"><span class="dot pos-1"></span> 1° lugar</span>
+        <span class="leyenda-item"><span class="dot pos-2"></span> 2° lugar</span>
+        <span class="leyenda-item"><span class="dot pos-3"></span> 3° lugar</span>
+        <span class="leyenda-sep">|</span>
+        <span class="leyenda-item">AG: Autogoles (no cuentan en el total del jugador) · p: de penal</span>
+      </div>
+
+    </div>
+
+    <!-- Estado vacío -->
+    <div class="empty-state" *ngIf="!loading && tablaCargada && goleadores.length === 0 && !errorMessage">
+      <div class="empty-icon">⚽</div>
+      <p>No hay goles registrados para esta categoría.</p>
+      <p class="empty-sub">Al registrar resultados con autores de goles, aparecerán aquí.</p>
+    </div>
+
+  </div>
+</div>

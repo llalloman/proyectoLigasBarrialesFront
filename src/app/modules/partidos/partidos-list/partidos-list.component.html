@@ -198,6 +198,9 @@
               >
                 ⚽ Resultado
               </button>
+              <a [routerLink]="['/partidos', partido.id, 'acta']" class="btn-accion btn-acta">
+                📋 Acta
+              </a>
               <a [routerLink]="['/partidos/editar', partido.id]" class="btn-accion btn-editar">
                 ✏️ Editar
               </a>
@@ -260,6 +263,70 @@
             </label>
           </div>
         </div>
+
+        <!-- ─── Autores de goles (opcional) ─────────────────────────── -->
+        <div class="form-item form-item-full">
+          <div class="autores-header">
+            <label>⚽ Autores de goles <span class="optional-tag">(opcional)</span></label>
+            <button type="button" class="btn-toggle-autores" (click)="mostrarAutores = !mostrarAutores">
+              {{ mostrarAutores ? '▲ Ocultar' : '▼ Registrar autores' }}
+            </button>
+          </div>
+
+          <div class="autores-section" *ngIf="mostrarAutores">
+            <div class="autores-info">
+              Si registras los autores, se actualizará la tabla de goleadores.
+              La suma debe coincidir con el marcador.
+            </div>
+
+            <!-- Goles ya registrados -->
+            <div *ngIf="autoresGoles.length > 0" class="autores-lista">
+              <div class="autor-row" *ngFor="let gol of autoresGoles; let i = index">
+                <!-- Selector de jugador -->
+                <select class="filter-select" [(ngModel)]="gol.jugadorId">
+                  <option [ngValue]="0">— Jugador —</option>
+                  <optgroup label="{{ resultadoModal.partido?.equipoLocal?.nombre }}">
+                    <option *ngFor="let j of jugadoresLocal" [ngValue]="j.id">{{ j.nombre }}</option>
+                  </optgroup>
+                  <optgroup label="{{ resultadoModal.partido?.equipoVisitante?.nombre }}">
+                    <option *ngFor="let j of jugadoresVisitante" [ngValue]="j.id">{{ j.nombre }}</option>
+                  </optgroup>
+                </select>
+
+                <!-- Tipo de gol -->
+                <select class="filter-select tipo-select" [(ngModel)]="gol.tipo">
+                  <option value="normal">Normal</option>
+                  <option value="penal">Penal</option>
+                  <option value="autogol">Autogol</option>
+                </select>
+
+                <!-- Minuto (opcional) -->
+                <input
+                  type="number"
+                  class="form-input minuto-input"
+                  [(ngModel)]="gol.minuto"
+                  placeholder="Min"
+                  min="0"
+                  max="120"
+                />
+
+                <!-- Eliminar -->
+                <button type="button" class="btn-remove-gol" (click)="eliminarGol(i)" title="Quitar gol">✕</button>
+              </div>
+            </div>
+
+            <!-- Botones para agregar gol -->
+            <div class="autores-acciones">
+              <button type="button" class="btn btn-add-gol" (click)="agregarGol(resultadoModal.partido!.equipoLocalId!)">
+                + Gol {{ resultadoModal.partido?.equipoLocal?.nombre }}
+              </button>
+              <button type="button" class="btn btn-add-gol" (click)="agregarGol(resultadoModal.partido!.equipoVisitanteId!)">
+                + Gol {{ resultadoModal.partido?.equipoVisitante?.nombre }}
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
     <div class="modal-footer">

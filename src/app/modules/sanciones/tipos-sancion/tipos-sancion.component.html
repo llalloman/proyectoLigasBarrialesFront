@@ -1,0 +1,103 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="page-content">
+
+    <!-- Alertas -->
+    <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+    <div class="alert alert-success" *ngIf="exito">{{ exito }}</div>
+
+    <!-- Botón nuevo -->
+    <div class="actions-bar">
+      <button class="btn-primary-action" (click)="abrirFormulario()" *ngIf="!mostrarFormulario">
+        + Nuevo tipo de sanción
+      </button>
+    </div>
+
+    <!-- Formulario inline -->
+    <div class="form-card" *ngIf="mostrarFormulario">
+      <div class="form-card-header">
+        <h2>{{ editandoId ? '✏️ Editar tipo' : '➕ Nuevo tipo de sanción' }}</h2>
+      </div>
+      <div class="form-card-body">
+        <form [formGroup]="form" (ngSubmit)="guardar()">
+          <div class="form-grid">
+
+            <div class="form-item">
+              <label>Nombre *</label>
+              <input class="form-input" formControlName="nombre" placeholder="Ej: Amarilla, Roja, Multa...">
+              <span class="field-error" *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched">
+                El nombre es obligatorio.
+              </span>
+            </div>
+
+            <div class="form-item">
+              <label>Aplica a *</label>
+              <select class="form-select" formControlName="aplicaA">
+                <option value="jugador">👤 Jugador</option>
+                <option value="equipo">⚽ Equipo</option>
+                <option value="directivo">👔 Directivo</option>
+                <option value="barra">🎉 Barra</option>
+              </select>
+            </div>
+
+            <div class="form-item full-width">
+              <label>Descripción</label>
+              <textarea class="form-input" formControlName="descripcion" rows="2"
+                placeholder="Descripción opcional del tipo de sanción..."></textarea>
+            </div>
+
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary-action" [disabled]="form.invalid || guardando">
+              <span *ngIf="guardando">Guardando...</span>
+              <span *ngIf="!guardando">{{ editandoId ? 'Actualizar' : 'Crear tipo' }}</span>
+            </button>
+            <button type="button" class="btn-cancel" (click)="cancelar()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Lista de tipos -->
+    <div class="loading-state" *ngIf="cargando">
+      <div class="spinner"></div>
+      <p>Cargando tipos...</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!cargando && tipos.length === 0">
+      <p>🟨 No hay tipos de sanción configurados para esta liga.</p>
+      <p>Crea el primero usando el botón de arriba.</p>
+    </div>
+
+    <div class="tipos-grid" *ngIf="!cargando && tipos.length > 0">
+      <div class="tipo-card" *ngFor="let tipo of tipos" [class.inactivo]="!tipo.activo">
+        <div class="tipo-header">
+          <span class="tipo-nombre">{{ tipo.nombre }}</span>
+          <span class="badge" [class]="'badge-' + tipo.aplicaA">
+            {{ APLICA_A_LABELS[tipo.aplicaA] }}
+          </span>
+        </div>
+        <p class="tipo-desc" *ngIf="tipo.descripcion">{{ tipo.descripcion }}</p>
+        <p class="tipo-alcance" *ngIf="!tipo.ligaId">🌐 Global (todas las ligas)</p>
+        <div class="tipo-actions">
+          <button class="btn-edit" (click)="editarTipo(tipo)">✏️ Editar</button>
+          <button class="btn-toggle" (click)="toggleActivo(tipo)">
+            {{ tipo.activo ? '🔴 Desactivar' : '🟢 Activar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

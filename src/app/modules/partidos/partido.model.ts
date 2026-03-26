@@ -5,8 +5,10 @@ export interface Partido {
   categoriaId: number;
   categoria?: any;
   equipoLocalId: number | null;
+  equipoLocalOrden?: number | null;
   equipoLocal?: any;
   equipoVisitanteId: number | null;
+  equipoVisitanteOrden?: number | null;
   equipoVisitante?: any;
   etapa: string;
   jornada: number;
@@ -41,6 +43,13 @@ export interface UpdatePartidoDto extends Partial<CreatePartidoDto> {
   estado?: 'programado' | 'jugado' | 'suspendido' | 'cancelado';
 }
 
+export interface AutorGolDto {
+  jugadorId: number;
+  equipoDelJugadorId: number;
+  minuto?: number;
+  tipo?: 'normal' | 'penal' | 'autogol';
+}
+
 export interface RegistrarResultadoDto {
   golesLocal: number;
   golesVisitante: number;
@@ -48,6 +57,8 @@ export interface RegistrarResultadoDto {
   bonificacionVisitante?: number;
   observaciones?: string;
   sancionado?: 'ninguno' | 'local' | 'visitante';
+  /** Lista de autores de goles. Opcional: si no se envía, el marcador se guarda sin detalle. */
+  autoresGoles?: AutorGolDto[];
 }
 
 export interface GenerarFixtureDto {

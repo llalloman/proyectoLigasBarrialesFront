@@ -1,0 +1,143 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="page-content">
+
+    <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+    <div class="alert alert-success" *ngIf="exito">{{ exito }}</div>
+
+    <div class="actions-bar">
+      <button class="btn-primary-action" (click)="abrirFormulario()" *ngIf="!mostrarFormulario">
+        + Nueva regla
+      </button>
+    </div>
+
+    <!-- Formulario -->
+    <div class="form-card" *ngIf="mostrarFormulario">
+      <div class="form-card-header">
+        <h2>{{ reglaEditando ? '✏️ Editar regla de sanción' : '➕ Nueva regla de sanción' }}</h2>
+      </div>
+      <div class="form-card-body">
+        <form [formGroup]="form" (ngSubmit)="guardar()">
+          <div class="form-grid">
+
+            <div class="form-item">
+              <label>Tipo de sanción *</label>
+              <select class="form-select" formControlName="tipoSancionId"
+                [class.disabled-field]="reglaEditando">
+                <option value="">-- Selecciona --</option>
+                <option *ngFor="let t of tipos" [value]="t.id">{{ t.nombre }} ({{ t.aplicaA }})</option>
+              </select>
+              <span class="field-hint" *ngIf="reglaEditando">El tipo no se puede cambiar al editar.</span>
+            </div>
+
+            <div class="form-item wide">
+              <label>Causa / Literal del reglamento</label>
+              <textarea class="form-textarea" formControlName="descripcion" rows="2"
+                placeholder="Ej: Art. 108 lit. A — Reincidir en falta estando previamente amonestado"></textarea>
+              <span class="field-hint">Opcional. Escribe el texto exacto del reglamento para este tipo de infracción.</span>
+            </div>
+
+            <div class="form-item">
+              <label>Partidos de suspensión</label>
+              <input class="form-input" type="number" formControlName="partidosSuspension" min="0"
+                placeholder="Ej: 1">
+              <span class="field-hint">Partidos que cumple al ser sancionado con este tipo</span>
+            </div>
+
+            <div class="form-item">
+              <label>Descuento de puntos</label>
+              <input class="form-input" type="number" formControlName="puntosDescuento" min="0" placeholder="0">
+            </div>
+
+          </div>
+
+          <!-- Toggle acumulación -->
+          <div class="acumulacion-section">
+            <div class="toggle-row">
+              <label class="toggle-label">
+                <input type="checkbox" formControlName="acumulacionActiva">
+                <span class="toggle-slider"></span>
+                Activar acumulación de tarjetas
+              </label>
+              <span class="toggle-hint">
+                {{ form.get('acumulacionActiva')?.value
+                    ? '✅ La suspensión se generará automáticamente al llegar al límite'
+                    : '⬜ Las tarjetas se registran pero no generan suspensión automática' }}
+              </span>
+            </div>
+
+            <div class="acumulacion-fields" *ngIf="form.get('acumulacionActiva')?.value">
+              <div class="form-item">
+                <label>Cantidad para suspensión *</label>
+                <input class="form-input" type="number" formControlName="acumulacionCantidad" min="1"
+                  placeholder="Ej: 2 (2 amarillas = suspensión)">
+                <span class="field-error" *ngIf="form.get('acumulacionCantidad')?.invalid && form.get('acumulacionCantidad')?.touched">
+                  Indica cuántas tarjetas generan suspensión.
+                </span>
+              </div>
+              <div class="preview-regla" *ngIf="form.get('acumulacionCantidad')?.value && form.get('partidosSuspension')?.value">
+                📋 <strong>{{ form.get('acumulacionCantidad')?.value }}</strong> tarjetas →
+                <strong>{{ form.get('partidosSuspension')?.value }}</strong> partido(s) suspendido(s)
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary-action" [disabled]="form.invalid || guardando">
+              {{ guardando ? 'Guardando...' : (reglaEditando ? 'Guardar cambios' : 'Crear regla') }}
+            </button>
+            <button type="button" class="btn-cancel" (click)="cancelar()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Lista de reglas -->
+    <div class="loading-state" *ngIf="cargando">
+      <div class="spinner"></div>
+      <p>Cargando reglas...</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!cargando && reglas.length === 0">
+      <p>⚙️ No hay reglas configuradas para esta liga.</p>
+      <p>Sin reglas, las sanciones se registran manualmente sin suspensiones automáticas.</p>
+    </div>
+
+    <div class="reglas-lista" *ngIf="!cargando && reglas.length > 0">
+      <div class="regla-card" *ngFor="let regla of reglas">
+        <div class="regla-top">
+          <span class="regla-tipo">{{ regla.tipoSancion?.nombre ?? 'Tipo #' + regla.tipoSancionId }}</span>
+          <span class="badge-aplica">{{ regla.tipoSancion?.aplicaA ?? '' }}</span>
+        </div>
+
+        <p class="regla-desc">{{ descripcionRegla(regla) }}</p>
+        <p class="regla-literal" *ngIf="regla.descripcion">📋 {{ regla.descripcion }}</p>
+
+        <div class="regla-meta" *ngIf="regla.puntosDescuento">
+          <span>🔻 {{ regla.puntosDescuento }} pts de descuento al equipo</span>
+        </div>
+
+        <div class="regla-footer">
+          <label class="toggle-label small">
+            <input type="checkbox" [checked]="regla.acumulacionActiva"
+              (change)="toggleAcumulacion(regla)">
+            <span class="toggle-slider"></span>
+            Acumulación {{ regla.acumulacionActiva ? 'activada' : 'desactivada' }}
+          </label>
+          <button class="btn-editar" (click)="editar(regla)">✏️ Editar</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
