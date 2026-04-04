@@ -153,6 +153,10 @@
             <!-- Equipos y marcador -->
             <div class="partido-equipos">
               <div class="equipo equipo-local">
+                <div class="equipo-logo-wrap">
+                  <img *ngIf="partido.equipoLocal?.imagen" [src]="partido.equipoLocal.imagen" [alt]="partido.equipoLocal.nombre" class="equipo-logo" />
+                  <div *ngIf="!partido.equipoLocal?.imagen" class="equipo-logo-placeholder">{{ (partido.equipoLocal?.nombre ?? 'B')[0] }}</div>
+                </div>
                 <span class="equipo-nombre">{{ partido.equipoLocal?.nombre ?? 'BYE' }}</span>
               </div>
               <div class="marcador">
@@ -162,6 +166,10 @@
                 <span *ngIf="partido.estado !== 'jugado'" class="marcador-vs">VS</span>
               </div>
               <div class="equipo equipo-visitante">
+                <div class="equipo-logo-wrap">
+                  <img *ngIf="partido.equipoVisitante?.imagen" [src]="partido.equipoVisitante.imagen" [alt]="partido.equipoVisitante.nombre" class="equipo-logo" />
+                  <div *ngIf="!partido.equipoVisitante?.imagen" class="equipo-logo-placeholder">{{ (partido.equipoVisitante?.nombre ?? 'B')[0] }}</div>
+                </div>
                 <span class="equipo-nombre">{{ partido.equipoVisitante?.nombre ?? 'BYE' }}</span>
               </div>
             </div>
@@ -299,6 +307,17 @@
                   <option value="penal">Penal</option>
                   <option value="autogol">Autogol</option>
                 </select>
+
+                <!-- Cantidad de goles -->
+                <input
+                  type="number"
+                  class="form-input cantidad-input"
+                  [(ngModel)]="gol.cantidad"
+                  placeholder="Cant."
+                  min="1"
+                  max="20"
+                  title="Cantidad de goles de este jugador"
+                />
 
                 <!-- Minuto (opcional) -->
                 <input

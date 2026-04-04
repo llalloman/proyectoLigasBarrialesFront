@@ -8,7 +8,17 @@
 - Se agregó botón "Imprimir Acta" en la cabecera del acta digital.
 - Ruta: `/partidos/:partidoId/acta/imprimir`.
 - Estilos de impresión y PDF listos para A4.
-- Pendiente: Validar detalles visuales, ajuste de nombres, exportación de datos exactos, feedback de usuario.
+
+---
+
+## Actualización 2026-04-03
+
+### Resaltado visual de jugadores suspendidos
+- Las filas de jugadores con `estadoSugerido === 'suspendido'` se muestran con fondo **rojo sólido** (`#e74c3c`) y texto blanco negrita.
+- El resaltado aplica tanto en la pantalla como en la impresión/PDF, forzado con `print-color-adjust: exact`.
+- Permite al vocal de turno identificar de inmediato qué jugadores no pueden actuar en el acta física.
+- Clase CSS afectada: `.fila-suspendido td` en `acta-imprimir.component.scss`.
+- Binding HTML: `[ngClass]="{'fila-suspendido': fila?.estadoSugerido === 'suspendido'}"` en ambas tablas (local y visitante).
 
 ---
 

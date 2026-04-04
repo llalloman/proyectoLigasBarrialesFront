@@ -70,7 +70,7 @@
             <span class="minuto" *ngIf="inc.minuto"> min.{{ inc.minuto }}</span>
           </div>
           <div class="col-jugador">
-            <span class="jugador-nombre" *ngIf="inc.jugador">{{ inc.jugador?.nombres }} {{ inc.jugador?.apellidos }}</span>
+            <span class="jugador-nombre" *ngIf="inc.jugador">{{ inc.jugador?.nombre }}</span>
             <span class="colectivo" *ngIf="!inc.jugador">Equipo colectivo</span>
             <span class="equipo-nombre">{{ inc.equipo?.nombre }}</span>
           </div>
@@ -101,7 +101,7 @@
         </div>
         <div class="resumen-item" *ngIf="incidenciaAbierta.jugador">
           <span class="resumen-label">Jugador</span>
-          <span>{{ incidenciaAbierta.jugador?.nombres }} {{ incidenciaAbierta.jugador?.apellidos }}</span>
+          <span>{{ incidenciaAbierta.jugador?.nombre }}</span>
         </div>
         <div class="resumen-item">
           <span class="resumen-label">Equipo</span>
@@ -128,10 +128,23 @@
         <ng-container *ngIf="form.decision === 'sancionar'">
           <div class="form-row">
             <label>Tipo de sanción <span class="requerido">*</span></label>
-            <select [(ngModel)]="form.tipoSancionId" class="form-control">
+            <select [(ngModel)]="form.tipoSancionId" (ngModelChange)="onTipoSancionChange()" class="form-control">
               <option [ngValue]="undefined">— Seleccionar —</option>
               <option *ngFor="let t of tiposSancion" [ngValue]="t.id">{{ t.nombre }}</option>
             </select>
+          </div>
+
+          <!-- Causa según el reglamento (aparece si el tipo tiene reglas configuradas) -->
+          <div class="form-row" *ngIf="reglas.length > 0">
+            <label>Causa según el reglamento</label>
+            <select [(ngModel)]="form.reglaSancionId" (ngModelChange)="onReglaSancionChange()" class="form-control">
+              <option [ngValue]="undefined">— Sin causa específica —</option>
+              <option *ngFor="let r of reglas" [ngValue]="r.id">
+                {{ r.descripcion || ('Regla #' + r.id) }}
+                <ng-container *ngIf="r.partidosSuspension"> — {{ r.partidosSuspension }} partido(s)</ng-container>
+              </option>
+            </select>
+            <small class="form-hint">Al seleccionar la causa, los partidos de suspensión se autocompletarán.</small>
           </div>
           <div class="form-row">
             <label>Partidos de suspensión</label>

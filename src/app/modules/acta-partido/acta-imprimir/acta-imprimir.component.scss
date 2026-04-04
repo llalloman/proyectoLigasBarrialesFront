@@ -1,3 +1,10 @@
+.fila-suspendido td {
+  background: #e74c3c !important;
+  color: #fff !important;
+  font-weight: bold !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
 // ─── Variables de color (igual que el acta física) ───────────────────────────
 $header-bg:    #c8a000;   // amarillo dorado para encabezado
 $seccion-bg:   #d4e8c2;   // verde claro para títulos de sección

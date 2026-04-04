@@ -110,7 +110,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let fila of filasLocal" class="fila-jugador">
+            <tr *ngFor="let fila of filasLocal" class="fila-jugador" [ngClass]="{'fila-suspendido': fila?.estadoSugerido === 'suspendido'}">
               <td class="td-num">{{ fila ? numeroCancha(fila) : '' }}</td>
               <td class="td-nombre">{{ nombreJugador(fila) }}</td>
               <td class="td-stat"></td>
@@ -145,7 +145,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let fila of filasVisitante" class="fila-jugador">
+            <tr *ngFor="let fila of filasVisitante" class="fila-jugador" [ngClass]="{'fila-suspendido': fila?.estadoSugerido === 'suspendido'}">
               <td class="td-num">{{ fila ? numeroCancha(fila) : '' }}</td>
               <td class="td-nombre">{{ nombreJugador(fila) }}</td>
               <td class="td-stat"></td>
@@ -280,7 +280,7 @@
         <tr class="fila-entrega-vocal">
           <td colspan="6" class="entrega-vocal-full">
             <div class="entrega-vocal-grid">
-              <span class="entrega-vocal-lbl">ENTREGO AL SEÑOR TESORERO EL VALOR DE:</span>
+              <span class="entrega-vocal-lbl">ENTREGO AL SEï¿½OR TESORERO EL VALOR DE:</span>
               <span class="entrega-vocal-linea">__________________</span>
               <span class="entrega-vocal-total">TOTAL ENTREGADO:</span>
               <span class="entrega-vocal-linea entrega-vocal-linea-corta">__________</span>

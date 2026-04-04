@@ -75,13 +75,16 @@
                 <div class="jugador-info">
                   <span class="jugador-numero" *ngIf="fila.numeroCancha">#{{ fila.numeroCancha }}</span>
                   <span class="jugador-nombre">{{ fila.nombreCompleto }}</span>
-                  <span class="sancion-badge" *ngIf="fila.sancionActiva">🚫 Sancionado</span>
+                  <span class="sancion-badge" *ngIf="fila.sancionActiva">🚫 Suspendido</span>
                 </div>
                 <div class="jugador-controles">
-                  <select [(ngModel)]="fila.estadoSeleccionado" [class]="'estado-select ' + getEstadoClass(fila.estadoSeleccionado)">
+                  <select [(ngModel)]="fila.estadoSeleccionado"
+                    [class]="'estado-select ' + getEstadoClass(fila.estadoSeleccionado)"
+                    [disabled]="!!fila.sancionActiva"
+                    [title]="fila.sancionActiva ? 'Jugador suspendido, no puede participar' : ''">
                     <option *ngFor="let e of estados" [value]="e">{{ estadoLabels[e] }}</option>
                   </select>
-                  <input type="text" class="obs-input" placeholder="Observación..." [(ngModel)]="fila.observaciones" maxlength="300" />
+                  <input type="text" class="obs-input" placeholder="Observación..." [(ngModel)]="fila.observaciones" maxlength="300" [disabled]="!!fila.sancionActiva" />
                 </div>
               </div>
             </div>
@@ -98,13 +101,16 @@
                 <div class="jugador-info">
                   <span class="jugador-numero" *ngIf="fila.numeroCancha">#{{ fila.numeroCancha }}</span>
                   <span class="jugador-nombre">{{ fila.nombreCompleto }}</span>
-                  <span class="sancion-badge" *ngIf="fila.sancionActiva">🚫 Sancionado</span>
+                  <span class="sancion-badge" *ngIf="fila.sancionActiva">🚫 Suspendido</span>
                 </div>
                 <div class="jugador-controles">
-                  <select [(ngModel)]="fila.estadoSeleccionado" [class]="'estado-select ' + getEstadoClass(fila.estadoSeleccionado)">
+                  <select [(ngModel)]="fila.estadoSeleccionado"
+                    [class]="'estado-select ' + getEstadoClass(fila.estadoSeleccionado)"
+                    [disabled]="!!fila.sancionActiva"
+                    [title]="fila.sancionActiva ? 'Jugador suspendido, no puede participar' : ''">
                     <option *ngFor="let e of estados" [value]="e">{{ estadoLabels[e] }}</option>
                   </select>
-                  <input type="text" class="obs-input" placeholder="Observación..." [(ngModel)]="fila.observaciones" maxlength="300" />
+                  <input type="text" class="obs-input" placeholder="Observación..." [(ngModel)]="fila.observaciones" maxlength="300" [disabled]="!!fila.sancionActiva" />
                 </div>
               </div>
             </div>
@@ -188,16 +194,16 @@
               <div class="incidencia-campos">
                 <div class="campo-grupo">
                   <label>Equipo</label>
-                  <select [(ngModel)]="fila.equipoId" class="form-control-sm">
-                    <option [value]="partido?.equipoLocalId">{{ partido?.equipoLocal?.nombre ?? 'Local' }}</option>
-                    <option [value]="partido?.equipoVisitanteId">{{ partido?.equipoVisitante?.nombre ?? 'Visitante' }}</option>
+                  <select [(ngModel)]="fila.equipoId" (ngModelChange)="onEquipoIncidenciaChange(fila)" class="form-control-sm">
+                    <option [ngValue]="partido?.equipoLocalId">{{ partido?.equipoLocal?.nombre ?? 'Local' }}</option>
+                    <option [ngValue]="partido?.equipoVisitanteId">{{ partido?.equipoVisitante?.nombre ?? 'Visitante' }}</option>
                   </select>
                 </div>
                 <div class="campo-grupo">
                   <label>Jugador <small>(opcional)</small></label>
                   <select [(ngModel)]="fila.jugadorId" class="form-control-sm">
                     <option [ngValue]="null">— colectivo del equipo —</option>
-                    <option *ngFor="let j of todosLosJugadores" [ngValue]="j.jugadorId" [disabled]="j.equipoId !== fila.equipoId" [style.color]="j.equipoId !== fila.equipoId ? '#ccc' : ''">
+                    <option *ngFor="let j of jugadoresPorEquipo(fila.equipoId)" [ngValue]="j.jugadorId">
                       {{ j.nombre }}
                     </option>
                   </select>
@@ -229,7 +235,7 @@
               [class.resuelta-sancionado]="inc.estadoResolucion === 'sancionado'"
               [class.resuelta-absuelto]="inc.estadoResolucion === 'absuelto'">
               <span class="hist-tipo">{{ tipoLabels[inc.tipoIncidencia] }}</span>
-              <span class="hist-jugador" *ngIf="inc.jugador">{{ inc.jugador?.nombres }} {{ inc.jugador?.apellidos }}</span>
+              <span class="hist-jugador" *ngIf="inc.jugador">{{ inc.jugador?.nombre }}</span>
               <span class="hist-equipo">{{ inc.equipo?.nombre }}</span>
               <span class="hist-min" *ngIf="inc.minuto">min.{{ inc.minuto }}</span>
               <span class="hist-estado">

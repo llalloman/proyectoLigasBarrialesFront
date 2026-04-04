@@ -48,7 +48,8 @@ export class PartidosListComponent implements OnInit {
   // Autores de goles
   jugadoresLocal: any[] = [];
   jugadoresVisitante: any[] = [];
-  autoresGoles: AutorGolDto[] = [];
+  /** Filas internas del formulario (incluye campo 'cantidad' para goles múltiples) */
+  autoresGoles: (AutorGolDto & { cantidad: number })[] = [];
   mostrarAutores = false; // Desplegable para el usuario
 
   constructor(
@@ -171,6 +172,17 @@ export class PartidosListComponent implements OnInit {
       list.push(p);
       mapa.set(p.jornada, list);
     });
+    // Ordenar partidos dentro de cada jornada por fecha+hora de menor a mayor
+    mapa.forEach((partidos, jornada) => {
+      mapa.set(jornada, partidos.sort((a, b) => {
+        const fechaA = a.fechaPartido ? `${a.fechaPartido}T${a.horaPartido ?? '00:00'}` : null;
+        const fechaB = b.fechaPartido ? `${b.fechaPartido}T${b.horaPartido ?? '00:00'}` : null;
+        if (fechaA && fechaB) return fechaA.localeCompare(fechaB);
+        if (fechaA) return -1;
+        if (fechaB) return 1;
+        return 0;
+      }));
+    });
     return mapa;
   }
 
@@ -203,6 +215,7 @@ export class PartidosListComponent implements OnInit {
             equipoDelJugadorId: g.equipoId,
             tipo: g.tipo ?? 'normal',
             minuto: g.minuto ?? undefined,
+            cantidad: 1,
           }));
           this.mostrarAutores = true; // Expandir automáticamente si hay goles
         }
@@ -242,10 +255,22 @@ export class PartidosListComponent implements OnInit {
   guardarResultado(): void {
     if (!this.resultadoModal.partido) return;
     this.savingResultado = true;
-    // Incluir autores de goles solo si el usuario los ingresó
+    // Expandir filas con cantidad > 1 en registros individuales antes de enviar
+    const autoresExpandidos: AutorGolDto[] = [];
+    for (const fila of this.autoresGoles) {
+      const cant = Math.max(1, fila.cantidad ?? 1);
+      for (let i = 0; i < cant; i++) {
+        autoresExpandidos.push({
+          jugadorId: fila.jugadorId,
+          equipoDelJugadorId: fila.equipoDelJugadorId,
+          tipo: fila.tipo,
+          minuto: i === 0 ? fila.minuto : undefined,
+        });
+      }
+    }
     const dto: RegistrarResultadoDto = {
       ...this.resultadoForm,
-      autoresGoles: this.autoresGoles.length > 0 ? this.autoresGoles : undefined,
+      autoresGoles: autoresExpandidos.length > 0 ? autoresExpandidos : undefined,
     };
     this.partidosService
       .registrarResultado(this.resultadoModal.partido.id, dto)
@@ -268,7 +293,7 @@ export class PartidosListComponent implements OnInit {
   // ===== Autores de goles =====
 
   agregarGol(equipoId: number): void {
-    this.autoresGoles.push({ jugadorId: 0, equipoDelJugadorId: equipoId, tipo: 'normal' });
+    this.autoresGoles.push({ jugadorId: 0, equipoDelJugadorId: equipoId, tipo: 'normal', cantidad: 1 });
   }
 
   eliminarGol(index: number): void {

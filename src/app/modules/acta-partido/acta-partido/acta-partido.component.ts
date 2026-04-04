@@ -293,6 +293,19 @@ export class ActaPartidoComponent implements OnInit {
     }));
   }
 
+  /** Devuelve solo los jugadores del equipo seleccionado para el selector de incidencia */
+  jugadoresPorEquipo(equipoId: number | string): { jugadorId: number; nombre: string }[] {
+    const numId = Number(equipoId);
+    return this.todosLosJugadores
+      .filter((j) => Number(j.equipoId) === numId)
+      .map((j) => ({ jugadorId: j.jugadorId, nombre: j.nombre }));
+  }
+
+  /** Al cambiar el equipo de una incidencia, resetea el jugador para evitar datos cruzados */
+  onEquipoIncidenciaChange(fila: FilaIncidencia): void {
+    fila.jugadorId = null;
+  }
+
   get puedeEnviarTribunal(): boolean {
     return !this.informe || this.informe.estado === 'borrador';
   }
@@ -313,7 +326,7 @@ export class ActaPartidoComponent implements OnInit {
     return {
       jugadorId: j.jugadorId,
       equipoId: j.equipoId,
-      nombreCompleto: `${j.jugador?.nombres ?? ''} ${j.jugador?.apellidos ?? ''}`.trim(),
+      nombreCompleto: j.jugador?.nombre ?? j.jugador?.nombreCompleto ?? '',
       numeroCancha: j.numeroCancha ?? null,
       estadoSugerido: j.estadoSugerido,
       estadoSeleccionado: j.estadoSugerido,
@@ -326,7 +339,7 @@ export class ActaPartidoComponent implements OnInit {
     return {
       jugadorId: r.jugadorId,
       equipoId: r.equipoId,
-      nombreCompleto: `${r.jugador?.nombres ?? ''} ${r.jugador?.apellidos ?? ''}`.trim(),
+      nombreCompleto: r.jugador?.nombre ?? r.jugador?.nombreCompleto ?? '',
       numeroCancha: r.numeroCancha ?? null,
       estadoSugerido: r.estado,
       estadoSeleccionado: r.estado,

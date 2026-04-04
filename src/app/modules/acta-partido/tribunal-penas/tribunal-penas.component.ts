@@ -44,6 +44,7 @@ export class TribunalPenasComponent implements OnInit {
   // ── Datos ──────────────────────────────────────────────────────────────────
   incidencias: ActaIncidencia[] = [];
   tiposSancion: TipoSancion[] = [];
+  reglas: any[] = [];
   loading = false;
   error   = '';
 
@@ -119,6 +120,7 @@ export class TribunalPenasComponent implements OnInit {
 
   abrirResolucion(inc: ActaIncidencia): void {
     this.incidenciaAbierta = inc;
+    this.reglas = [];
     this.form = {
       decision:             'sancionar',
       tipoSancionId:        undefined,
@@ -130,6 +132,30 @@ export class TribunalPenasComponent implements OnInit {
     };
     this.errorResolucion = '';
     this.mensajeOk       = '';
+  }
+
+  onTipoSancionChange(): void {
+    this.reglas = [];
+    this.form.reglaSancionId = undefined;
+    if (!this.form.tipoSancionId) return;
+    const ligaId = (this.authService.currentUserValue as any)?.ligaId;
+    this.sancionesService.getReglas(ligaId, this.campeonatoIdSeleccionado ?? undefined).subscribe({
+      next: (todas) => {
+        // Filtrar solo las reglas del tipo de sanción seleccionado
+        this.reglas = todas.filter(
+          (r) => r.tipoSancionId === Number(this.form.tipoSancionId),
+        );
+      },
+      error: () => {},
+    });
+  }
+
+  onReglaSancionChange(): void {
+    if (!this.form.reglaSancionId) return;
+    const regla = this.reglas.find((r) => r.id === Number(this.form.reglaSancionId));
+    if (regla?.partidosSuspension != null) {
+      this.form.partidosSuspension = regla.partidosSuspension;
+    }
   }
 
   cerrarPanel(): void {
