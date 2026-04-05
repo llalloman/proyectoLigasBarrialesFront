@@ -116,9 +116,9 @@
         <div class="campeonato-info">
           <p><strong>Liga:</strong> {{ campeonato.liga?.nombre }}</p>
           <p *ngIf="campeonato.descripcion" class="descripcion">{{ campeonato.descripcion }}</p>
-          <p><strong>Inicio:</strong> {{ campeonato.fechaInicio | date:'dd/MM/yyyy' }}</p>
-          <p><strong>Fin:</strong> {{ campeonato.fechaFin | date:'dd/MM/yyyy' }}</p>
-          <p><strong>Límite inscripción:</strong> {{ campeonato.fechaLimiteInscripcion | date:'dd/MM/yyyy' }}</p>
+          <p><strong>Inicio:</strong> {{ campeonato.fechaInicio | date:'dd/MM/yyyy':'UTC' }}</p>
+          <p><strong>Fin:</strong> {{ campeonato.fechaFin | date:'dd/MM/yyyy':'UTC' }}</p>
+          <p><strong>Límite inscripción:</strong> {{ campeonato.fechaLimiteInscripcion | date:'dd/MM/yyyy':'UTC' }}</p>
         </div>
         <div class="campeonato-actions">
           <button class="btn-icon" (click)="verCategorias(campeonato.id)" title="Ver Categorías">

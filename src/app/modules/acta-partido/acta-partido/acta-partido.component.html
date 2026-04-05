@@ -21,7 +21,7 @@
         <p class="header-subtitle" *ngIf="partido">
           {{ partido.equipoLocal?.nombre }} vs {{ partido.equipoVisitante?.nombre }}
           &nbsp;|&nbsp;
-          {{ partido.fechaPartido | date:'dd/MM/yyyy' }}
+          {{ partido.fechaPartido | date:'dd/MM/yyyy':'UTC' }}
           <span *ngIf="partido.horaPartido">&nbsp;{{ partido.horaPartido }}</span>
           <span *ngIf="partido.cancha">&nbsp;— {{ partido.cancha }}</span>
         </p>

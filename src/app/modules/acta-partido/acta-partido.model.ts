@@ -154,6 +154,8 @@ export interface ResolverIncidenciaDto {
   tipoSancionId?: number;
   reglaSancionId?: number;
   partidosSuspension?: number;
+  fechaInicioSuspension?: string;
+  fechaFinSuspension?: string;
   descripcion?: string;
   observacionesTribunal?: string;
   fechaSancion?: string;

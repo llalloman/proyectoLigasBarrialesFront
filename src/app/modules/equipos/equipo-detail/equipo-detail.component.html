@@ -64,7 +64,7 @@
 
         <div class="info-row" *ngIf="equipo.fundacion">
           <label>Fecha de Fundación:</label>
-          <p>{{ equipo.fundacion | date: 'dd/MM/yyyy' }}</p>
+          <p>{{ equipo.fundacion | date: 'dd/MM/yyyy':'UTC' }}</p>
         </div>
 
         <div class="info-row" *ngIf="equipo.descripcion">

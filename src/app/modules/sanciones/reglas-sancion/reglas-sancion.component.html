@@ -40,18 +40,44 @@
               <span class="field-hint" *ngIf="reglaEditando">El tipo no se puede cambiar al editar.</span>
             </div>
 
-            <div class="form-item wide">
+            <div class="form-item">
               <label>Causa / Literal del reglamento</label>
               <textarea class="form-textarea" formControlName="descripcion" rows="2"
                 placeholder="Ej: Art. 108 lit. A — Reincidir en falta estando previamente amonestado"></textarea>
               <span class="field-hint">Opcional. Escribe el texto exacto del reglamento para este tipo de infracción.</span>
             </div>
 
+            <!-- Modo de castigo -->
             <div class="form-item">
+              <label>Tipo de castigo</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" formControlName="modoCastigo" value="partidos">
+                  <span>Por partidos</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" formControlName="modoCastigo" value="tiempo">
+                  <span>Por tiempo (meses)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Partidos de suspensión (modo partidos) -->
+            <div class="form-item" *ngIf="form.get('modoCastigo')?.value !== 'tiempo'">
               <label>Partidos de suspensión</label>
               <input class="form-input" type="number" formControlName="partidosSuspension" min="0"
                 placeholder="Ej: 1">
               <span class="field-hint">Partidos que cumple al ser sancionado con este tipo</span>
+            </div>
+
+            <!-- Duración en meses (modo tiempo) -->
+            <div class="form-item" *ngIf="form.get('modoCastigo')?.value === 'tiempo'">
+              <label>Duración de la suspensión (meses) *</label>
+              <input class="form-input" type="number" formControlName="duracionMeses" min="1"
+                placeholder="Ej: 6">
+              <span class="field-error" *ngIf="form.get('duracionMeses')?.invalid && form.get('duracionMeses')?.touched">
+                Indica la duración en meses.
+              </span>
             </div>
 
             <div class="form-item">
@@ -123,8 +149,9 @@
         <p class="regla-desc">{{ descripcionRegla(regla) }}</p>
         <p class="regla-literal" *ngIf="regla.descripcion">📋 {{ regla.descripcion }}</p>
 
-        <div class="regla-meta" *ngIf="regla.puntosDescuento">
-          <span>🔻 {{ regla.puntosDescuento }} pts de descuento al equipo</span>
+        <div class="regla-meta">
+          <span *ngIf="regla.puntosDescuento">🔻 {{ regla.puntosDescuento }} pts de descuento al equipo</span>
+          <span *ngIf="regla.modoCastigo === 'tiempo'" class="badge-tiempo">⏳ Por tiempo</span>
         </div>
 
         <div class="regla-footer">

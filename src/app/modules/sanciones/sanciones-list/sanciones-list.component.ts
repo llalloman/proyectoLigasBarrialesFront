@@ -171,6 +171,26 @@ export class SancionesListComponent implements OnInit {
     });
   }
 
+  transferir(sancion: Sancion): void {
+    if (!this.filtroCampeonatoId) {
+      this.error = 'Selecciona primero el campeonato destino en los filtros.';
+      return;
+    }
+    if (!confirm(
+      `¿Transferir la suspensión de "${this.sancionadoLabel(sancion)}" al campeonato seleccionado? ` +
+      `Se creará una nueva sanción con los partidos/tiempo pendientes.`,
+    )) return;
+
+    this.sancionesService.transferirSancion(sancion.id, this.filtroCampeonatoId).subscribe({
+      next: () => {
+        this.exito = 'Suspensión transferida correctamente.';
+        this.cargarSanciones();
+        setTimeout(() => (this.exito = ''), 4000);
+      },
+      error: (e) => (this.error = e?.error?.message ?? 'Error al transferir la sanción.'),
+    });
+  }
+
   colorTipo(aplicaA: string): string {
     const mapa: Record<string, string> = {
       jugador: '#f59e0b',

@@ -129,7 +129,7 @@
         
         <div class="jugador-info">
           <p><strong>Cédula:</strong> {{ jugador.cedula }}</p>
-          <p><strong>Fecha Nac.:</strong> {{ jugador.fechaNacimiento | date: 'dd/MM/yyyy' }}</p>
+          <p><strong>Fecha Nac.:</strong> {{ jugador.fechaNacimiento | date: 'dd/MM/yyyy':'UTC' }}</p>
           <p *ngIf="jugador.equipo">
             <strong>Equipo:</strong> {{ jugador.equipo.nombre }}
           </p>

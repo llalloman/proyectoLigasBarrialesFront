@@ -462,6 +462,34 @@
   justify-content: flex-end;
 }
 
+.btn-transferir {
+  background: transparent;
+  color: #2563eb;
+  border: 1.5px solid #93c5fd;
+  border-radius: 6px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-right: 0.5rem;
+
+  &:hover {
+    background: #dbeafe;
+  }
+}
+
+.badge-arrastrada {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+  border-radius: 12px;
+  padding: 0.1rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
 .btn-anular {
   background: transparent;
   color: #ef4444;

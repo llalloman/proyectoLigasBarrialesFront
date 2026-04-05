@@ -108,7 +108,7 @@
           <p><strong>Liga:</strong> {{ equipo.liga.nombre }}</p>
           <p><strong>Dirigente:</strong> {{ equipo.dirigente.nombre }}</p>
           <p *ngIf="equipo.representante"><strong>Representante:</strong> {{ equipo.representante }}</p>
-          <p *ngIf="equipo.fundacion"><strong>Fundación:</strong> {{ equipo.fundacion | date: 'dd/MM/yyyy' }}</p>
+          <p *ngIf="equipo.fundacion"><strong>Fundación:</strong> {{ equipo.fundacion | date: 'dd/MM/yyyy':'UTC' }}</p>
         </div>
 
         <div class="equipo-actions">

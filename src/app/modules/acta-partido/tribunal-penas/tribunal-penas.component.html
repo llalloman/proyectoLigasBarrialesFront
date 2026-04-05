@@ -116,7 +116,7 @@
             <span class="etapa-pill" *ngIf="grupo.partido?.etapa">{{ grupo.partido.etapa }}</span>
           </div>
           <div class="partido-header-right">
-            <span class="fecha-partido" *ngIf="grupo.partido?.fechaPartido">{{ grupo.partido.fechaPartido | date:'dd/MM/yyyy' }}</span>
+            <span class="fecha-partido" *ngIf="grupo.partido?.fechaPartido">{{ grupo.partido.fechaPartido | date:'dd/MM/yyyy':'UTC' }}</span>
             <span class="count-pill">{{ grupo.incidencias.length }} incidencia{{ grupo.incidencias.length !== 1 ? 's' : '' }}</span>
           </div>
         </div>
@@ -208,16 +208,31 @@
               <option [ngValue]="undefined">— Sin causa específica —</option>
               <option *ngFor="let r of reglas" [ngValue]="r.id">
                 {{ r.descripcion || ('Regla #' + r.id) }}
-                <ng-container *ngIf="r.partidosSuspension"> — {{ r.partidosSuspension }} partido(s)</ng-container>
+                <ng-container *ngIf="r.modoCastigo === 'tiempo'"> — {{ r.duracionMeses }} mes(es)</ng-container>
+                <ng-container *ngIf="r.modoCastigo !== 'tiempo' && r.partidosSuspension"> — {{ r.partidosSuspension }} partido(s)</ng-container>
               </option>
             </select>
-            <small class="form-hint">Al seleccionar la causa, los partidos de suspensión se autocompletarán.</small>
+            <small class="form-hint">Al seleccionar la causa, los campos de suspensión se autocompletarán.</small>
           </div>
-          <div class="form-row">
+
+          <!-- Por partidos (modo default) -->
+          <div class="form-row" *ngIf="!esPorTiempo">
             <label>Partidos de suspensión</label>
             <input type="number" [(ngModel)]="form.partidosSuspension" min="0" max="99" class="form-control input-short" />
             <small class="form-hint">0 = amonestación sin suspensión</small>
           </div>
+
+          <!-- Por tiempo (modo 'tiempo') -->
+          <ng-container *ngIf="esPorTiempo">
+            <div class="form-row">
+              <label>Inicio suspensión</label>
+              <input type="date" [(ngModel)]="form.fechaInicioSuspension" class="form-control input-medium" />
+            </div>
+            <div class="form-row">
+              <label>Fin suspensión</label>
+              <input type="date" [(ngModel)]="form.fechaFinSuspension" class="form-control input-medium" />
+            </div>
+          </ng-container>
           <div class="form-row">
             <label>Fecha de la sanción</label>
             <input type="date" [(ngModel)]="form.fechaSancion" class="form-control input-medium" />

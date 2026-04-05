@@ -36,10 +36,28 @@ export class ReglasSancionComponent implements OnInit {
     this.form = this.fb.group({
       tipoSancionId: [null, Validators.required],
       descripcion: [''],
+      modoCastigo: ['partidos'],
       acumulacionActiva: [false],
       acumulacionCantidad: [{ value: null, disabled: true }],
       partidosSuspension: [null],
+      duracionMeses: [{ value: null, disabled: true }],
       puntosDescuento: [0],
+    });
+
+    // Habilitar/deshabilitar campos según modo de castigo
+    this.form.get('modoCastigo')!.valueChanges.subscribe((modo) => {
+      const ctrlPartidos = this.form.get('partidosSuspension')!;
+      const ctrlMeses    = this.form.get('duracionMeses')!;
+      if (modo === 'tiempo') {
+        ctrlPartidos.setValue(null);
+        ctrlMeses.enable();
+        ctrlMeses.setValidators([Validators.required, Validators.min(1)]);
+      } else {
+        ctrlMeses.setValue(null);
+        ctrlMeses.disable();
+        ctrlMeses.clearValidators();
+      }
+      ctrlMeses.updateValueAndValidity();
     });
 
     // Habilitar/deshabilitar acumulacionCantidad según toggle
@@ -106,11 +124,20 @@ export class ReglasSancionComponent implements OnInit {
     this.form.patchValue({
       tipoSancionId: regla.tipoSancionId,
       descripcion: regla.descripcion ?? '',
+      modoCastigo: regla.modoCastigo ?? 'partidos',
       acumulacionActiva: regla.acumulacionActiva,
       acumulacionCantidad: regla.acumulacionCantidad ?? null,
       partidosSuspension: regla.partidosSuspension ?? null,
+      duracionMeses: regla.duracionMeses ?? null,
       puntosDescuento: regla.puntosDescuento ?? 0,
     });
+    // Ajustar estado de duracionMeses según modo guardado
+    const ctrlMeses = this.form.get('duracionMeses')!;
+    if ((regla.modoCastigo ?? 'partidos') === 'tiempo') {
+      ctrlMeses.enable();
+    } else {
+      ctrlMeses.disable();
+    }
     this.mostrarFormulario = true;
     this.exito = '';
     this.error = '';
@@ -134,9 +161,11 @@ export class ReglasSancionComponent implements OnInit {
       // ── Modo edición ──────────────────────────────────────────────────────
       const dto: UpdateReglaSancionDto = {
         descripcion: val.descripcion || undefined,
+        modoCastigo: val.modoCastigo ?? 'partidos',
         acumulacionActiva: val.acumulacionActiva ?? false,
         acumulacionCantidad: val.acumulacionCantidad ?? undefined,
-        partidosSuspension: val.partidosSuspension ?? undefined,
+        partidosSuspension: val.modoCastigo === 'tiempo' ? undefined : (val.partidosSuspension ?? undefined),
+        duracionMeses: val.modoCastigo === 'tiempo' ? (val.duracionMeses ?? undefined) : undefined,
         puntosDescuento: val.puntosDescuento ?? 0,
       };
       this.sancionesService.updateRegla(this.reglaEditando.id, dto).subscribe({
@@ -157,9 +186,11 @@ export class ReglasSancionComponent implements OnInit {
         ligaId: this.ligaId,
         tipoSancionId: Number(val.tipoSancionId),
         descripcion: val.descripcion || undefined,
+        modoCastigo: val.modoCastigo ?? 'partidos',
         acumulacionActiva: val.acumulacionActiva ?? false,
         acumulacionCantidad: val.acumulacionCantidad ?? undefined,
-        partidosSuspension: val.partidosSuspension ?? undefined,
+        partidosSuspension: val.modoCastigo === 'tiempo' ? undefined : (val.partidosSuspension ?? undefined),
+        duracionMeses: val.modoCastigo === 'tiempo' ? (val.duracionMeses ?? undefined) : undefined,
         puntosDescuento: val.puntosDescuento ?? 0,
       };
       this.sancionesService.createRegla(dto).subscribe({
@@ -190,7 +221,10 @@ export class ReglasSancionComponent implements OnInit {
   }
 
   descripcionRegla(regla: ReglaSancion): string {
-    if (!regla.acumulacionActiva) return 'Sin acumulación automática';
-    return `${regla.acumulacionCantidad ?? '?'} ${regla.tipoSancion?.nombre ?? 'tarjetas'} → ${regla.partidosSuspension ?? '?'} partido(s) de suspensión`;
+    const castigo = regla.modoCastigo === 'tiempo'
+      ? `${regla.duracionMeses ?? '?'} mes(es) de suspensión`
+      : `${regla.partidosSuspension ?? '?'} partido(s) de suspensión`;
+    if (!regla.acumulacionActiva) return castigo || 'Sin acumulación automática';
+    return `${regla.acumulacionCantidad ?? '?'} ${regla.tipoSancion?.nombre ?? 'tarjetas'} → ${castigo}`;
   }
 }

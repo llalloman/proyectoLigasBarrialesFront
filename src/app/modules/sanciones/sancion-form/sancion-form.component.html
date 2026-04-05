@@ -47,7 +47,8 @@
                 <option value="">-- Sin causa específica --</option>
                 <option *ngFor="let r of reglas" [value]="r.id">
                   {{ r.descripcion || ('Regla #' + r.id) }}
-                  <ng-container *ngIf="r.partidosSuspension"> — {{ r.partidosSuspension }} partido(s)</ng-container>
+                  <ng-container *ngIf="r.modoCastigo === 'tiempo'"> — {{ r.duracionMeses }} mes(es)</ng-container>
+                  <ng-container *ngIf="r.modoCastigo !== 'tiempo' && r.partidosSuspension"> — {{ r.partidosSuspension }} partido(s)</ng-container>
                 </option>
               </select>
               <span class="field-hint">Al seleccionar la causa, los partidos de suspensión se autocompletarán.</span>
@@ -111,11 +112,24 @@
           <p class="section-label">Suspensión</p>
           <div class="form-grid">
 
-            <div class="form-item">
+            <!-- Por partidos (modo default) -->
+            <div class="form-item" *ngIf="!esPorTiempo">
               <label>Partidos de suspensión</label>
               <input class="form-input" type="number" formControlName="partidosSuspension" min="0" placeholder="0">
               <span class="field-hint">0 = sin suspensión (solo registro)</span>
             </div>
+
+            <!-- Por tiempo (mode = 'tiempo') -->
+            <ng-container *ngIf="esPorTiempo">
+              <div class="form-item">
+                <label>Inicio suspensión</label>
+                <input class="form-input" type="date" formControlName="fechaInicioSuspension">
+              </div>
+              <div class="form-item">
+                <label>Fin suspensión</label>
+                <input class="form-input" type="date" formControlName="fechaFinSuspension">
+              </div>
+            </ng-container>
 
             <div class="form-item wide">
               <label>Descripción / observaciones</label>

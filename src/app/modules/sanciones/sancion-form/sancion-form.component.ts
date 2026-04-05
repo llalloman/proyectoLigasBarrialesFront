@@ -63,8 +63,10 @@ export class SancionFormComponent implements OnInit {
       jugadorId: [null],
       equipoId: [null],
       descripcion: [''],
-      fechaSancion: [new Date().toISOString().substring(0, 10)],
+      fechaSancion: [new Date().toLocaleDateString('en-CA')],
       partidosSuspension: [0, [Validators.min(0)]],
+      fechaInicioSuspension: [null],
+      fechaFinSuspension: [null],
     });
 
     // Al cambiar tipo de sanción → cargar reglas del reglamento asociadas
@@ -74,12 +76,26 @@ export class SancionFormComponent implements OnInit {
       if (tipoId) this.cargarReglas(Number(tipoId));
     });
 
-    // Al seleccionar una regla → autocompletar partidos de suspensión
+    // Al seleccionar una regla → autocompletar campos de suspensión
     this.form.get('reglaSancionId')!.valueChanges.subscribe((reglaId) => {
       if (reglaId) {
         const regla = this.reglas.find((r) => r.id === Number(reglaId));
-        if (regla?.partidosSuspension != null) {
-          this.form.patchValue({ partidosSuspension: regla.partidosSuspension });
+        if (regla?.modoCastigo === 'tiempo' && regla.duracionMeses) {
+          const fechaInicio = this.form.get('fechaSancion')!.value || new Date().toLocaleDateString('en-CA');
+          const inicio = new Date(fechaInicio);
+          const fin = new Date(inicio);
+          fin.setMonth(fin.getMonth() + regla.duracionMeses);
+          this.form.patchValue({
+            fechaInicioSuspension: inicio.toISOString().substring(0, 10),
+            fechaFinSuspension:    fin.toISOString().substring(0, 10),
+            partidosSuspension:    0,
+          });
+        } else if (regla?.partidosSuspension != null) {
+          this.form.patchValue({
+            partidosSuspension:    regla.partidosSuspension,
+            fechaInicioSuspension: null,
+            fechaFinSuspension:    null,
+          });
         }
       }
     });
@@ -185,7 +201,9 @@ export class SancionFormComponent implements OnInit {
       reglaSancionId: val.reglaSancionId ? Number(val.reglaSancionId) : undefined,
       descripcion: val.descripcion || undefined,
       fechaSancion: val.fechaSancion || undefined,
-      partidosSuspension: val.partidosSuspension ?? 0,
+      partidosSuspension: this.esPorTiempo ? 0 : (val.partidosSuspension ?? 0),
+      fechaInicioSuspension: this.esPorTiempo ? (val.fechaInicioSuspension || undefined) : undefined,
+      fechaFinSuspension:    this.esPorTiempo ? (val.fechaFinSuspension    || undefined) : undefined,
     };
 
     this.sancionesService.createSancion(dto).subscribe({
@@ -199,6 +217,14 @@ export class SancionFormComponent implements OnInit {
         this.guardando = false;
       },
     });
+  }
+
+  /** True si la regla seleccionada es de tipo 'tiempo'. */
+  get esPorTiempo(): boolean {
+    const reglaId = this.form.get('reglaSancionId')?.value;
+    if (!reglaId) return false;
+    const regla = this.reglas.find((r) => r.id === Number(reglaId));
+    return regla?.modoCastigo === 'tiempo';
   }
 
   cancelar(): void {

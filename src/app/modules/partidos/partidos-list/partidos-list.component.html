@@ -145,7 +145,7 @@
             <div class="partido-meta">
               <span class="estado-badge estado-{{ partido.estado }}">{{ partido.estado }}</span>
               <span class="partido-fecha">
-                {{ partido.fechaPartido ? (partido.fechaPartido | date:'dd/MM/yyyy') : 'Sin fecha' }}
+                {{ partido.fechaPartido ? (partido.fechaPartido | date:'dd/MM/yyyy':'UTC') : 'Sin fecha' }}
                 {{ partido.horaPartido ? ' · ' + partido.horaPartido : '' }}
               </span>
             </div>

@@ -85,4 +85,31 @@ export class SancionesService {
   deleteSancion(id: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
   }
+
+  // ─── Arrastre entre campeonatos ───────────────────────────────────────────
+
+  /**
+   * Obtiene suspensiones activas del jugador en campeonatos anteriores
+   * de la misma liga (llama al endpoint de sanciones).
+   */
+  getSuspensionesArrastradas(
+    jugadorId: number,
+    ligaId: number,
+    campeonatoId: number,
+  ): Observable<Sancion[]> {
+    const params = new HttpParams()
+      .set('ligaId', ligaId.toString())
+      .set('campeonatoId', campeonatoId.toString());
+    return this.http.get<Sancion[]>(`${this.apiUrl}/jugador/${jugadorId}/arrastradas`, { params });
+  }
+
+  /**
+   * Transfiere la sanción al nuevo campeonato y cierra la original.
+   */
+  transferirSancion(sancionId: number, nuevoCampeonatoId: number): Observable<Sancion> {
+    return this.http.post<Sancion>(
+      `${this.apiUrl}/${sancionId}/transferir/${nuevoCampeonatoId}`,
+      {},
+    );
+  }
 }

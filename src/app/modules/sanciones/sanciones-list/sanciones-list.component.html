@@ -130,6 +130,7 @@
               {{ s.tipoSancion?.nombre ?? 'Sanción' }}
             </span>
             <span class="aplica-badge">{{ s.tipoSancion?.aplicaA ?? '' }}</span>
+            <span class="badge-arrastrada" *ngIf="s.origenSancionId" title="Arrastrada de campeonato anterior">↩ Arrastrada</span>
           </div>
           <span class="estado-badge" [class.activa]="s.suspensionActiva" [class.cumplida]="!s.suspensionActiva && s.activo"
             [class.anulada]="!s.activo">
@@ -153,8 +154,14 @@
           <p class="descripcion" *ngIf="s.descripcion">{{ s.descripcion }}</p>
         </div>
 
-        <div class="sancion-footer">
-          <div class="suspension-info" *ngIf="s.partidosSuspension > 0">
+          <div class="sancion-footer">
+          <div class="suspension-info" *ngIf="s.fechaFinSuspension">
+            <span class="pts">
+              🗓️ Hasta {{ s.fechaFinSuspension | date:'dd/MM/yyyy':'UTC' }}
+              <ng-container *ngIf="s.fechaInicioSuspension"> (desde {{ s.fechaInicioSuspension | date:'dd/MM/yyyy':'UTC' }})</ng-container>
+            </span>
+          </div>
+          <div class="suspension-info" *ngIf="!s.fechaFinSuspension && s.partidosSuspension > 0">
             <span class="pts">{{ s.partidosCumplidos }}/{{ s.partidosSuspension }} partidos cumplidos</span>
             <div class="progreso-bar">
               <div class="progreso-fill"
@@ -162,9 +169,16 @@
             </div>
           </div>
 
-          <span class="fecha" *ngIf="s.fechaSancion">{{ s.fechaSancion | date:'dd/MM/yyyy' }}</span>
+          <span class="fecha" *ngIf="s.fechaSancion">{{ s.fechaSancion | date:'dd/MM/yyyy':'UTC' }}</span>
 
           <div class="card-actions" *ngIf="permissions.canGestionarSanciones() && s.activo">
+            <button
+              class="btn-transferir"
+              *ngIf="s.suspensionActiva && !s.origenSancionId && filtroCampeonatoId"
+              (click)="transferir(s)"
+              title="Transferir suspensión al campeonato seleccionado en el filtro">
+              ↩ Transferir al campeonato
+            </button>
             <button class="btn-anular" (click)="anular(s)">Anular</button>
           </div>
         </div>

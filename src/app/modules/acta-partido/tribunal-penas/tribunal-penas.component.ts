@@ -222,9 +222,11 @@ export class TribunalPenasComponent implements OnInit {
       tipoSancionId:        undefined,
       reglaSancionId:       undefined,
       partidosSuspension:   1,
+      fechaInicioSuspension: undefined,
+      fechaFinSuspension:   undefined,
       descripcion:          '',
       observacionesTribunal:'',
-      fechaSancion:         new Date().toISOString().split('T')[0],
+      fechaSancion:         new Date().toLocaleDateString('en-CA'),
     };
     this.errorResolucion = '';
     this.mensajeOk       = '';
@@ -249,13 +251,30 @@ export class TribunalPenasComponent implements OnInit {
   onReglaSancionChange(): void {
     if (!this.form.reglaSancionId) return;
     const regla = this.reglas.find((r) => r.id === Number(this.form.reglaSancionId));
-    if (regla?.partidosSuspension != null) {
-      this.form.partidosSuspension = regla.partidosSuspension;
+    if (regla?.modoCastigo === 'tiempo' && regla.duracionMeses) {
+      const fechaInicio = this.form.fechaSancion || new Date().toLocaleDateString('en-CA');
+      const inicio = new Date(fechaInicio);
+      const fin = new Date(inicio);
+      fin.setMonth(fin.getMonth() + regla.duracionMeses);
+      this.form.fechaInicioSuspension = inicio.toISOString().split('T')[0];
+      this.form.fechaFinSuspension    = fin.toISOString().split('T')[0];
+      this.form.partidosSuspension    = 0;
+    } else if (regla?.partidosSuspension != null) {
+      this.form.partidosSuspension    = regla.partidosSuspension;
+      this.form.fechaInicioSuspension = undefined;
+      this.form.fechaFinSuspension    = undefined;
     }
   }
 
   cerrarPanel(): void {
     this.incidenciaAbierta = null;
+  }
+
+  /** True si la regla seleccionada aplica castigo por tiempo. */
+  get esPorTiempo(): boolean {
+    if (!this.form.reglaSancionId) return false;
+    const regla = this.reglas.find((r) => r.id === Number(this.form.reglaSancionId));
+    return regla?.modoCastigo === 'tiempo';
   }
 
   resolver(): void {
@@ -273,7 +292,9 @@ export class TribunalPenasComponent implements OnInit {
       decision:              this.form.decision,
       tipoSancionId:         this.form.decision === 'sancionar' ? this.form.tipoSancionId   : undefined,
       reglaSancionId:        this.form.decision === 'sancionar' ? this.form.reglaSancionId  : undefined,
-      partidosSuspension:    this.form.decision === 'sancionar' ? (this.form.partidosSuspension ?? 0) : undefined,
+      partidosSuspension:    this.form.decision === 'sancionar' && !this.esPorTiempo ? (this.form.partidosSuspension ?? 0) : undefined,
+      fechaInicioSuspension: this.form.decision === 'sancionar' && this.esPorTiempo ? this.form.fechaInicioSuspension : undefined,
+      fechaFinSuspension:    this.form.decision === 'sancionar' && this.esPorTiempo ? this.form.fechaFinSuspension    : undefined,
       descripcion:           this.form.descripcion              || undefined,
       observacionesTribunal: this.form.observacionesTribunal    || undefined,
       fechaSancion:          this.form.fechaSancion             || undefined,

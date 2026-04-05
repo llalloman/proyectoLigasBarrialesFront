@@ -19,6 +19,8 @@ export interface ReglaSancion {
   acumulacionCantidad?: number;
   partidosSuspension?: number;
   puntosDescuento?: number;
+  modoCastigo?: 'partidos' | 'tiempo';
+  duracionMeses?: number;
   activo: boolean;
   creadoEn?: string;
 }
@@ -45,6 +47,9 @@ export interface Sancion {
   partidosCumplidos: number;
   suspensionActiva: boolean;
   fechaSancion?: string;
+  fechaInicioSuspension?: string;
+  fechaFinSuspension?: string;
+  origenSancionId?: number | null;
   activo: boolean;
   creadoEn?: string;
 }
@@ -65,6 +70,8 @@ export interface CreateReglaSancionDto {
   acumulacionCantidad?: number;
   partidosSuspension?: number;
   puntosDescuento?: number;
+  modoCastigo?: 'partidos' | 'tiempo';
+  duracionMeses?: number;
 }
 
 export interface UpdateReglaSancionDto {
@@ -73,6 +80,8 @@ export interface UpdateReglaSancionDto {
   acumulacionCantidad?: number;
   partidosSuspension?: number;
   puntosDescuento?: number;
+  modoCastigo?: 'partidos' | 'tiempo';
+  duracionMeses?: number;
   activo?: boolean;
 }
 
@@ -89,6 +98,8 @@ export interface CreateSancionDto {
   partidosSuspension?: number;
   suspensionActiva?: boolean;
   fechaSancion?: string;
+  fechaInicioSuspension?: string;
+  fechaFinSuspension?: string;
 }
 
 export interface FiltrosSanciones {
