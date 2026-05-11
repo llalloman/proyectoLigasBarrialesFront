@@ -35,6 +35,12 @@ export class FixtureViewComponent implements OnInit {
   errorMessage = '';
   miEquipoId: number | null = null;  // ID del equipo del dirigente autenticado
 
+  get ligaFija(): boolean {
+    const user = this.authService.getCurrentUser();
+    const rolesConLiga = ['directivo_liga', 'dirigente_equipo', 'tribuna_penas', 'tesoreria'];
+    return !!(user && rolesConLiga.includes(user.rol?.nombre) && user.ligaId);
+  }
+
   ligas: any[] = [];
   campeonatos: any[] = [];
   categorias: any[] = [];
@@ -83,7 +89,8 @@ export class FixtureViewComponent implements OnInit {
         if (user?.rol?.nombre === 'dirigente_equipo' && user.equipoId) {
           this.miEquipoId = user.equipoId;
         }
-        if ((user?.rol?.nombre === 'directivo_liga' || user?.rol?.nombre === 'dirigente_equipo') && user.ligaId) {
+        const rolesConLiga = ['directivo_liga', 'dirigente_equipo', 'tribuna_penas', 'tesoreria'];
+        if (user && rolesConLiga.includes(user.rol?.nombre) && user.ligaId) {
           this.selectedLigaId = user.ligaId;
           this.loadCampeonatos(user.ligaId, true);
         }

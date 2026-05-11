@@ -28,7 +28,7 @@
   <!-- Filtros -->
   <div class="filters-section">
     <div class="filters-grid">
-      <div class="filter-item">
+      <div class="filter-item" *ngIf="!ligaFija">
         <label>Liga</label>
         <select class="filter-select" [(ngModel)]="selectedLigaId" (change)="onLigaChange()">
           <option [ngValue]="null">-- Selecciona --</option>

@@ -259,7 +259,9 @@ export class PartidosListComponent implements OnInit {
           next: (data) =>
             (this.jugadoresLocal = data
               .filter((jc) => jc.estado === 'habilitado')
-              .map((jc) => ({ id: jc.jugador?.id, nombre: jc.jugador?.nombre, equipoId: partido.equipoLocalId }))),
+              // Incluimos numeroCancha para mostrarlo en el dropdown y ordenamos por él
+              .map((jc) => ({ id: jc.jugador?.id, nombre: jc.jugador?.nombre, equipoId: partido.equipoLocalId, numeroCancha: jc.numeroCancha }))
+              .sort((a, b) => (a.numeroCancha ?? 999) - (b.numeroCancha ?? 999))),
         });
     }
     if (partido.equipoVisitanteId && partido.campeonatoId) {
@@ -269,7 +271,9 @@ export class PartidosListComponent implements OnInit {
           next: (data) =>
             (this.jugadoresVisitante = data
               .filter((jc) => jc.estado === 'habilitado')
-              .map((jc) => ({ id: jc.jugador?.id, nombre: jc.jugador?.nombre, equipoId: partido.equipoVisitanteId }))),
+              // Incluimos numeroCancha para mostrarlo en el dropdown y ordenamos por él
+              .map((jc) => ({ id: jc.jugador?.id, nombre: jc.jugador?.nombre, equipoId: partido.equipoVisitanteId, numeroCancha: jc.numeroCancha }))
+              .sort((a, b) => (a.numeroCancha ?? 999) - (b.numeroCancha ?? 999))),
         });
     }
   }

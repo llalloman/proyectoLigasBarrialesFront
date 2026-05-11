@@ -253,7 +253,7 @@
 </div>
 
 <!-- Modal Resultado -->
-<div class="modal-overlay" *ngIf="resultadoModal.visible" (click)="cerrarModalResultado()">
+<div class="modal-overlay" *ngIf="resultadoModal.visible">
   <div class="modal-box" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>⚽ Registrar Resultado</h3>
@@ -322,15 +322,10 @@
             <!-- Goles ya registrados -->
             <div *ngIf="autoresGoles.length > 0" class="autores-lista">
               <div class="autor-row" *ngFor="let gol of autoresGoles; let i = index">
-                <!-- Selector de jugador -->
+                <!-- Selector de jugador: solo muestra jugadores del equipo al que pertenece el gol -->
                 <select class="filter-select" [(ngModel)]="gol.jugadorId">
                   <option [ngValue]="0">— Jugador —</option>
-                  <optgroup label="{{ resultadoModal.partido?.equipoLocal?.nombre }}">
-                    <option *ngFor="let j of jugadoresLocal" [ngValue]="j.id">{{ j.nombre }}</option>
-                  </optgroup>
-                  <optgroup label="{{ resultadoModal.partido?.equipoVisitante?.nombre }}">
-                    <option *ngFor="let j of jugadoresVisitante" [ngValue]="j.id">{{ j.nombre }}</option>
-                  </optgroup>
+                  <option *ngFor="let j of getJugadoresPorEquipo(gol.equipoDelJugadorId)" [ngValue]="j.id">{{ j.numeroCancha ? '#' + j.numeroCancha + ' - ' : '' }}{{ j.nombre }}</option>
                 </select>
 
                 <!-- Tipo de gol -->
