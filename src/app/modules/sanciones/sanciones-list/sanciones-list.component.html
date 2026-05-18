@@ -75,6 +75,53 @@
       </div>
     </div>
 
+    <!-- ── Alertas de acumulación para equipos/barras ────────────────────────
+         Se muestra cuando un equipo/barra ha alcanzado el límite definido en
+         las reglas de sanción (ej: 3 tarjetas rojas de barra = alerta roja).
+         El administrador debe tomar la acción correspondiente manualmente.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div class="acumulacion-alertas" *ngIf="alertasAcumulacion.length > 0">
+      <div class="acumulacion-alertas__header">
+        <span class="acumulacion-alertas__icon">⚠️</span>
+        <strong>CONTROL DE TARJETAS POR EQUIPO</strong>
+        <span class="acumulacion-alertas__subtitulo">
+          — {{ alertasAcumulacion.length }} equipo(s) con tarjetas acumuladas
+        </span>
+      </div>
+      <div class="acumulacion-alertas__lista">
+        <div
+          class="acumulacion-alerta-item"
+          [class.nivel-info]="alerta.nivel === 'info'"
+          [class.nivel-warn]="alerta.nivel === 'warn'"
+          [class.nivel-danger]="alerta.nivel === 'danger'"
+          *ngFor="let alerta of alertasAcumulacion"
+        >
+          <span class="alerta-badge" [style.background]="colorTipo(alerta.aplicaA)">
+            {{ alerta.aplicaA | uppercase }}
+          </span>
+          <span class="alerta-equipo">{{ alerta.equipo }}</span>
+
+          <!-- Barra de progreso -->
+          <div class="alerta-progreso">
+            <div
+              class="alerta-progreso__barra"
+              [style.width.%]="(alerta.total / alerta.limite) * 100 | number:'1.0-0'"
+            ></div>
+          </div>
+
+          <span class="alerta-detalle">
+            <strong>{{ alerta.total }}</strong> / {{ alerta.limite }}
+            <em>{{ alerta.tipo }}</em>
+            <ng-container *ngIf="alerta.campeonato"> · {{ alerta.campeonato }}</ng-container>
+          </span>
+
+          <!-- Etiqueta de estado -->
+          <span class="alerta-estado" *ngIf="alerta.nivel === 'danger'">EN LÍMITE</span>
+          <span class="alerta-estado alerta-estado--warn" *ngIf="alerta.nivel === 'warn'">CERCA</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Búsqueda client-side -->
     <div class="filtros-card filtros-busqueda">
       <div class="filtros-grid">
@@ -145,7 +192,8 @@
               title="Generada por apelación de sanción anterior">⚖️ Apelada</span>
           </div>
           <span class="estado-badge" [class.activa]="s.suspensionActiva" [class.cumplida]="!s.suspensionActiva && s.activo"
-            [class.anulada]="!s.activo">
+            [class.anulada]="!s.activo"
+            *ngIf="!s.activo || s.tipoSancion?.aplicaA === 'jugador'">
             {{ !s.activo ? 'Anulada' : s.suspensionActiva ? 'Suspensión activa' : 'Sin suspensión activa' }}
           </span>
         </div>
@@ -194,8 +242,11 @@
               title="Transferir suspensión al campeonato seleccionado en el filtro">
               ↩ Transferir al campeonato
             </button>
-            <button class="btn-apelar" (click)="abrirApelar(s)" title="Apelar / reemplazar esta sanción">⚖️ Apelar</button>
-            <button class="btn-anular" (click)="anular(s)">Anular</button>
+            <!-- Ocultar Apelar y Anular si la suspensión ya fue cumplida completamente -->
+            <ng-container *ngIf="!(s.partidosSuspension > 0 && !s.suspensionActiva && s.partidosCumplidos >= s.partidosSuspension)">
+              <button class="btn-apelar" (click)="abrirApelar(s)" title="Apelar / reemplazar esta sanción">⚖️ Apelar</button>
+              <button class="btn-anular" (click)="anular(s)">Anular</button>
+            </ng-container>
           </div>
         </div>
 

@@ -244,15 +244,22 @@
             <small class="form-hint">Al seleccionar la causa, los campos de suspensión se autocompletarán.</small>
           </div>
 
-          <!-- Por partidos (modo default) -->
-          <div class="form-row" *ngIf="!esPorTiempo">
+          <!-- Aviso para sanciones a equipo/barra/directivo -->
+          <div class="form-row" *ngIf="!esParaJugador">
+            <small class="form-hint" style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:0.4rem 0.7rem;color:#856404;display:block">
+              ℹ️ Las sanciones a este tipo no generan suspensión de partidos.
+            </small>
+          </div>
+
+          <!-- Por partidos (modo default) — solo jugadores -->
+          <div class="form-row" *ngIf="esParaJugador && !esPorTiempo">
             <label>Partidos de suspensión</label>
             <input type="number" [(ngModel)]="form.partidosSuspension" min="0" max="99" class="form-control input-short" />
             <small class="form-hint">0 = amonestación sin suspensión</small>
           </div>
 
-          <!-- Por tiempo (modo 'tiempo') -->
-          <ng-container *ngIf="esPorTiempo">
+          <!-- Por tiempo (modo 'tiempo') — solo jugadores -->
+          <ng-container *ngIf="esParaJugador && esPorTiempo">
             <div class="form-row">
               <label>Inicio suspensión</label>
               <input type="date" [(ngModel)]="form.fechaInicioSuspension" class="form-control input-medium" />

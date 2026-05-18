@@ -44,6 +44,16 @@ export class SancionFormComponent implements OnInit {
     return this.tipos.find((t) => t.id === tipoId)?.aplicaA ?? '';
   }
 
+  /**
+   * True si el tipo seleccionado aplica a jugadores (o aún no se eligió tipo).
+   * Se usa en el HTML para mostrar/ocultar el bloque de suspensión por partidos.
+   * Los tipos 'equipo', 'barra' y 'directivo' nunca generan suspensión de partidos.
+   */
+  get aplicaAJugador(): boolean {
+    const a = this.aplicaASeleccionado;
+    return a === '' || a === 'jugador';
+  }
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly sancionesService: SancionesService,
@@ -74,6 +84,17 @@ export class SancionFormComponent implements OnInit {
       this.form.patchValue({ reglaSancionId: null });
       this.reglas = [];
       if (tipoId) this.cargarReglas(Number(tipoId));
+
+      // Si el tipo no aplica a jugador, limpiar campos de suspensión
+      // para que el formulario no muestre valores residuos de una selección anterior.
+      const tipo = this.tipos.find((t) => t.id === Number(tipoId));
+      if (tipo && tipo.aplicaA !== 'jugador') {
+        this.form.patchValue({
+          partidosSuspension:    0,
+          fechaInicioSuspension: null,
+          fechaFinSuspension:    null,
+        });
+      }
     });
 
     // Al seleccionar una regla → autocompletar campos de suspensión
@@ -201,9 +222,11 @@ export class SancionFormComponent implements OnInit {
       reglaSancionId: val.reglaSancionId ? Number(val.reglaSancionId) : undefined,
       descripcion: val.descripcion || undefined,
       fechaSancion: val.fechaSancion || undefined,
-      partidosSuspension: this.esPorTiempo ? 0 : (val.partidosSuspension ?? 0),
-      fechaInicioSuspension: this.esPorTiempo ? (val.fechaInicioSuspension || undefined) : undefined,
-      fechaFinSuspension:    this.esPorTiempo ? (val.fechaFinSuspension    || undefined) : undefined,
+      // Si el tipo no aplica a jugador, forzar suspensión en cero.
+      // Doble seguridad: el HTML ya oculta el campo, pero el DTO también lo garantiza.
+      partidosSuspension: (!this.aplicaAJugador || this.esPorTiempo) ? 0 : (val.partidosSuspension ?? 0),
+      fechaInicioSuspension: (this.esPorTiempo && this.aplicaAJugador) ? (val.fechaInicioSuspension || undefined) : undefined,
+      fechaFinSuspension:    (this.esPorTiempo && this.aplicaAJugador) ? (val.fechaFinSuspension    || undefined) : undefined,
     };
 
     this.sancionesService.createSancion(dto).subscribe({

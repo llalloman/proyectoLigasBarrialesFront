@@ -65,6 +65,20 @@ export class ReglasSancionComponent implements OnInit {
       ctrlMeses.updateValueAndValidity();
     });
 
+    // Al cambiar tipo de sanción: si NO aplica a jugador, limpiar campos de suspensión.
+    // Un equipo/barra/directivo no cumple partidos de suspensión.
+    this.form.get('tipoSancionId')!.valueChanges.subscribe((tipoId) => {
+      if (!tipoId) return;
+      const tipo = this.tipos.find((t) => t.id === Number(tipoId));
+      if (tipo && tipo.aplicaA !== 'jugador') {
+        this.form.patchValue({
+          modoCastigo:       'partidos',
+          partidosSuspension: null,
+          duracionMeses:      null,
+        });
+      }
+    });
+
     // Habilitar/deshabilitar acumulacionCantidad según toggle
     this.form.get('acumulacionActiva')!.valueChanges.subscribe((val) => {
       const ctrl = this.form.get('acumulacionCantidad')!;
@@ -95,6 +109,22 @@ export class ReglasSancionComponent implements OnInit {
 
   get isMaster(): boolean {
     return this.authService.currentUserValue?.rol?.nombre === 'master';
+  }
+
+  /**
+   * Devuelve el 'aplicaA' del tipo seleccionado en el formulario.
+   * '' cuando aún no se eligió ningún tipo.
+   * Se usa en el HTML para mostrar/ocultar los campos de suspensión.
+   */
+  get aplicaADelTipo(): string {
+    const tipoId = Number(this.form.getRawValue().tipoSancionId);
+    return this.tipos.find((t) => t.id === tipoId)?.aplicaA ?? '';
+  }
+
+  /** True si el tipo seleccionado aplica solo a jugadores (o aún no hay tipo). */
+  get esParaJugador(): boolean {
+    const a = this.aplicaADelTipo;
+    return a === '' || a === 'jugador';
   }
 
   get ligaId(): number | null {
@@ -186,11 +216,12 @@ export class ReglasSancionComponent implements OnInit {
       // ── Modo edición ──────────────────────────────────────────────────────
       const dto: UpdateReglaSancionDto = {
         descripcion: val.descripcion || undefined,
-        modoCastigo: val.modoCastigo ?? 'partidos',
+        // Para tipos no-jugador no tiene sentido guardar modo/partidos/meses
+        modoCastigo: this.esParaJugador ? (val.modoCastigo ?? 'partidos') : 'partidos',
         acumulacionActiva: val.acumulacionActiva ?? false,
         acumulacionCantidad: val.acumulacionCantidad ?? undefined,
-        partidosSuspension: val.modoCastigo === 'tiempo' ? undefined : (val.partidosSuspension ?? undefined),
-        duracionMeses: val.modoCastigo === 'tiempo' ? (val.duracionMeses ?? undefined) : undefined,
+        partidosSuspension: (this.esParaJugador && val.modoCastigo !== 'tiempo') ? (val.partidosSuspension ?? undefined) : undefined,
+        duracionMeses: (this.esParaJugador && val.modoCastigo === 'tiempo') ? (val.duracionMeses ?? undefined) : undefined,
         puntosDescuento: val.puntosDescuento ?? 0,
       };
       this.sancionesService.updateRegla(this.reglaEditando.id, dto).subscribe({
@@ -211,11 +242,12 @@ export class ReglasSancionComponent implements OnInit {
         ligaId: this.ligaId!,
         tipoSancionId: Number(val.tipoSancionId),
         descripcion: val.descripcion || undefined,
-        modoCastigo: val.modoCastigo ?? 'partidos',
+        // Para tipos no-jugador no tiene sentido guardar modo/partidos/meses
+        modoCastigo: this.esParaJugador ? (val.modoCastigo ?? 'partidos') : 'partidos',
         acumulacionActiva: val.acumulacionActiva ?? false,
         acumulacionCantidad: val.acumulacionCantidad ?? undefined,
-        partidosSuspension: val.modoCastigo === 'tiempo' ? undefined : (val.partidosSuspension ?? undefined),
-        duracionMeses: val.modoCastigo === 'tiempo' ? (val.duracionMeses ?? undefined) : undefined,
+        partidosSuspension: (this.esParaJugador && val.modoCastigo !== 'tiempo') ? (val.partidosSuspension ?? undefined) : undefined,
+        duracionMeses: (this.esParaJugador && val.modoCastigo === 'tiempo') ? (val.duracionMeses ?? undefined) : undefined,
         puntosDescuento: val.puntosDescuento ?? 0,
       };
       this.sancionesService.createRegla(dto).subscribe({

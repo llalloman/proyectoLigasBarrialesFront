@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SancionesService } from '../sanciones.service';
-import { Sancion, FiltrosSanciones, TipoSancion, ApelarSancionDto } from '../sancion.model';
+import { Sancion, FiltrosSanciones, TipoSancion, ReglaSancion, ApelarSancionDto } from '../sancion.model';
 import { CampeonatosService } from '../../campeonatos/campeonatos.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
@@ -21,6 +21,7 @@ import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.c
 export class SancionesListComponent implements OnInit {
   sanciones: Sancion[] = [];
   tipos: TipoSancion[] = [];
+  reglas: ReglaSancion[] = []; // Reglas de acumulación (cargadas junto con las sanciones)
   campeonatos: any[] = [];
   ligas: any[] = [];
 
@@ -235,6 +236,22 @@ export class SancionesListComponent implements OnInit {
     });
   }
 
+  /**
+   * Carga las reglas de sanción de la liga (y campeonato si hay uno seleccionado).
+   * Se usa para calcular alertas de acumulación en equipos/barras.
+   * Las reglas con acumulacionActiva=true definen el límite de tarjetas.
+   */
+  cargarReglas(): void {
+    if (!this.ligaIdEfectivo) return;
+    this.sancionesService.getReglas(
+      this.ligaIdEfectivo,
+      this.filtroCampeonatoId ?? undefined,
+    ).subscribe({
+      next: (r) => (this.reglas = r),
+      error: () => (this.reglas = []),
+    });
+  }
+
   cargarCampeonatos(): void {
     if (!this.ligaIdEfectivo) return;
     this.campeonatosService.getByLiga(this.ligaIdEfectivo).subscribe({
@@ -250,6 +267,9 @@ export class SancionesListComponent implements OnInit {
     if (this.filtroTipoId) filtros.tipoSancionId = this.filtroTipoId;
     if (this.soloActivas) filtros.soloActivas = true;
     if (this.incluirAnuladas) filtros.incluirAnuladas = true;
+
+    // Cargar reglas en paralelo para calcular alertas de acumulación
+    this.cargarReglas();
 
     this.sancionesService.getSanciones(filtros).subscribe({
       next: (s) => {
@@ -276,6 +296,7 @@ export class SancionesListComponent implements OnInit {
     this.busqueda = '';
     this.filtroEquipoId = null;
     this.currentPage = 1;
+    this.reglas = []; // Al limpiar sin campeonato, las alertas ya no aplican
     this.cargarSanciones();
   }
 
@@ -319,6 +340,92 @@ export class SancionesListComponent implements OnInit {
       barra: '#ef4444',
     };
     return mapa[aplicaA] ?? '#64748b';
+  }
+
+  /**
+   * Calcula alertas de acumulación para equipos/barras/directivos.
+   *
+   * Lógica:
+   *  1. Filtra reglas con acumulacionActiva=true que apliquen a NO-jugadores.
+   *  2. Para cada regla, cuenta cuántas sanciones de ese tipo tiene cada equipo
+   *     en el conjunto de sanciones actualmente cargado.
+   *  3. Si un equipo llega o supera el límite (acumulacionCantidad), genera una alerta.
+   *
+   * No requiere ningún endpoint nuevo: usa los datos ya en memoria.
+   */
+  /** Calcula el nivel visual de una alerta según cuánto se acerca al límite */
+  nivelAlerta(total: number, limite: number): 'info' | 'warn' | 'danger' {
+    if (total >= limite) return 'danger';
+    if (total >= Math.ceil(limite / 2)) return 'warn';
+    return 'info';
+  }
+
+  get alertasAcumulacion(): { equipo: string; campeonato: string; tipo: string; aplicaA: string; total: number; limite: number; nivel: 'info' | 'warn' | 'danger' }[] {
+    if (!this.ligaIdEfectivo) return [];
+
+    const alertas: { equipo: string; campeonato: string; tipo: string; aplicaA: string; total: number; limite: number; nivel: 'info' | 'warn' | 'danger' }[] = [];
+
+    // Reglas de acumulación activa para tipos que NO son jugador.
+    // Si hay varias reglas del mismo tipoSancionId (ej: "1ra roja", "2da roja"),
+    // se deduplica por tipo quedando la de mayor acumulacionCantidad,
+    // ya que el total de sanciones del equipo es el mismo para todas.
+    const reglasRaw = this.reglas.filter(r =>
+      r.acumulacionActiva &&
+      r.acumulacionCantidad &&
+      r.tipoSancion?.aplicaA !== 'jugador',
+    );
+    const reglaPorTipo = new Map<number, typeof reglasRaw[0]>();
+    for (const r of reglasRaw) {
+      const prev = reglaPorTipo.get(r.tipoSancionId);
+      if (!prev || r.acumulacionCantidad! > prev.acumulacionCantidad!) {
+        reglaPorTipo.set(r.tipoSancionId, r);
+      }
+    }
+    const reglasAcum = Array.from(reglaPorTipo.values());
+
+    for (const regla of reglasAcum) {
+      // Sanciones activas de ese tipo que tengan equipo asignado
+      const sancionesTipo = this.sanciones.filter(s =>
+        s.tipoSancionId === regla.tipoSancionId &&
+        s.activo &&
+        s.equipoId,
+      );
+
+      // Agrupar por campeonatoId+equipoId para no mezclar campeonatos
+      const clave = (s: { campeonatoId: number; equipoId?: number }) =>
+        `${s.campeonatoId}-${s.equipoId}`;
+
+      const porGrupo = new Map<string, { equipo: string; campeonato: string; count: number }>();
+      for (const s of sancionesTipo) {
+        if (!s.equipoId || !s.equipo) continue;
+        const k = clave(s);
+        const prev = porGrupo.get(k) ?? {
+          equipo: s.equipo.nombre,
+          campeonato: s.campeonato?.nombre ?? '',
+          count: 0,
+        };
+        porGrupo.set(k, { ...prev, count: prev.count + 1 });
+      }
+
+      // Todos los equipos con al menos 1 sanción de este tipo
+      for (const [, data] of porGrupo) {
+        if (data.count >= 1) {
+          alertas.push({
+            equipo:     data.equipo,
+            campeonato: data.campeonato,
+            tipo:       regla.tipoSancion?.nombre ?? 'Sanción',
+            aplicaA:    regla.tipoSancion?.aplicaA ?? 'equipo',
+            total:      data.count,
+            limite:     regla.acumulacionCantidad!,
+            nivel:      this.nivelAlerta(data.count, regla.acumulacionCantidad!),
+          });
+        }
+      }
+    }
+
+    // Ordenar: danger primero, luego warn, luego info
+    const orden = { danger: 0, warn: 1, info: 2 };
+    return alertas.sort((a, b) => orden[a.nivel] - orden[b.nivel]);
   }
 
   sancionadoLabel(s: Sancion): string {

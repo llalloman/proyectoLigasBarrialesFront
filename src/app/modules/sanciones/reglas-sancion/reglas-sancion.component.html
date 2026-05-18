@@ -58,8 +58,16 @@
               <span class="field-hint">Opcional. Escribe el texto exacto del reglamento para este tipo de infracción.</span>
             </div>
 
-            <!-- Modo de castigo -->
-            <div class="form-item">
+            <!-- Aviso informativo para tipos no-jugador -->
+            <div class="form-item wide" *ngIf="aplicaADelTipo && !esParaJugador">
+              <div class="field-hint" style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:0.6rem 0.9rem;color:#856404;">
+                ℹ️ Las reglas para <strong>{{ aplicaADelTipo }}</strong> no generan suspensión de partidos.
+                Solo se configura la acumulación para generar alertas cuando el equipo llega al límite.
+              </div>
+            </div>
+
+            <!-- Modo de castigo — solo visible para jugadores -->
+            <div class="form-item" *ngIf="esParaJugador">
               <label>Tipo de castigo</label>
               <div class="radio-group">
                 <label class="radio-option">
@@ -73,16 +81,16 @@
               </div>
             </div>
 
-            <!-- Partidos de suspensión (modo partidos) -->
-            <div class="form-item" *ngIf="form.get('modoCastigo')?.value !== 'tiempo'">
+            <!-- Partidos de suspensión (modo partidos) — solo visible para jugadores -->
+            <div class="form-item" *ngIf="esParaJugador && form.get('modoCastigo')?.value !== 'tiempo'">
               <label>Partidos de suspensión</label>
               <input class="form-input" type="number" formControlName="partidosSuspension" min="0"
                 placeholder="Ej: 1">
               <span class="field-hint">Partidos que cumple al ser sancionado con este tipo</span>
             </div>
 
-            <!-- Duración en meses (modo tiempo) -->
-            <div class="form-item" *ngIf="form.get('modoCastigo')?.value === 'tiempo'">
+            <!-- Duración en meses (modo tiempo) — solo visible para jugadores -->
+            <div class="form-item" *ngIf="esParaJugador && form.get('modoCastigo')?.value === 'tiempo'">
               <label>Duración de la suspensión (meses) *</label>
               <input class="form-input" type="number" formControlName="duracionMeses" min="1"
                 placeholder="Ej: 6">
@@ -122,9 +130,15 @@
                   Indica cuántas tarjetas generan suspensión.
                 </span>
               </div>
-              <div class="preview-regla" *ngIf="form.get('acumulacionCantidad')?.value && form.get('partidosSuspension')?.value">
+              <!-- Preview jugador: X tarjetas → Y partidos suspendido -->
+              <div class="preview-regla" *ngIf="esParaJugador && form.get('acumulacionCantidad')?.value && form.get('partidosSuspension')?.value">
                 📋 <strong>{{ form.get('acumulacionCantidad')?.value }}</strong> tarjetas →
                 <strong>{{ form.get('partidosSuspension')?.value }}</strong> partido(s) suspendido(s)
+              </div>
+              <!-- Preview equipo/barra: X tarjetas → alerta de límite -->
+              <div class="preview-regla" *ngIf="!esParaJugador && form.get('acumulacionCantidad')?.value">
+                ⚠️ Al llegar a <strong>{{ form.get('acumulacionCantidad')?.value }}</strong> tarjetas
+                → se mostrará una alerta en el listado de sanciones
               </div>
             </div>
           </div>

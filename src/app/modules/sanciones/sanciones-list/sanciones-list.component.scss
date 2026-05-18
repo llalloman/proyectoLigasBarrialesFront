@@ -796,3 +796,125 @@
 @media (max-width: 600px) {
   .paginator-container { flex-direction: column; align-items: center; text-align: center; }
 }
+
+// ─── Alertas de acumulación de equipos/barras ─────────────────────────────────
+// Card roja que aparece cuando un equipo/barra llega al límite configurado
+// en las reglas de sanción. El administrador debe actuar manualmente.
+.acumulacion-alertas {
+  background: #f7fafc;
+  border: 2px solid #cbd5e0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #2d3748;
+    margin-bottom: 0.75rem;
+
+    strong { font-size: 0.92rem; }
+  }
+
+  &__subtitulo {
+    color: #718096;
+    font-size: 0.82rem;
+    font-weight: 400;
+  }
+
+  &__lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+.acumulacion-alerta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem 0.85rem;
+  flex-wrap: wrap;
+  transition: border-color 0.2s;
+
+  // ── Niveles de color ──────────────────────────────────────────────────────
+  &.nivel-info {
+    border-left: 4px solid #48bb78;
+    .alerta-detalle strong { color: #276749; }
+    .alerta-progreso__barra { background: #48bb78; }
+  }
+  &.nivel-warn {
+    border-left: 4px solid #ed8936;
+    background: #fffaf0;
+    .alerta-detalle strong { color: #c05621; }
+    .alerta-progreso__barra { background: #ed8936; }
+  }
+  &.nivel-danger {
+    border-left: 4px solid #e53e3e;
+    background: #fff5f5;
+    .alerta-detalle strong { color: #c53030; }
+    .alerta-progreso__barra { background: #e53e3e; }
+  }
+
+  .alerta-badge {
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .alerta-equipo {
+    font-weight: 700;
+    color: #1a202c;
+    font-size: 0.92rem;
+    min-width: 120px;
+  }
+
+  // ── Barra de progreso ─────────────────────────────────────────────────────
+  .alerta-progreso {
+    flex: 1;
+    min-width: 80px;
+    max-width: 140px;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+
+    &__barra {
+      height: 100%;
+      border-radius: 999px;
+      max-width: 100%;
+      transition: width 0.3s ease;
+    }
+  }
+
+  .alerta-detalle {
+    font-size: 0.85rem;
+    color: #4a5568;
+
+    em { font-style: normal; color: #718096; margin-left: 0.3rem; }
+  }
+
+  .alerta-estado {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: #e53e3e;
+    color: white;
+    white-space: nowrap;
+
+    &--warn {
+      background: #ed8936;
+    }
+  }
+}

@@ -37,8 +37,10 @@
 
 ---
 
-## Próximos pasos sugeridos
-- Ajustar detalles visuales y de datos según feedback real.
-- Validar que todos los jugadores y datos relevantes se exporten correctamente.
-- Mejorar la exportación a PDF si es necesario.
-- Documentar cualquier cambio adicional tras la revisión del usuario.
+## Estado del componente (mayo 2026)
+- ✅ Implementado y en producción. Equivalencia visual total con acta física validada.
+- ✅ Resaltado de suspendidos en impresión. Campo árbitro editable. Nueva línea vocalía ($16.00).
+- ✅ Todos los jugadores habilitados se exportan correctamente, ordenados por número de camiseta.
+- ⚠️ Pendiente de futuro: reportes estadísticos globales desde el acta.
+
+**Última actualización:** 13 de mayo de 2026

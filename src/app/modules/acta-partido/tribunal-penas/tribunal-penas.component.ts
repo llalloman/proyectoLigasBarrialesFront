@@ -324,6 +324,13 @@ export class TribunalPenasComponent implements OnInit {
     return regla?.modoCastigo === 'tiempo';
   }
 
+  /** True si el tipo seleccionado aplica a jugador (único caso con suspensión). */
+  get esParaJugador(): boolean {
+    if (!this.form.tipoSancionId) return true; // sin selección, mostrar por defecto
+    const tipo = this.tiposSancion.find((t) => t.id === Number(this.form.tipoSancionId));
+    return !tipo || tipo.aplicaA === 'jugador';
+  }
+
   resolver(): void {
     if (!this.incidenciaAbierta) return;
 
@@ -339,9 +346,9 @@ export class TribunalPenasComponent implements OnInit {
       decision:              this.form.decision,
       tipoSancionId:         this.form.decision === 'sancionar' ? this.form.tipoSancionId   : undefined,
       reglaSancionId:        this.form.decision === 'sancionar' ? this.form.reglaSancionId  : undefined,
-      partidosSuspension:    this.form.decision === 'sancionar' && !this.esPorTiempo ? (this.form.partidosSuspension ?? 0) : undefined,
-      fechaInicioSuspension: this.form.decision === 'sancionar' && this.esPorTiempo ? this.form.fechaInicioSuspension : undefined,
-      fechaFinSuspension:    this.form.decision === 'sancionar' && this.esPorTiempo ? this.form.fechaFinSuspension    : undefined,
+      partidosSuspension:    this.form.decision === 'sancionar' && this.esParaJugador && !this.esPorTiempo ? (this.form.partidosSuspension ?? 0) : 0,
+      fechaInicioSuspension: this.form.decision === 'sancionar' && this.esParaJugador && this.esPorTiempo ? this.form.fechaInicioSuspension : undefined,
+      fechaFinSuspension:    this.form.decision === 'sancionar' && this.esParaJugador && this.esPorTiempo ? this.form.fechaFinSuspension    : undefined,
       descripcion:           this.form.descripcion              || undefined,
       observacionesTribunal: this.form.observacionesTribunal    || undefined,
       fechaSancion:          this.form.fechaSancion             || undefined,
