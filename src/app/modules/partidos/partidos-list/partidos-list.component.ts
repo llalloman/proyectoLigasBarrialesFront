@@ -13,11 +13,15 @@ import { GoleadoresService } from '../../goleadores/goleadores.service';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
 import { Partido, RegistrarResultadoDto, AutorGolDto } from '../partido.model';
 import { PartidosExportService } from '../partidos-export.service';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-partidos-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MainNavComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MainNavComponent, SearchableSelectComponent],
   templateUrl: './partidos-list.component.html',
   styleUrls: ['./partidos-list.component.scss'],
 })
@@ -336,7 +340,13 @@ export class PartidosListComponent implements OnInit {
             (this.jugadoresLocal = data
               .filter((jc) => jc.estado === 'habilitado')
               // Incluimos numeroCancha para mostrarlo en el dropdown y ordenamos por él
-              .map((jc) => ({ id: jc.jugador?.id, nombre: jc.jugador?.nombre, equipoId: partido.equipoLocalId, numeroCancha: jc.numeroCancha }))
+              .map((jc) => ({
+                id: jc.jugador?.id,
+                nombre: jc.jugador?.nombre,
+                cedula: jc.jugador?.cedula,
+                equipoId: partido.equipoLocalId,
+                numeroCancha: jc.numeroCancha,
+              }))
               .sort((a, b) => (a.numeroCancha ?? 999) - (b.numeroCancha ?? 999))),
         });
     }
@@ -348,7 +358,13 @@ export class PartidosListComponent implements OnInit {
             (this.jugadoresVisitante = data
               .filter((jc) => jc.estado === 'habilitado')
               // Incluimos numeroCancha para mostrarlo en el dropdown y ordenamos por él
-              .map((jc) => ({ id: jc.jugador?.id, nombre: jc.jugador?.nombre, equipoId: partido.equipoVisitanteId, numeroCancha: jc.numeroCancha }))
+              .map((jc) => ({
+                id: jc.jugador?.id,
+                nombre: jc.jugador?.nombre,
+                cedula: jc.jugador?.cedula,
+                equipoId: partido.equipoVisitanteId,
+                numeroCancha: jc.numeroCancha,
+              }))
               .sort((a, b) => (a.numeroCancha ?? 999) - (b.numeroCancha ?? 999))),
         });
     }
@@ -461,6 +477,15 @@ export class PartidosListComponent implements OnInit {
     if (equipoId === this.resultadoModal.partido?.equipoLocalId) return this.jugadoresLocal;
     if (equipoId === this.resultadoModal.partido?.equipoVisitanteId) return this.jugadoresVisitante;
     return [];
+  }
+
+  opcionesJugadoresPorEquipo(equipoId: number): SearchableSelectOption[] {
+    return this.getJugadoresPorEquipo(equipoId).map(jugador => ({
+      value: jugador.id,
+      label: `${jugador.numeroCancha != null ? `#${jugador.numeroCancha} - ` : ''}${jugador.nombre}`,
+      secondary: jugador.cedula ? `Cédula: ${jugador.cedula}` : undefined,
+      searchText: `${jugador.nombre ?? ''} ${jugador.cedula ?? ''} ${jugador.numeroCancha ?? ''}`,
+    }));
   }
 
   // ===== Eliminar fixture =====

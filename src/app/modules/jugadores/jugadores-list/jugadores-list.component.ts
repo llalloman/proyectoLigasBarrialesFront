@@ -10,6 +10,7 @@ import { Usuario } from '../../../core/models/usuario.model';
 import { Liga } from '../../../core/models/liga.model';
 import { Equipo } from '../../../core/models/equipo.model';
 import { Observable } from 'rxjs';
+import { SearchableSelectOption } from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-jugadores-list',
@@ -29,6 +30,15 @@ export class JugadoresListComponent implements OnInit {
   searchTerm = '';
   selectedLigaId: string = '';
   selectedEquipoId: string = '';
+
+  get equiposSearchOptions(): SearchableSelectOption[] {
+    return this.filteredEquipos.map((equipo) => ({
+      value: String(equipo.id),
+      label: equipo.nombre,
+      secondary: equipo.liga?.nombre,
+      searchText: `${equipo.nombre} ${equipo.liga?.nombre ?? ''}`,
+    }));
+  }
 
   // Paginación
   currentPage = 1;

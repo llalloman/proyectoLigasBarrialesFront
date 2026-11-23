@@ -321,6 +321,13 @@ export class PermissionsService {
   }
 
   /**
+   * Verifica si puede acceder a los reportes administrativos de competencia.
+   */
+  canAccessReportes(): boolean {
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo']);
+  }
+
+  /**
    * Solo master y directivo pueden generar/regenerar el fixture
    */
   canGenerarFixture(): boolean {
@@ -353,6 +360,11 @@ export class PermissionsService {
    */
   canImprimirActa(): boolean {
     return this.hasRole(['master', 'directivo_liga', 'tribuna_penas', 'tesoreria']);
+  }
+
+  /** Pueden consultar el acta; el dirigente solo accede a partidos de su equipo. */
+  canConsultarActa(): boolean {
+    return this.hasRole(['master', 'directivo_liga', 'dirigente_equipo', 'tribuna_penas', 'tesoreria']);
   }
 
   // ==================== SANCIONES ====================

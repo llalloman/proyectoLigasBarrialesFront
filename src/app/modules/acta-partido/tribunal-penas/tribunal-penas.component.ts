@@ -17,6 +17,10 @@ import {
 } from '../acta-partido.model';
 import { TipoSancion } from '../../sanciones/sancion.model';
 import { environment } from '../../../../environments/environment';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
 /**
  * Tribunal de Penas
@@ -34,7 +38,7 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-tribunal-penas',
   standalone: true,
-  imports: [CommonModule, FormsModule, MainNavComponent],
+  imports: [CommonModule, FormsModule, MainNavComponent, SearchableSelectComponent],
   templateUrl: './tribunal-penas.component.html',
   styleUrls: ['./tribunal-penas.component.scss'],
 })
@@ -253,6 +257,15 @@ export class TribunalPenasComponent implements OnInit {
     return [...porId.entries()]
       .sort(([, a], [, b]) => this.ordenPartido(a).localeCompare(this.ordenPartido(b)))
       .map(([id, partido]) => ({ id, ...partido }));
+  }
+
+  get partidosSearchOptions(): SearchableSelectOption[] {
+    return this.partidosDisponibles.map((partido) => ({
+      value: partido.id,
+      label: this.etiquetaPartido(partido),
+      secondary: partido.categoria?.nombre || partido.etapa || undefined,
+      searchText: `${partido.equipoLocal?.nombre ?? ''} ${partido.equipoVisitante?.nombre ?? ''} jornada ${partido.jornada ?? ''}`,
+    }));
   }
 
   etiquetaPartido(partido: any): string {

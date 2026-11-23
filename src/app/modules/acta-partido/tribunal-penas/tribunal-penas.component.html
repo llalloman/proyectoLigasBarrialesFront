@@ -73,13 +73,14 @@
         <!-- Partido: se alimenta únicamente con encuentros que tienen incidencias pendientes -->
         <div class="filter-item">
           <label>Partido</label>
-          <select class="filter-select" [(ngModel)]="selectedPartidoId" (change)="onPartidoChange()"
-            [disabled]="!campeonatoIdSeleccionado || partidosDisponibles.length === 0">
-            <option [ngValue]="null">— Todos los partidos —</option>
-            <option *ngFor="let partido of partidosDisponibles" [ngValue]="partido.id">
-              {{ etiquetaPartido(partido) }}
-            </option>
-          </select>
+          <app-searchable-select
+            [(ngModel)]="selectedPartidoId"
+            (ngModelChange)="onPartidoChange()"
+            [options]="partidosSearchOptions"
+            [disabled]="!campeonatoIdSeleccionado || partidosDisponibles.length === 0"
+            placeholder="Todos los partidos"
+            searchPlaceholder="Buscar por equipo o jornada...">
+          </app-searchable-select>
         </div>
 
       </div>

@@ -32,7 +32,7 @@
     <h2>Registrar solicitud</h2>
     <p class="ayuda">Elige el partido y el horario solicitado. Si la solicitud se rechaza o cancela, el equipo podrá presentar una nueva para esta etapa.</p>
     <div class="grid-form solicitud-form">
-      <label class="ancho">Partido<select [(ngModel)]="partidoId" (change)="seleccionarPartido()"><option [ngValue]="null">Seleccionar partido pendiente</option><option *ngFor="let partido of partidosDisponibles" [ngValue]="partido.id">{{ textoPartido(partido) }}</option></select></label>
+      <label class="ancho">Partido<app-searchable-select [(ngModel)]="partidoId" (ngModelChange)="seleccionarPartido()" [options]="partidosSearchOptions" placeholder="Seleccionar partido pendiente" searchPlaceholder="Buscar por equipo o jornada..."></app-searchable-select></label>
       <label>Equipo solicitante<select [(ngModel)]="equipoId" [disabled]="esDirigente || !partidoId"><option [ngValue]="null">Seleccionar equipo</option><option *ngFor="let equipo of equiposDelPartido" [ngValue]="equipo.id">{{ equipo.nombre }}</option></select></label>
       <label>Fecha solicitada<input type="date" [(ngModel)]="fechaSolicitada"></label>
       <label>Hora solicitada<input type="time" [(ngModel)]="horaSolicitada"></label>

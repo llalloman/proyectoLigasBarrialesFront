@@ -9,6 +9,10 @@ import { EquiposService } from '../../../core/services/equipos.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
 import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
+import {
   ActaIncidencia,
   ActaInformePartido,
   EstadoAlineacion,
@@ -22,10 +26,19 @@ import {
   TipoIncidencia,
 } from '../acta-partido.model';
 
+interface ResumenEquipoAlineacion {
+  participaron: number;
+  noJugaron: number;
+  ausentes: number;
+  lesionados: number;
+  suspendidos: number;
+  expulsados: number;
+}
+
 @Component({
   selector: 'app-acta-partido',
   standalone: true,
-  imports: [CommonModule, FormsModule, MainNavComponent, RouterLink],
+  imports: [CommonModule, FormsModule, MainNavComponent, RouterLink, SearchableSelectComponent],
   templateUrl: './acta-partido.component.html',
   styleUrls: ['./acta-partido.component.scss'],
 })
@@ -46,6 +59,7 @@ export class ActaPartidoComponent implements OnInit {
   plantillaGuardada = false;
   /** Solo habilita una corrección durante la visita actual al acta. */
   plantillaCorreccionDesbloqueada = false;
+  motivoCorreccion = '';
   error = '';
 
   // ── Informe del Vocal ──────────────────────────────────────────────────────
@@ -105,7 +119,11 @@ export class ActaPartidoComponent implements OnInit {
   }
 
   get soloLectura(): boolean {
-    return this.permissions.hasRole(['tribuna_penas', 'tesoreria']);
+    return this.permissions.hasRole(['dirigente_equipo', 'tribuna_penas', 'tesoreria']);
+  }
+
+  get puedeImprimirActa(): boolean {
+    return this.permissions.hasRole(['master', 'directivo_liga', 'tribuna_penas', 'tesoreria']);
   }
 
   get planillaEstaBloqueada(): boolean {
@@ -121,6 +139,7 @@ export class ActaPartidoComponent implements OnInit {
 
   bloquearCorreccionPlanilla(): void {
     this.plantillaCorreccionDesbloqueada = false;
+    this.motivoCorreccion = '';
   }
 
   logout(): void {
@@ -204,6 +223,15 @@ export class ActaPartidoComponent implements OnInit {
   }
 
   guardar(): void {
+    if (
+      this.partido?.estado === 'jugado' &&
+      this.plantillaCorreccionDesbloqueada &&
+      this.motivoCorreccion.trim().length < 5
+    ) {
+      this.error = 'Ingrese un motivo de al menos 5 caracteres para guardar la corrección.';
+      return;
+    }
+
     this.guardando = true;
     this.guardado = false;
     this.error = '';
@@ -219,11 +247,16 @@ export class ActaPartidoComponent implements OnInit {
     this.actaService.guardarAlineacion(this.partidoId, {
       jugadores,
       permitirCorreccion: this.plantillaCorreccionDesbloqueada,
+      motivoCorreccion: this.plantillaCorreccionDesbloqueada
+        ? this.motivoCorreccion.trim()
+        : undefined,
     }).subscribe({
       next: () => {
         this.guardando = false;
         this.guardado = true;
         this.plantillaGuardada = true;
+        this.plantillaCorreccionDesbloqueada = false;
+        this.motivoCorreccion = '';
         setTimeout(() => (this.guardado = false), 3000);
       },
       error: (err) => {
@@ -349,6 +382,24 @@ export class ActaPartidoComponent implements OnInit {
       });
   }
 
+  get equiposVocalSearchOptions(): SearchableSelectOption[] {
+    return this.equiposVocal.map((equipo) => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      secondary: equipo.representante || equipo.nombreRepresentante || undefined,
+      searchText: `${equipo.nombre ?? ''} ${equipo.representante ?? ''} ${equipo.nombreRepresentante ?? ''}`,
+    }));
+  }
+
+  jugadoresIncidenciaSearchOptions(equipoId: number | string): SearchableSelectOption[] {
+    return this.jugadoresPorEquipo(equipoId).map((jugador) => ({
+      value: jugador.jugadorId,
+      label: jugador.nombre,
+      secondary: jugador.suspendido ? 'Jugador suspendido' : undefined,
+      searchText: jugador.nombre,
+    }));
+  }
+
   /** Al cambiar el equipo de una incidencia, resetea el jugador para evitar datos cruzados */
   onEquipoIncidenciaChange(fila: FilaIncidencia): void {
     fila.jugadorId = null;
@@ -418,5 +469,28 @@ export class ActaPartidoComponent implements OnInit {
     return [...this.filasLocal, ...this.filasVisitante].filter(
       (f) => f.estadoSeleccionado === 'suspendido',
     ).length;
+  }
+
+  get resumenLocal(): ResumenEquipoAlineacion {
+    return this.calcularResumenEquipo(this.filasLocal);
+  }
+
+  get resumenVisitante(): ResumenEquipoAlineacion {
+    return this.calcularResumenEquipo(this.filasVisitante);
+  }
+
+  private calcularResumenEquipo(filas: FilaAlineacion[]): ResumenEquipoAlineacion {
+    const contar = (estado: EstadoAlineacion) =>
+      filas.filter((fila) => fila.estadoSeleccionado === estado).length;
+    const expulsados = contar('expulsado');
+
+    return {
+      participaron: contar('jugo') + expulsados,
+      noJugaron: contar('no_jugo'),
+      ausentes: contar('ausente'),
+      lesionados: contar('lesionado'),
+      suspendidos: contar('suspendido'),
+      expulsados,
+    };
   }
 }

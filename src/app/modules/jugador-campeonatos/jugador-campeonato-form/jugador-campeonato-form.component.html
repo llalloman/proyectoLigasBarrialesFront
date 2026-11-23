@@ -69,19 +69,13 @@
 
         <div class="form-group">
           <label for="equipoId">Equipo *</label>
-          <select
+          <app-searchable-select
             id="equipoId"
             formControlName="equipoId"
-            class="form-control"
-            [class.is-invalid]="
-              form.get('equipoId')?.invalid && form.get('equipoId')?.touched
-            "
-          >
-            <option [ngValue]="null">Seleccione un equipo</option>
-            <option *ngFor="let equipo of equipos" [ngValue]="equipo.id">
-              {{ equipo.nombre }}
-            </option>
-          </select>
+            [options]="equiposSearchOptions"
+            placeholder="Seleccione un equipo"
+            searchPlaceholder="Buscar equipo...">
+          </app-searchable-select>
           <div
             class="error-message"
             *ngIf="
@@ -94,35 +88,14 @@
 
         <div class="form-group">
           <label for="jugadorSearch">Jugador *</label>
-          <div class="jugador-autocomplete">
-            <input
-              id="jugadorSearch"
-              type="text"
-              class="form-control"
-              [class.is-invalid]="form.get('jugadorId')?.invalid && form.get('jugadorId')?.touched"
-              placeholder="Buscar por nombre o cédula..."
-              [value]="jugadorSearchText"
-              (input)="onJugadorSearchInput($any($event.target).value)"
-              (focus)="showJugadorDropdown = jugadores.length > 0"
-              (blur)="onJugadorBlur()"
-              [disabled]="isEditMode"
-              autocomplete="off"
-            />
-            <div class="jugador-dropdown" *ngIf="showJugadorDropdown">
-              <div
-                class="jugador-option"
-                *ngFor="let jugador of jugadoresFiltrados"
-                (mousedown)="selectJugador(jugador)"
-              >
-                {{ jugador.nombre }} - {{ jugador.cedula }}
-              </div>
-              <div class="jugador-option jugador-no-result" *ngIf="jugadoresFiltrados.length === 0">
-                No se encontraron jugadores con «{{ jugadorSearchText }}»
-              </div>
-            </div>
-          </div>
-          <!-- Campo oculto que guarda el id seleccionado en el formulario reactivo -->
-          <input type="hidden" formControlName="jugadorId" />
+          <app-searchable-select
+            id="jugadorSearch"
+            formControlName="jugadorId"
+            [options]="jugadoresSearchOptions"
+            [disabled]="isEditMode"
+            placeholder="Seleccione un jugador"
+            searchPlaceholder="Buscar por nombre o cédula...">
+          </app-searchable-select>
           <div
             class="error-message"
             *ngIf="form.get('jugadorId')?.invalid && form.get('jugadorId')?.touched"

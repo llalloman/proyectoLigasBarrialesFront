@@ -45,6 +45,7 @@
         >🔒</button>
       </div>
       <a
+        *ngIf="puedeImprimirActa"
         class="btn-imprimir-acta"
         [routerLink]="['/partidos', partidoId, 'acta', 'imprimir']"
         [queryParams]="parametrosRetorno"
@@ -93,6 +94,16 @@
               <span class="equipo-nombre">{{ partido?.equipoLocal?.nombre }}</span>
               <span class="equipo-conteo">{{ filasLocal.length }} jugadores</span>
             </div>
+            <div class="equipo-resumen" aria-label="Resumen de participación del equipo local">
+              <span class="resumen-item participaron">Participaron <strong>{{ resumenLocal.participaron }}</strong></span>
+              <span class="resumen-item no-jugaron">No jugaron <strong>{{ resumenLocal.noJugaron }}</strong></span>
+              <span class="resumen-item ausentes">Ausentes <strong>{{ resumenLocal.ausentes }}</strong></span>
+              <span class="resumen-item lesionados">Lesionados <strong>{{ resumenLocal.lesionados }}</strong></span>
+              <span class="resumen-item suspendidos">Suspendidos <strong>{{ resumenLocal.suspendidos }}</strong></span>
+              <span class="resumen-item expulsados" title="Incluidos en el total de participantes">
+                Expulsados <strong>{{ resumenLocal.expulsados }}</strong>
+              </span>
+            </div>
             <div class="jugadores-list">
               <div class="jugador-fila" *ngFor="let fila of filasLocal" [class]="getEstadoClass(fila.estadoSeleccionado)">
                 <div class="jugador-info">
@@ -119,6 +130,16 @@
               <span class="equipo-nombre">{{ partido?.equipoVisitante?.nombre }}</span>
               <span class="equipo-conteo">{{ filasVisitante.length }} jugadores</span>
             </div>
+            <div class="equipo-resumen" aria-label="Resumen de participación del equipo visitante">
+              <span class="resumen-item participaron">Participaron <strong>{{ resumenVisitante.participaron }}</strong></span>
+              <span class="resumen-item no-jugaron">No jugaron <strong>{{ resumenVisitante.noJugaron }}</strong></span>
+              <span class="resumen-item ausentes">Ausentes <strong>{{ resumenVisitante.ausentes }}</strong></span>
+              <span class="resumen-item lesionados">Lesionados <strong>{{ resumenVisitante.lesionados }}</strong></span>
+              <span class="resumen-item suspendidos">Suspendidos <strong>{{ resumenVisitante.suspendidos }}</strong></span>
+              <span class="resumen-item expulsados" title="Incluidos en el total de participantes">
+                Expulsados <strong>{{ resumenVisitante.expulsados }}</strong>
+              </span>
+            </div>
             <div class="jugadores-list">
               <div class="jugador-fila" *ngFor="let fila of filasVisitante" [class]="getEstadoClass(fila.estadoSeleccionado)">
                 <div class="jugador-info">
@@ -141,6 +162,21 @@
 
         </div>
 
+        <div
+          class="correccion-planilla"
+          *ngIf="!soloLectura && partido?.estado === 'jugado' && plantillaCorreccionDesbloqueada"
+        >
+          <label for="motivoCorreccion">Motivo de la corrección *</label>
+          <textarea
+            id="motivoCorreccion"
+            [(ngModel)]="motivoCorreccion"
+            maxlength="500"
+            rows="3"
+            placeholder="Explique por qué se modifica la planilla cerrada..."
+          ></textarea>
+          <small>Este motivo y las versiones anterior y nueva quedarán registrados en el historial.</small>
+        </div>
+
         <div class="form-footer" *ngIf="(filasLocal.length > 0 || filasVisitante.length > 0) && !soloLectura">
           <div class="resumen">
             <span>Total jugaron: <strong>{{ totalJugaron }}</strong></span>
@@ -148,7 +184,11 @@
           </div>
           <div class="acciones">
             <button class="btn-secondary" (click)="volver()">Cancelar</button>
-            <button class="btn-primary" (click)="guardar()" [disabled]="guardando || planillaEstaBloqueada">
+            <button
+              class="btn-primary"
+              (click)="guardar()"
+              [disabled]="guardando || planillaEstaBloqueada || (partido?.estado === 'jugado' && motivoCorreccion.trim().length < 5)"
+            >
               <span *ngIf="!guardando">💾 Guardar planilla</span>
               <span *ngIf="guardando">Guardando...</span>
             </button>
@@ -177,11 +217,13 @@
             <label>Vocal responsable <small>(equipo, jugador o directivo)</small></label>
             <div class="vocal-row">
               <input type="text" [(ngModel)]="vocalNombre" placeholder="Ej: SPARTA, Juan Pérez, Directivos Liga..." maxlength="200" class="form-control" />
-              <select [(ngModel)]="vocalEquipoId" class="form-control vocal-equipo-select">
-                <option [ngValue]="null">— Equipo del vocal (opcional) —</option>
-                <option *ngFor="let eq of equiposVocal" [ngValue]="eq.id">{{ eq.nombre }}</option>
-                <option [ngValue]="null">Directivos Liga</option>
-              </select>
+              <app-searchable-select
+                [(ngModel)]="vocalEquipoId"
+                [options]="equiposVocalSearchOptions"
+                placeholder="Equipo del vocal (opcional)"
+                searchPlaceholder="Buscar equipo..."
+                class="vocal-equipo-select">
+              </app-searchable-select>
             </div>
           </div>
           <div class="form-row">
@@ -224,13 +266,12 @@
                 </div>
                 <div class="campo-grupo">
                   <label>Jugador <small>(opcional)</small></label>
-                  <select [(ngModel)]="fila.jugadorId" class="form-control-sm">
-                    <option [ngValue]="null">— colectivo del equipo —</option>
-                    <option *ngFor="let j of jugadoresPorEquipo(fila.equipoId)" [ngValue]="j.jugadorId"
-                      [style.color]="j.suspendido ? '#e74c3c' : ''">
-                      {{ j.nombre }}
-                    </option>
-                  </select>
+                  <app-searchable-select
+                    [(ngModel)]="fila.jugadorId"
+                    [options]="jugadoresIncidenciaSearchOptions(fila.equipoId)"
+                    placeholder="Colectivo del equipo"
+                    searchPlaceholder="Buscar jugador o dorsal...">
+                  </app-searchable-select>
                 </div>
                 <div class="campo-grupo">
                   <label>Tipo</label>

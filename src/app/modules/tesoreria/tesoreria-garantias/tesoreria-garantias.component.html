@@ -117,7 +117,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let g of garantias" [class]="'fila-' + g.estado">
-                <td class="td-equipo">{{ g.equipo?.nombre ?? '—' }}</td>
+                <td class="td-equipo">{{ g.equipo.nombre }}</td>
                 <td class="td-monto">$ {{ g.monto | number:'1.2-2' }}</td>
                 <td>
                   <span class="badge-estado" [class]="'badge-' + g.estado">
@@ -272,17 +272,17 @@
       <div class="alert alert-error" *ngIf="errorResolver">{{ errorResolver }}</div>
 
       <div class="resolver-info">
-        <strong>Equipo:</strong> {{ modalResolver?.equipo?.nombre }}<br>
-        <strong>Monto:</strong> $ {{ modalResolver?.monto | number:'1.2-2' }}
+        <strong>Equipo:</strong> {{ modalResolver.equipo.nombre }}<br>
+        <strong>Monto:</strong> $ {{ modalResolver.monto | number:'1.2-2' }}
       </div>
 
       <div class="resolver-descripcion" *ngIf="resolverAccion === 'ejecutar'">
         El equipo <strong>pierde</strong> la garantía. Se creará un
-        <strong>ingreso</strong> en tesorería por $ {{ modalResolver?.monto | number:'1.2-2' }}.
+        <strong>ingreso</strong> en tesorería por $ {{ modalResolver.monto | number:'1.2-2' }}.
       </div>
       <div class="resolver-descripcion" *ngIf="resolverAccion === 'devolver'">
         Se <strong>devuelve</strong> la garantía al equipo. Se creará un
-        <strong>egreso</strong> en tesorería por $ {{ modalResolver?.monto | number:'1.2-2' }}.
+        <strong>egreso</strong> en tesorería por $ {{ modalResolver.monto | number:'1.2-2' }}.
       </div>
 
       <div class="form-item">
@@ -373,13 +373,13 @@
       <div class="alert alert-error" *ngIf="errorDevolucion">{{ errorDevolucion }}</div>
 
       <div class="resolver-info">
-        <strong>Motivo original:</strong> {{ modalDevolverPrestamo?.motivo }}<br>
-        <strong>Monto a devolver:</strong> $ {{ modalDevolverPrestamo?.monto | number:'1.2-2' }}
+        <strong>Motivo original:</strong> {{ modalDevolverPrestamo.motivo }}<br>
+        <strong>Monto a devolver:</strong> $ {{ modalDevolverPrestamo.monto | number:'1.2-2' }}
       </div>
 
       <div class="resolver-descripcion">
         Se registrará un <strong>egreso</strong> en tesorería por
-        $ {{ modalDevolverPrestamo?.monto | number:'1.2-2' }},
+        $ {{ modalDevolverPrestamo.monto | number:'1.2-2' }},
         devolviendo el dinero al fondo de garantías.
       </div>
 

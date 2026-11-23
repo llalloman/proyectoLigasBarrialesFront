@@ -255,6 +255,49 @@ $bg-light:      #f8f9fa;
 }
 
 // ── Lista de jugadores ────────────────────────────────────────────────────────
+.equipo-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  padding: 0.75rem 0.85rem;
+  background: #f8fafc;
+  border-bottom: 1px solid $border;
+
+  @media (max-width: 1050px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 420px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.resumen-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #dfe6ec;
+  border-radius: 6px;
+  background: #fff;
+  color: $text-gray;
+  font-size: 0.72rem;
+
+  strong {
+    color: $text-dark;
+    font-size: 0.85rem;
+  }
+
+  &.participaron { border-left: 3px solid $success; }
+  &.no-jugaron { border-left: 3px solid #95a5a6; }
+  &.ausentes { border-left: 3px solid $warning; }
+  &.lesionados { border-left: 3px solid #e67e22; }
+  &.suspendidos { border-left: 3px solid $error; }
+  &.expulsados { border-left: 3px solid #8e44ad; }
+}
+
 .jugadores-list {
   padding: 0.5rem 0;
 }
@@ -353,6 +396,45 @@ $bg-light:      #f8f9fa;
 }
 
 // ── Pie de formulario ─────────────────────────────────────────────────────────
+.correccion-planilla {
+  margin-bottom: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #f0b35a;
+  border-left: 4px solid $warning;
+  border-radius: 8px;
+  background: #fffaf0;
+
+  label {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: #7c4a03;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #d9a441;
+    border-radius: 6px;
+    font: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: $warning;
+      box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.15);
+    }
+  }
+
+  small {
+    display: block;
+    margin-top: 0.35rem;
+    color: #7f6a45;
+  }
+}
+
 .form-footer {
   display: flex;
   justify-content: space-between;
@@ -623,7 +705,7 @@ $bg-light:      #f8f9fa;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 80px 2fr;
   gap: 0.6rem;
-  align-items: end;
+  align-items: flex-end;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr 1fr;

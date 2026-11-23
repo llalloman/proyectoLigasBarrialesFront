@@ -7,6 +7,7 @@ import { JugadorFormComponent } from './jugador-form/jugador-form.component';
 import { JugadorDetailComponent } from './jugador-detail/jugador-detail.component';
 import { ImageUploadComponent } from '../../shared/components/image-upload/image-upload.component';
 import { MainNavComponent } from '../../shared/components/main-nav/main-nav.component';
+import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { MainNavComponent } from '../../shared/components/main-nav/main-nav.comp
     FormsModule,
     JugadoresRoutingModule,
     ImageUploadComponent,
-    MainNavComponent
+    MainNavComponent,
+    SearchableSelectComponent,
   ]
 })
 export class JugadoresModule { }

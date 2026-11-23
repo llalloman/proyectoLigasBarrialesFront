@@ -11,11 +11,15 @@ import { CategoriasService } from '../../categorias/categorias.service';
 import { EquiposService } from '../../../core/services/equipos.service';
 import { InscripcionesService } from '../../inscripciones/inscripciones.service';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-partido-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, MainNavComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, MainNavComponent, SearchableSelectComponent],
   templateUrl: './partido-form.component.html',
   styleUrls: ['./partido-form.component.scss'],
 })
@@ -34,6 +38,28 @@ export class PartidoFormComponent implements OnInit {
   campeonatos: any[] = [];
   categorias: any[] = [];
   equipos: any[] = [];
+
+  get equiposLocalOptions(): SearchableSelectOption[] {
+    const visitanteId = Number(this.partidoForm.get('equipoVisitanteId')?.value || 0);
+    return this.equipos.map(equipo => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      secondary: equipo.representante ? `Representante: ${equipo.representante}` : undefined,
+      searchText: `${equipo.nombre} ${equipo.representante ?? ''}`,
+      disabled: visitanteId > 0 && Number(equipo.id) === visitanteId,
+    }));
+  }
+
+  get equiposVisitanteOptions(): SearchableSelectOption[] {
+    const localId = Number(this.partidoForm.get('equipoLocalId')?.value || 0);
+    return this.equipos.map(equipo => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      secondary: equipo.representante ? `Representante: ${equipo.representante}` : undefined,
+      searchText: `${equipo.nombre} ${equipo.representante ?? ''}`,
+      disabled: localId > 0 && Number(equipo.id) === localId,
+    }));
+  }
 
   estadosOpciones = [
     { value: 'programado', label: 'Programado' },

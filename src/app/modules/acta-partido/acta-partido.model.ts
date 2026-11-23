@@ -74,6 +74,7 @@ export interface FilaAlineacion {
 /** DTO para enviar al backend */
 export interface GuardarAlineacionDto {
   permitirCorreccion?: boolean;
+  motivoCorreccion?: string;
   jugadores: {
     jugadorId: number;
     equipoId: number;
@@ -200,7 +201,7 @@ export const ESTADO_ALINEACION_LABELS: Record<EstadoAlineacion, string> = {
   suspendido: 'Suspendido',
   ausente:    'Ausente',
   lesionado:  'Lesionado',
-  expulsado:  'Expulsado',
+  expulsado:  'Jugó y fue expulsado',
 };
 
 /** Colores para cada estado (clase CSS o estilo directo) */

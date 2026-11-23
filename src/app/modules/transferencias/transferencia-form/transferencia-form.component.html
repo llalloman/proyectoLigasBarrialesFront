@@ -71,18 +71,14 @@
 
       <div class="form-group" *ngIf="currentRole === 'master'">
         <label for="equipoDestinoId">Equipo destino *</label>
-        <select
+        <app-searchable-select
           id="equipoDestinoId"
           formControlName="equipoDestinoId"
-          class="form-control"
-        >
-          <option value="">
-            {{ form.get('campeonatoId')?.value ? 'Seleccione el equipo destino' : 'Seleccione primero un campeonato' }}
-          </option>
-          <option *ngFor="let equipo of equiposDestino" [value]="equipo.id">
-            {{ equipo.nombre }}
-          </option>
-        </select>
+          [options]="equiposDestinoSearchOptions"
+          [disabled]="!form.get('campeonatoId')?.value"
+          [placeholder]="form.get('campeonatoId')?.value ? 'Seleccione el equipo destino' : 'Seleccione primero un campeonato'"
+          searchPlaceholder="Buscar equipo destino...">
+        </app-searchable-select>
         <div class="error-message" *ngIf="form.get('equipoDestinoId')?.invalid && form.get('equipoDestinoId')?.touched">
           El equipo destino es requerido
         </div>

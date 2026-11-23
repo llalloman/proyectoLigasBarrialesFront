@@ -65,13 +65,13 @@
             <!-- Equipo -->
             <div class="form-item form-item-full">
               <label>Equipo *</label>
-              <select class="form-select" formControlName="equipoId"
-                      [attr.disabled]="!form.get('campeonatoId')?.value ? '' : null">
-                <option value="">-- Selecciona equipo --</option>
-                <option *ngFor="let e of equiposDisponibles" [value]="e.id">
-                  {{ e.nombre }} <span *ngIf="e.categoriaActual">(actualmente en: {{ e.categoriaActual }})</span>
-                </option>
-              </select>
+              <app-searchable-select
+                formControlName="equipoId"
+                [options]="equiposSearchOptions"
+                [disabled]="!form.get('campeonatoId')?.value"
+                placeholder="Selecciona equipo"
+                searchPlaceholder="Buscar equipo...">
+              </app-searchable-select>
               <span class="hint" *ngIf="equiposDisponibles.length === 0 && form.get('campeonatoId')?.value">
                 No hay equipos con inscripción confirmada en este campeonato.
               </span>

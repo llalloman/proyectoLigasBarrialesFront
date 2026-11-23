@@ -19,6 +19,10 @@ import { Campeonato } from '../../campeonatos/campeonato.model';
 import { JugadorCampeonato } from '../../jugador-campeonatos/jugador-campeonato.model';
 import { Equipo } from '../../../core/models/equipo.model';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -36,6 +40,7 @@ import { map, startWith } from 'rxjs/operators';
     MatAutocompleteModule,
     MatInputModule,
     MatFormFieldModule,
+    SearchableSelectComponent,
   ],
   templateUrl: './transferencia-form.component.html',
   styleUrls: ['./transferencia-form.component.scss'],
@@ -53,6 +58,14 @@ export class TransferenciaFormComponent implements OnInit {
   currentEquipoId: number | null = null;
   currentRole = '';
   user$ = this.authService.currentUser$;
+
+  get equiposDestinoSearchOptions(): SearchableSelectOption[] {
+    return this.equiposDestino.map((equipo) => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      searchText: equipo.nombre,
+    }));
+  }
 
   constructor(
     private fb: FormBuilder,

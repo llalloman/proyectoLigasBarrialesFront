@@ -61,10 +61,14 @@
         <!-- Filtro por Equipo -->
         <div class="filter-group" *ngIf="canShowEquipoFilter()">
           <label for="filterEquipo">Equipo</label>
-          <select id="filterEquipo" [(ngModel)]="filterEquipoId" (change)="applyFilters()">
-            <option value="">Todos los equipos</option>
-            <option *ngFor="let equipo of filteredEquipos" [value]="equipo.id">{{ equipo.nombre }}</option>
-          </select>
+          <app-searchable-select
+            id="filterEquipo"
+            [(ngModel)]="filterEquipoId"
+            (ngModelChange)="applyFilters()"
+            [options]="filteredEquiposSearchOptions"
+            placeholder="Todos los equipos"
+            searchPlaceholder="Buscar equipo...">
+          </app-searchable-select>
         </div>
 
         <!-- Filtro por Estado -->

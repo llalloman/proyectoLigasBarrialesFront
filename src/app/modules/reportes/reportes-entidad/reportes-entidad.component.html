@@ -1,0 +1,143 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span><span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+  <app-main-nav></app-main-nav>
+
+  <div class="module-header">
+    <div><h2>{{ tipo === 'equipo' ? 'Reporte integral por equipo' : 'Historial y reporte del jugador' }}</h2>
+      <p>Consulta consolidada de solo lectura. No modifica la información deportiva.</p></div>
+    <div class="export-actions" *ngIf="reporte">
+      <button class="btn btn-outline" (click)="descargarPdf()" [disabled]="exportando">PDF</button>
+      <button class="btn btn-outline" (click)="descargarExcel()" [disabled]="exportando">Excel</button>
+    </div>
+  </div>
+
+  <main class="content">
+    <nav class="report-tabs">
+      <a routerLink="/reportes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Campeonato</a>
+      <a routerLink="/reportes/equipos" routerLinkActive="active">Equipos</a>
+      <a routerLink="/reportes/jugadores" routerLinkActive="active">Jugadores</a>
+    </nav>
+
+    <section class="filters-card">
+      <div class="filters-grid">
+        <label><span>Liga</span><select [(ngModel)]="ligaId" (change)="onLigaChange()" [disabled]="!esMaster">
+          <option [ngValue]="null">Seleccionar liga</option><option *ngFor="let liga of ligas" [ngValue]="liga.id">{{ liga.nombre }}</option>
+        </select></label>
+        <label><span>Campeonato *</span><select [(ngModel)]="campeonatoId" (change)="onCampeonatoChange()" [disabled]="!ligaId">
+          <option [ngValue]="null">Seleccionar campeonato</option><option *ngFor="let campeonato of campeonatos" [ngValue]="campeonato.id">{{ campeonato.nombre }}</option>
+        </select></label>
+        <label><span>Categoría</span><select [(ngModel)]="categoriaId" (change)="onCategoriaChange()" [disabled]="!campeonatoId">
+          <option [ngValue]="null">Todas las categorías</option><option *ngFor="let categoria of categorias" [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+        </select></label>
+        <label class="search-field"><span>Equipo *</span><app-searchable-select [(ngModel)]="equipoId" (ngModelChange)="onEquipoChange()"
+          [options]="opcionesEquipos" [disabled]="!ligaId || esDirigente" placeholder="Seleccionar equipo" searchPlaceholder="Buscar equipo..."></app-searchable-select></label>
+        <label><span>Etapa</span><select [(ngModel)]="etapa" (change)="onEtapaChange()" [disabled]="!campeonatoId || !equipoId || etapas.length === 0">
+          <option value="">Todas las etapas</option><option *ngFor="let opcion of etapas" [value]="opcion">{{ nombreEtapa(opcion) }}</option>
+        </select></label>
+        <label class="search-field" *ngIf="tipo === 'jugador'"><span>Jugador *</span><app-searchable-select [(ngModel)]="jugadorId" (ngModelChange)="onJugadorChange()"
+          [options]="opcionesJugadores" [disabled]="!campeonatoId || !equipoId" placeholder="Seleccionar jugador" searchPlaceholder="Buscar por nombre o cédula..."></app-searchable-select></label>
+      </div>
+      <button class="btn btn-primary" (click)="consultar()" [disabled]="!campeonatoId || !equipoId || (tipo === 'jugador' && !jugadorId) || loading">
+        {{ loading ? 'Generando...' : 'Actualizar reporte' }}
+      </button>
+    </section>
+
+    <div class="alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="loading" *ngIf="loading">Calculando información...</div>
+
+    <ng-container *ngIf="reporteEquipo as data">
+      <section class="context-card">
+        <div class="context-main">
+          <div class="report-avatar team-avatar">
+            <img *ngIf="data.contexto.equipoImagen; else equipoPlaceholder" [src]="data.contexto.equipoImagen" [alt]="'Escudo de ' + data.contexto.equipoNombre">
+            <ng-template #equipoPlaceholder><span>{{ iniciales(data.contexto.equipoNombre) }}</span></ng-template>
+          </div>
+          <div class="context-copy"><strong>{{ data.contexto.equipoNombre }}</strong><span>{{ data.contexto.campeonatoNombre }} · Categoría consultada: {{ data.contexto.categoriaNombre }} · {{ nombreEtapa(data.contexto.etapa) }}</span><span *ngIf="data.contexto.categoriaActualNombre !== data.contexto.categoriaNombre">Categoría actual: {{ data.contexto.categoriaActualNombre }}</span></div>
+        </div>
+        <b>Solo lectura</b>
+      </section>
+      <section class="summary-grid">
+        <article><span>Habilitados</span><strong>{{ data.resumen.habilitados }}</strong></article><article><span>Pendientes</span><strong>{{ data.resumen.pendientes }}</strong></article>
+        <article><span>Bajas</span><strong>{{ data.resumen.bajas }}</strong></article><article><span>Partidos jugados</span><strong>{{ data.resumen.partidosJugados }}</strong></article>
+        <article><span>Partidos pendientes</span><strong>{{ data.resumen.partidosPendientes }}</strong></article><article><span>Goles a favor</span><strong>{{ data.resumen.golesFavor }}</strong></article>
+        <article><span>Goles en contra</span><strong>{{ data.resumen.golesContra }}</strong></article><article><span>Sanciones activas</span><strong>{{ data.resumen.sancionesActivas }}</strong></article>
+        <article><span>Transferencias</span><strong>{{ data.resumen.transferencias }}</strong></article>
+      </section>
+      <section class="card performance"><h3>Rendimiento deportivo</h3><div class="performance-grid">
+        <span><b>{{ data.rendimiento.pj }}</b>PJ</span><span><b>{{ data.rendimiento.pg }}</b>PG</span><span><b>{{ data.rendimiento.pe }}</b>PE</span><span><b>{{ data.rendimiento.pp }}</b>PP</span>
+        <span><b>{{ data.rendimiento.gf }}</b>GF</span><span><b>{{ data.rendimiento.gc }}</b>GC</span><span><b>{{ data.rendimiento.dg > 0 ? '+' : '' }}{{ data.rendimiento.dg }}</b>DG</span><span><b>{{ data.rendimiento.efectividad | number:'1.0-2' }}%</b>Efectividad</span>
+      </div><small>No reemplaza la tabla oficial de posiciones.</small></section>
+      <section class="card" *ngIf="data.movimientosCategoria.length"><h3>Historial de categoría</h3><div class="category-movements"><div *ngFor="let item of data.movimientosCategoria"><span class="movement-icon">{{ item.motivo === 'ascenso' ? '↑' : '↓' }}</span><div><b>{{ item.motivo === 'ascenso' ? 'Ascenso' : 'Descenso' }}</b><small>{{ item.categoriaOrigenNombre }} → {{ item.categoriaDestinoNombre }} · {{ item.fecha | date:'dd/MM/yyyy' }}</small></div></div></div></section>
+      <section class="two-columns">
+        <article class="card"><h3>{{ data.contexto.etapa ? 'Plantilla durante la etapa' : 'Plantilla del período consultado' }}</h3><div class="table-wrapper"><table><thead><tr><th>#</th><th>Jugador</th><th>Categoría histórica</th><th>Posición</th><th>Estado en el período</th></tr></thead><tbody>
+          <tr *ngFor="let item of data.plantilla"><td>{{ item.dorsal }}</td><td>{{ item.jugadorNombre }}</td><td>{{ item.categoriaHistoricaNombre }}</td><td>{{ item.posicion }}</td><td><span class="badge" [class.active]="item.estado === 'habilitado'">{{ item.estado }}</span></td></tr>
+          <tr *ngIf="!data.plantilla.length"><td colspan="5" class="empty">Sin jugadores habilitados durante este período.</td></tr>
+        </tbody></table></div></article>
+        <article class="card"><h3>Goleadores del equipo</h3><ol class="ranking"><li *ngFor="let item of data.goleadores; let i = index"><b>{{ i + 1 }}</b><span>{{ item.jugadorNombre }}</span><strong>{{ item.goles }} goles</strong></li></ol><p class="empty" *ngIf="!data.goleadores.length">Sin goles registrados.</p></article>
+      </section>
+      <section class="card"><h3>Partidos</h3><div class="table-wrapper"><table><thead><tr><th>Etapa/Jornada</th><th>Fecha</th><th>Condición</th><th>Rival</th><th>Marcador</th><th>Estado</th></tr></thead><tbody>
+        <tr *ngFor="let item of data.partidos"><td>{{ nombreEtapa(item.etapa) }} · J{{ item.jornada }}</td><td>{{ item.fecha ? (item.fecha | date:'dd/MM/yyyy') : 'Sin fecha' }}</td><td>{{ item.condicion }}</td><td>{{ item.rivalNombre }}</td><td>{{ item.gf === null ? '-' : item.gf + ' - ' + item.gc }}</td><td><span class="badge" [class.active]="item.resultado === 'ganado'">{{ item.resultado === 'pendiente' ? item.estado : item.resultado }}</span></td></tr>
+        <tr *ngIf="!data.partidos.length"><td colspan="6" class="empty">Sin partidos para estos filtros.</td></tr>
+      </tbody></table></div></section>
+      <section class="two-columns">
+        <article class="card"><h3>Sanciones</h3><div class="compact-list"><div *ngFor="let item of data.sanciones"><span><b>{{ item.tipoNombre }}</b><small>{{ item.jugadorNombre || item.aplicaA }} · {{ item.fecha | date:'dd/MM/yyyy' }}</small></span><em [class.active-text]="item.activa">{{ item.activa ? 'Activa' : 'Histórica' }}</em></div><p class="empty" *ngIf="!data.sanciones.length">Sin sanciones.</p></div></article>
+        <article class="card"><h3>Transferencias</h3><div class="compact-list"><div *ngFor="let item of data.transferencias"><span><b>{{ item.jugadorNombre }}</b><small>{{ item.equipoOrigen }} → {{ item.equipoDestino }}</small></span><em>{{ item.estadoDirectivo }}</em></div><p class="empty" *ngIf="!data.transferencias.length">Sin transferencias.</p></div></article>
+      </section>
+    </ng-container>
+
+    <ng-container *ngIf="reporteJugador as data">
+      <section class="context-card">
+        <div class="context-main">
+          <div class="report-avatar player-avatar">
+            <img *ngIf="data.contexto.jugadorImagen; else jugadorPlaceholder" [src]="data.contexto.jugadorImagen" [alt]="'Fotografía de ' + data.contexto.jugadorNombre">
+            <ng-template #jugadorPlaceholder><span>{{ iniciales(data.contexto.jugadorNombre) }}</span></ng-template>
+          </div>
+          <div class="context-copy"><strong>{{ data.contexto.jugadorNombre }}</strong><span *ngIf="data.contexto.equipoConsultado">Equipo durante el período: {{ data.contexto.equipoConsultado }}</span><span>Equipo actual: {{ data.contexto.equipoActual }} · #{{ data.contexto.dorsalActual || '-' }} · {{ data.contexto.campeonatoNombre }}</span></div>
+        </div>
+        <b>Solo lectura</b>
+      </section>
+      <section class="summary-grid player-summary"><article><span>Goles</span><strong>{{ data.resumen.goles }}</strong></article><article><span>Penales</span><strong>{{ data.resumen.penales }}</strong></article><article><span>Autogoles</span><strong>{{ data.resumen.autogoles }}</strong></article><article><span>Sanciones activas</span><strong>{{ data.resumen.sancionesActivas }}</strong></article><article><span>Habilitaciones</span><strong>{{ data.resumen.habilitaciones }}</strong></article><article><span>Transferencias</span><strong>{{ data.resumen.transferencias }}</strong></article><article><span>Cambios de dorsal</span><strong>{{ data.resumen.cambiosDorsal }}</strong></article></section>
+      <section class="card participation-card">
+        <h3>Participación y disciplina</h3>
+        <div class="participation-summary">
+          <article><span>Partidos del equipo</span><strong>{{ data.participacion.resumen.partidosEquipo }}</strong></article>
+          <article><span>Jugó</span><strong>{{ data.participacion.resumen.partidosJugados }}</strong></article>
+          <article><span>No jugó</span><strong>{{ data.participacion.resumen.partidosNoJugados }}</strong></article>
+          <article><span>Participación</span><strong>{{ data.participacion.resumen.porcentajeParticipacion | number:'1.0-2' }}%</strong></article>
+          <article class="yellow-metric"><span>Amarillas</span><strong>{{ data.participacion.resumen.amarillas }}</strong></article>
+          <article class="yellow-metric"><span>Dobles amarillas</span><strong>{{ data.participacion.resumen.doblesAmarillas }}</strong></article>
+          <article class="red-metric"><span>Rojas</span><strong>{{ data.participacion.resumen.rojas }}</strong></article>
+          <article class="red-metric"><span>Expulsiones</span><strong>{{ data.participacion.resumen.expulsiones }}</strong></article>
+          <article><span>No convocado</span><strong>{{ data.participacion.resumen.noConvocado }}</strong></article>
+          <article><span>Ausente</span><strong>{{ data.participacion.resumen.ausencias }}</strong></article>
+          <article><span>Suspendido</span><strong>{{ data.participacion.resumen.suspendido }}</strong></article>
+          <article><span>Lesionado</span><strong>{{ data.participacion.resumen.lesionado }}</strong></article>
+          <article><span>Sin planilla</span><strong>{{ data.participacion.resumen.sinRegistro }}</strong></article>
+        </div>
+        <small>Solo considera partidos jugados por el equipo mientras la habilitación del jugador estuvo vigente en los filtros seleccionados.</small>
+        <div class="table-wrapper participation-table"><table><thead><tr><th>Fecha</th><th>Etapa/Jornada</th><th>Rival</th><th>Participación</th><th>#</th><th>Goles</th><th>TA</th><th>TR</th><th>Expulsión</th></tr></thead><tbody>
+          <tr *ngFor="let item of data.participacion.detalle"><td>{{ item.fecha | date:'dd/MM/yyyy' }}</td><td>{{ nombreEtapa(item.etapa) }} · J{{ item.jornada }}</td><td>{{ item.rivalNombre }}</td><td><span class="badge" [class.active]="item.estado === 'jugo'" [class.danger]="item.estado === 'expulsado'">{{ estadoParticipacion(item.estado) }}</span></td><td>{{ item.dorsal || '-' }}</td><td>{{ item.goles }}</td><td>{{ item.amarillas }}</td><td>{{ item.rojas }}</td><td>{{ item.expulsado ? 'Sí' : 'No' }}</td></tr>
+          <tr *ngIf="!data.participacion.detalle.length"><td colspan="9" class="empty">No existen partidos jugados aplicables al período y equipo seleccionados.</td></tr>
+        </tbody></table></div>
+      </section>
+      <section class="two-columns timeline-layout">
+        <article class="card"><h3>Línea de tiempo</h3><div class="timeline"><div *ngFor="let item of data.lineaTiempo" [attr.data-type]="item.tipo"><i></i><div><time>{{ item.fecha | date:'dd/MM/yyyy HH:mm' }}</time><b>{{ item.titulo }}</b><p>{{ item.detalle }}</p></div></div><p class="empty" *ngIf="!data.lineaTiempo.length">Sin eventos para estos filtros.</p></div></article>
+        <article class="card"><h3>Habilitaciones</h3><div class="compact-list"><div *ngFor="let item of data.habilitaciones"><span><b>{{ item.equipoNombre }} · #{{ item.dorsal }}</b><small>{{ item.categoriaNombre }} · {{ item.tipoSolicitud }}</small></span><em>{{ item.estado }}</em></div><p class="empty" *ngIf="!data.habilitaciones.length">Sin habilitaciones.</p></div>
+          <h3 class="subheading">Cambios de dorsal</h3><div class="compact-list"><div *ngFor="let item of data.cambiosDorsal"><span><b>#{{ item.dorsalAnterior }} → #{{ item.dorsalNuevo }}</b><small>{{ nombreEtapa(item.etapa) }} desde J{{ item.jornadaDesde }}</small></span><em>{{ item.activo ? 'Vigente' : 'Anulado' }}</em></div><p class="empty" *ngIf="!data.cambiosDorsal.length">Sin cambios de dorsal.</p></div></article>
+      </section>
+      <section class="two-columns">
+        <article class="card"><h3>Goles registrados</h3><div class="compact-list"><div *ngFor="let item of data.goles"><span><b>{{ item.tipo === 'autogol' ? 'Autogol' : 'Gol' }} · Jornada {{ item.jornada || '-' }}</b><small>{{ nombreEtapa(item.etapa) }} · {{ item.equipoNombre }}</small></span><em>{{ item.minuto ? item.minuto + '\'' : '-' }}</em></div><p class="empty" *ngIf="!data.goles.length">Sin goles.</p></div></article>
+        <article class="card"><h3>Sanciones</h3><div class="compact-list"><div *ngFor="let item of data.sanciones"><span><b>{{ item.tipoNombre }}</b><small>{{ item.descripcion || (item.partidosCumplidos + '/' + item.partidosSuspension + ' partidos') }}</small></span><em [class.active-text]="item.activa">{{ item.activa ? 'Activa' : 'Histórica' }}</em></div><p class="empty" *ngIf="!data.sanciones.length">Sin sanciones.</p></div>
+          <h3 class="subheading">Transferencias</h3><div class="compact-list"><div *ngFor="let item of data.transferencias"><span><b>{{ item.equipoOrigen }} → {{ item.equipoDestino }}</b><small>{{ item.fecha | date:'dd/MM/yyyy' }}</small></span><em>{{ item.estadoDirectivo }}</em></div><p class="empty" *ngIf="!data.transferencias.length">Sin transferencias.</p></div></article>
+      </section>
+    </ng-container>
+
+    <section class="initial-empty" *ngIf="!reporte && !loading && !errorMessage">Selecciona los filtros requeridos para generar el reporte.</section>
+  </main>
+</div>

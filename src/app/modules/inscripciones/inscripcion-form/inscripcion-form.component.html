@@ -69,17 +69,13 @@
 
       <div class="form-group">
         <label for="equipoId">Equipo *</label>
-        <select
+        <app-searchable-select
           id="equipoId"
           formControlName="equipoId"
-          [class.error]="hasError('equipoId', 'required')"
-          [class.disabled]="inscripcionForm.get('equipoId')?.disabled"
-        >
-          <option value="">Seleccione un equipo</option>
-          <option *ngFor="let equipo of equipos" [value]="equipo.id">
-            {{ equipo.nombre }}
-          </option>
-        </select>
+          [options]="equiposSearchOptions"
+          placeholder="Seleccione un equipo"
+          searchPlaceholder="Buscar equipo...">
+        </app-searchable-select>
         <span *ngIf="getErrorMessage('equipoId')" class="field-error">
           {{ getErrorMessage('equipoId') }}
         </span>

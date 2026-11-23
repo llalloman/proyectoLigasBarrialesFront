@@ -20,6 +20,11 @@
       <a *ngIf="permissions.canAccessTablaPosiciones()" routerLink="/tabla-posiciones" class="action-card"><span class="action-icon">🏆</span><h3>Tabla de posiciones</h3><p>Clasificación de equipos</p></a>
       <a *ngIf="permissions.canAccessGoleadores()" routerLink="/goleadores" class="action-card"><span class="action-icon">⚽</span><h3>Goleadores</h3><p>Estadísticas de jugadores</p></a>
     </div></section>
+    <section class="dashboard-section" *ngIf="permissions.canAccessReportes()"><h3>Reportes y estadísticas</h3><p>Consultas consolidadas de campeonato, equipos y jugadores.</p><div class="dashboard-actions">
+      <a routerLink="/reportes" class="action-card"><span class="action-icon">📈</span><h3>Reporte del campeonato</h3><p>Indicadores generales y rendimiento</p></a>
+      <a routerLink="/reportes/equipos" class="action-card"><span class="action-icon">📋</span><h3>Reporte por equipo</h3><p>Plantilla, partidos, goles y sanciones</p></a>
+      <a routerLink="/reportes/jugadores" class="action-card"><span class="action-icon">🕓</span><h3>Historial del jugador</h3><p>Trayectoria y línea de tiempo</p></a>
+    </div></section>
     <section class="dashboard-section" *ngIf="canAccessEquipos() || canAccessCampeonatos()"><h3>Gestión deportiva</h3><p>Equipos, jugadores y organización de campeonatos.</p><div class="dashboard-actions">
       <a *ngIf="canAccessLigas()" routerLink="/ligas" class="action-card"><span class="action-icon">🏆</span><h3>Gestión de ligas</h3><p>Administrar ligas</p></a>
       <a *ngIf="canAccessCampeonatos()" routerLink="/campeonatos" class="action-card"><span class="action-icon">🏅</span><h3>Campeonatos</h3><p>Torneos y competiciones</p></a>

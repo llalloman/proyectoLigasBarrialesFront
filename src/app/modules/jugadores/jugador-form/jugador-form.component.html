@@ -99,14 +99,13 @@
       <div class="form-row">
         <div class="form-group">
           <label for="equipoId">Equipo</label>
-          <select 
+          <app-searchable-select
             id="equipoId" 
-            formControlName="equipoId">
-            <option [ngValue]="null">Sin equipo</option>
-            <option *ngFor="let equipo of equipos" [ngValue]="equipo.id">
-              {{ equipo.nombre }} ({{ equipo.liga.nombre }})
-            </option>
-          </select>
+            formControlName="equipoId"
+            [options]="equiposSearchOptions"
+            placeholder="Sin equipo"
+            searchPlaceholder="Buscar equipo o liga...">
+          </app-searchable-select>
           <small class="help-text">Opcional: Asignar jugador a un equipo</small>
         </div>
       </div>

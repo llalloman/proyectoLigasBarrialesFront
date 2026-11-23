@@ -1,0 +1,46 @@
+<div class="searchable-select" [class.is-disabled]="disabled" [class.is-open]="open">
+  <div class="input-wrap">
+    <input
+      type="text"
+      [ngModel]="query"
+      (ngModelChange)="input($event)"
+      (focus)="focus()"
+      (keydown)="keydown($event)"
+      [disabled]="disabled"
+      [placeholder]="open ? searchPlaceholder : placeholder"
+      role="combobox"
+      autocomplete="off"
+      [attr.aria-expanded]="open"
+      [attr.aria-activedescendant]="activeIndex >= 0 ? optionId(activeIndex) : null"
+    />
+    <button
+      *ngIf="clearable && value !== null && !disabled"
+      type="button"
+      class="clear-button"
+      title="Limpiar selección"
+      aria-label="Limpiar selección"
+      (click)="clear($event)"
+    >×</button>
+    <span class="arrow" aria-hidden="true">⌄</span>
+  </div>
+
+  <div class="options-panel" *ngIf="open && !disabled" role="listbox">
+    <button
+      *ngFor="let option of filteredOptions; let index = index; trackBy: trackOption"
+      type="button"
+      class="option"
+      [id]="optionId(index)"
+      [class.active]="index === activeIndex"
+      [class.selected]="isSelected(option)"
+      [disabled]="option.disabled"
+      role="option"
+      [attr.aria-selected]="isSelected(option)"
+      (mouseenter)="activeIndex = index"
+      (click)="select(option)"
+    >
+      <span>{{ option.label }}</span>
+      <small *ngIf="option.secondary">{{ option.secondary }}</small>
+    </button>
+    <div class="empty-option" *ngIf="filteredOptions.length === 0">{{ emptyText }}</div>
+  </div>
+</div>

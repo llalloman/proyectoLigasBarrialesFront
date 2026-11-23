@@ -11,11 +11,21 @@ import { JugadoresService } from '../../../core/services/jugadores.service';
 import { PartidosService } from '../../partidos/partidos.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-sancion-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, MainNavComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    MainNavComponent,
+    SearchableSelectComponent,
+  ],
   templateUrl: './sancion-form.component.html',
   styleUrl: './sancion-form.component.scss',
 })
@@ -52,6 +62,33 @@ export class SancionFormComponent implements OnInit {
   get aplicaAJugador(): boolean {
     const a = this.aplicaASeleccionado;
     return a === '' || a === 'jugador';
+  }
+
+  get partidosSearchOptions(): SearchableSelectOption[] {
+    return this.partidos.map((partido) => ({
+      value: partido.id,
+      label: this.labelPartido(partido),
+      secondary: partido.fecha ? new Date(partido.fecha).toLocaleDateString('es-EC') : undefined,
+      searchText: `${partido.equipoLocal?.nombre ?? ''} ${partido.equipoVisitante?.nombre ?? ''} jornada ${partido.jornada ?? ''}`,
+    }));
+  }
+
+  get equiposSearchOptions(): SearchableSelectOption[] {
+    return this.equipos.map((equipo) => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      secondary: equipo.representante || equipo.nombreRepresentante || undefined,
+      searchText: `${equipo.nombre ?? ''} ${equipo.representante ?? ''} ${equipo.nombreRepresentante ?? ''}`,
+    }));
+  }
+
+  get jugadoresSearchOptions(): SearchableSelectOption[] {
+    return this.jugadores.map((jugador) => ({
+      value: jugador.id,
+      label: `${jugador.nombre ?? ''} ${jugador.apellido ?? ''}`.trim(),
+      secondary: jugador.cedula ? `Cédula: ${jugador.cedula}` : undefined,
+      searchText: `${jugador.nombre ?? ''} ${jugador.apellido ?? ''} ${jugador.cedula ?? ''}`,
+    }));
   }
 
   constructor(

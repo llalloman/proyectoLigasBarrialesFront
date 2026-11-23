@@ -9,11 +9,15 @@ import { LigasService } from '../../../core/services/ligas.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-movimiento-categoria',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, MainNavComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, MainNavComponent, SearchableSelectComponent],
   templateUrl: './movimiento-categoria.component.html',
   styleUrls: ['./movimiento-categoria.component.scss'],
 })
@@ -29,6 +33,15 @@ export class MovimientoCategoriaComponent implements OnInit {
   campeonatos: any[] = [];
   categorias: any[] = [];
   equiposDisponibles: any[] = []; // equipos con inscripción confirmada en el campeonato
+
+  get equiposSearchOptions(): SearchableSelectOption[] {
+    return this.equiposDisponibles.map((equipo) => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      secondary: equipo.categoriaActual ? `Categoría actual: ${equipo.categoriaActual}` : undefined,
+      searchText: `${equipo.nombre ?? ''} ${equipo.categoriaActual ?? ''}`,
+    }));
+  }
 
   constructor(
     private fb: FormBuilder,

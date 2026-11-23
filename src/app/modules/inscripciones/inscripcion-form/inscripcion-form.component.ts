@@ -13,11 +13,15 @@ import { Campeonato } from '../../campeonatos/campeonato.model';
 import { Categoria } from '../../categorias/categoria.model';
 import { Equipo } from '../../../core/models/equipo.model';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-inscripcion-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, MainNavComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, MainNavComponent, SearchableSelectComponent],
   templateUrl: './inscripcion-form.component.html',
   styleUrl: './inscripcion-form.component.scss'
 })
@@ -35,6 +39,14 @@ export class InscripcionFormComponent implements OnInit {
   isReintentar = false;
   currentUser: any;
   user$: Observable<any>;
+
+  get equiposSearchOptions(): SearchableSelectOption[] {
+    return this.equipos.map((equipo) => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      searchText: equipo.nombre,
+    }));
+  }
 
   constructor(
     private fb: FormBuilder,

@@ -15,6 +15,10 @@ import { EquiposService } from '../../../core/services/equipos.service';
 import { PdfTransferenciaService } from '../../../core/services/pdf-transferencia.service';
 import { Transferencia } from '../transferencia.model';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 import { Observable, map, startWith } from 'rxjs';
 import { FormControl } from '@angular/forms';
 
@@ -30,7 +34,8 @@ import { FormControl } from '@angular/forms';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MainNavComponent
+    MainNavComponent,
+    SearchableSelectComponent,
   ],
   templateUrl: './transferencias-list.component.html',
   styleUrls: ['./transferencias-list.component.scss'],
@@ -191,6 +196,22 @@ export class TransferenciasListComponent implements OnInit {
     }
     
     return this.equipos;
+  }
+
+  get equiposOrigenSearchOptions(): SearchableSelectOption[] {
+    return this.filteredEquiposOrigen.map((equipo) => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      searchText: equipo.nombre,
+    }));
+  }
+
+  get equiposDestinoSearchOptions(): SearchableSelectOption[] {
+    return this.filteredEquiposDestino.map((equipo) => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      searchText: equipo.nombre,
+    }));
   }
 
   onLigaChange(): void {

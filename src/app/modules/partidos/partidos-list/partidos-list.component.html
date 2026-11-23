@@ -232,7 +232,7 @@
             </div>
 
             <!-- Acciones -->
-            <div class="partido-acciones" *ngIf="permissions.canEditPartido() || permissions.canImprimirActa()">
+            <div class="partido-acciones" *ngIf="permissions.canEditPartido() || permissions.canConsultarActa()">
               <button
                 *ngIf="permissions.canEditPartido() && partido.equipoLocalId && partido.equipoVisitanteId && !partidoEstaBloqueado(partido)"
                 class="btn-accion btn-resultado"
@@ -258,7 +258,7 @@
               >
                 🔒
               </button>
-              <a *ngIf="permissions.canImprimirActa()" [routerLink]="['/partidos', partido.id, 'acta']" [queryParams]="parametrosRetornoActa()" class="btn-accion btn-acta">
+              <a *ngIf="permissions.canConsultarActa()" [routerLink]="['/partidos', partido.id, 'acta']" [queryParams]="parametrosRetornoActa()" class="btn-accion btn-acta">
                 📋 Acta
               </a>
               <a *ngIf="permissions.canEditPartido() && !partidoEstaBloqueado(partido)" [routerLink]="['/partidos/editar', partido.id]" [queryParams]="parametrosRetornoActa()" class="btn-accion btn-editar">
@@ -396,10 +396,13 @@
             <div *ngIf="autoresGoles.length > 0" class="autores-lista">
               <div class="autor-row" *ngFor="let gol of autoresGoles; let i = index">
                 <!-- Selector de jugador: solo muestra jugadores del equipo al que pertenece el gol -->
-                <select class="filter-select" [(ngModel)]="gol.jugadorId">
-                  <option [ngValue]="0">— Jugador —</option>
-                  <option *ngFor="let j of getJugadoresPorEquipo(gol.equipoDelJugadorId)" [ngValue]="j.id">{{ j.numeroCancha ? '#' + j.numeroCancha + ' - ' : '' }}{{ j.nombre }}</option>
-                </select>
+                <app-searchable-select
+                  [(ngModel)]="gol.jugadorId"
+                  [options]="opcionesJugadoresPorEquipo(gol.equipoDelJugadorId)"
+                  placeholder="Seleccionar jugador"
+                  searchPlaceholder="Buscar por nombre, cédula o dorsal..."
+                  emptyText="No hay jugadores habilitados coincidentes."
+                ></app-searchable-select>
 
                 <!-- Tipo de gol -->
                 <select class="filter-select tipo-select" [(ngModel)]="gol.tipo">
@@ -437,10 +440,10 @@
             <!-- Botones para agregar gol -->
             <div class="autores-acciones">
               <button type="button" class="btn btn-add-gol" (click)="agregarGol(resultadoModal.partido!.equipoLocalId!)">
-                + Gol {{ resultadoModal.partido?.equipoLocal?.nombre }}
+                + Gol {{ resultadoModal.partido.equipoLocal?.nombre }}
               </button>
               <button type="button" class="btn btn-add-gol" (click)="agregarGol(resultadoModal.partido!.equipoVisitanteId!)">
-                + Gol {{ resultadoModal.partido?.equipoVisitante?.nombre }}
+                + Gol {{ resultadoModal.partido.equipoVisitante?.nombre }}
               </button>
             </div>
           </div>

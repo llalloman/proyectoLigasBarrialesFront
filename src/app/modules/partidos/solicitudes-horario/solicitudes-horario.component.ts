@@ -11,11 +11,15 @@ import { CategoriasService } from '../../categorias/categorias.service';
 import { Partido, SolicitudHorario } from '../partido.model';
 import { PartidosService } from '../partidos.service';
 import { SolicitudHorarioPdfService } from './solicitud-horario-pdf.service';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-solicitudes-horario',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MainNavComponent],
+  imports: [CommonModule, FormsModule, RouterLink, MainNavComponent, SearchableSelectComponent],
   templateUrl: './solicitudes-horario.component.html',
   styleUrls: ['./solicitudes-horario.component.scss'],
 })
@@ -233,6 +237,15 @@ export class SolicitudesHorarioComponent implements OnInit {
 
   get partidosDisponibles(): Partido[] {
     return this.partidos.filter(partido => !this.etapa || partido.etapa === this.etapa);
+  }
+
+  get partidosSearchOptions(): SearchableSelectOption[] {
+    return this.partidosDisponibles.map(partido => ({
+      value: partido.id,
+      label: this.textoPartido(partido),
+      secondary: partido.cancha || undefined,
+      searchText: `${partido.equipoLocal?.nombre ?? ''} ${partido.equipoVisitante?.nombre ?? ''} jornada ${partido.jornada ?? ''}`,
+    }));
   }
 
   get partidoSeleccionado(): Partido | undefined {

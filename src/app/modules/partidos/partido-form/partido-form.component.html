@@ -78,17 +78,23 @@
               <div class="form-grid">
                 <div class="form-item">
                   <label>Equipo Local * <span *ngIf="isEditMode" class="field-locked" title="No editable">🔒</span></label>
-                  <select class="form-select" formControlName="equipoLocalId">
-                    <option value="">-- Selecciona --</option>
-                    <option *ngFor="let e of equipos" [value]="e.id">{{ e.nombre }}</option>
-                  </select>
+                  <app-searchable-select
+                    formControlName="equipoLocalId"
+                    [options]="equiposLocalOptions"
+                    placeholder="Seleccionar equipo local"
+                    searchPlaceholder="Buscar equipo local..."
+                    emptyText="No hay equipos locales coincidentes."
+                  ></app-searchable-select>
                 </div>
                 <div class="form-item">
                   <label>Equipo Visitante * <span *ngIf="isEditMode" class="field-locked" title="No editable">🔒</span></label>
-                  <select class="form-select" formControlName="equipoVisitanteId">
-                    <option value="">-- Selecciona --</option>
-                    <option *ngFor="let e of equipos" [value]="e.id">{{ e.nombre }}</option>
-                  </select>
+                  <app-searchable-select
+                    formControlName="equipoVisitanteId"
+                    [options]="equiposVisitanteOptions"
+                    placeholder="Seleccionar equipo visitante"
+                    searchPlaceholder="Buscar equipo visitante..."
+                    emptyText="No hay equipos visitantes coincidentes."
+                  ></app-searchable-select>
                 </div>
               </div>
             </div>

@@ -9,6 +9,7 @@ import { Equipo } from '../../../core/models/equipo.model';
 import { Usuario } from '../../../core/models/usuario.model';
 import { Observable } from 'rxjs';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { SearchableSelectOption } from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-jugador-form',
@@ -25,6 +26,15 @@ export class JugadorFormComponent implements OnInit {
   equipos: Equipo[] = [];
   user$: Observable<Usuario | null>;
   isMaster = false;
+
+  get equiposSearchOptions(): SearchableSelectOption[] {
+    return this.equipos.map((equipo) => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      secondary: equipo.liga?.nombre,
+      searchText: `${equipo.nombre} ${equipo.liga?.nombre ?? ''}`,
+    }));
+  }
 
   constructor(
     private fb: FormBuilder,

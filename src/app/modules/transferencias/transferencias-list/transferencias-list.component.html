@@ -93,31 +93,27 @@
       <!-- Equipo Origen (solo master y directivo_liga) -->
       <div class="filter-item" *ngIf="permissions.isMaster() || permissions.isDirectivo()">
         <label for="filter-equipo-origen">Equipo Origen</label>
-        <select 
+        <app-searchable-select
           id="filter-equipo-origen" 
           [(ngModel)]="selectedEquipoOrigenId"
-          class="filter-select"
-        >
-          <option [ngValue]="null">Todos los equipos</option>
-          <option *ngFor="let equipo of filteredEquiposOrigen" [ngValue]="equipo.id">
-            {{ equipo.nombre }}
-          </option>
-        </select>
+          (ngModelChange)="currentPage = 1"
+          [options]="equiposOrigenSearchOptions"
+          placeholder="Todos los equipos"
+          searchPlaceholder="Buscar equipo origen...">
+        </app-searchable-select>
       </div>
 
       <!-- Equipo Destino (solo master y directivo_liga) -->
       <div class="filter-item" *ngIf="permissions.isMaster() || permissions.isDirectivo()">
         <label for="filter-equipo-destino">Equipo Destino</label>
-        <select 
+        <app-searchable-select
           id="filter-equipo-destino" 
           [(ngModel)]="selectedEquipoDestinoId"
-          class="filter-select"
-        >
-          <option [ngValue]="null">Todos los equipos</option>
-          <option *ngFor="let equipo of filteredEquiposDestino" [ngValue]="equipo.id">
-            {{ equipo.nombre }}
-          </option>
-        </select>
+          (ngModelChange)="currentPage = 1"
+          [options]="equiposDestinoSearchOptions"
+          placeholder="Todos los equipos"
+          searchPlaceholder="Buscar equipo destino...">
+        </app-searchable-select>
       </div>
 
       <!-- Estado -->

@@ -11,8 +11,12 @@ import { CategoriasService } from '../../categorias/categorias.service';
 import { PartidosService } from '../partidos.service';
 import { BolillaHorario, ProgramacionSemanal, ProgramacionSemanalResumen, SolicitudHorario, VocaliaPartido, VocaliasProgramacion } from '../partido.model';
 import { ProgramacionSemanalExport, ProgramacionSemanalExportService } from './programacion-semanal-export.service';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
-@Component({ selector: 'app-programacion-semanal', standalone: true, imports: [CommonModule, FormsModule, RouterLink, MainNavComponent], templateUrl: './programacion-semanal.component.html', styleUrls: ['./programacion-semanal.component.scss'] })
+@Component({ selector: 'app-programacion-semanal', standalone: true, imports: [CommonModule, FormsModule, RouterLink, MainNavComponent, SearchableSelectComponent], templateUrl: './programacion-semanal.component.html', styleUrls: ['./programacion-semanal.component.scss'] })
 export class ProgramacionSemanalComponent implements OnInit {
   ligas: any[] = []; campeonatos: any[] = []; categorias: any[] = [];
   ligaId: number | null = null; campeonatoId: number | null = null; categoriaId: number | null = null;
@@ -79,6 +83,14 @@ export class ProgramacionSemanalComponent implements OnInit {
     });
   }
   get pendientes(): any[] { if (!this.sesion) return []; const asignados = new Set(this.sesion.bolillas.filter(b => b.partidoId).map(b => b.partidoId)); return this.sesion.partidos.filter(p => !asignados.has(p.id)); }
+  get partidosPendientesSearchOptions(): SearchableSelectOption[] {
+    return this.pendientes.map(partido => ({
+      value: partido.id,
+      label: `${this.solicitudDelPartido(partido.id) ? '⚑ SOLICITUD · ' : ''}${partido.categoria?.nombre || 'Categoría'} · J${partido.jornada} · ${partido.equipoLocal?.nombre} vs ${partido.equipoVisitante?.nombre}`,
+      secondary: partido.cancha || undefined,
+      searchText: `${partido.equipoLocal?.nombre ?? ''} ${partido.equipoVisitante?.nombre ?? ''} ${partido.categoria?.nombre ?? ''} jornada ${partido.jornada ?? ''}`,
+    }));
+  }
   get bolillasDisponibles(): number { return this.sesion?.bolillas.filter(b => b.estado === 'disponible').length ?? 0; }
   sacar(): void { if (!this.sesion || !this.partidoSeleccionadoId) return; this.sorteando = true; this.error = ''; this.partidosService.sacarBolilla(this.sesion.id, this.partidoSeleccionadoId).subscribe({ next: r => { this.ultimaBolilla = r.bolilla; this.partidoSeleccionadoId = null; this.refrescar(); this.sorteando = false; }, error: e => { this.error = e?.error?.message ?? 'No se pudo sacar la bolilla.'; this.sorteando = false; } }); }
   confirmar(): void { if (!this.sesion || this.pendientes.length) return; this.confirmando = true; this.partidosService.confirmarProgramacionSemanal(this.sesion.id).subscribe({ next: s => { this.sesion = s; this.exito = 'Programación confirmada. Los horarios fueron guardados en los partidos.'; this.confirmando = false; this.cargarProgramacionesConfirmadas(); this.cargarVocalias(); }, error: e => { this.error = e?.error?.message ?? 'No se pudo confirmar la programación.'; this.confirmando = false; } }); }

@@ -26,11 +26,15 @@ import { Equipo } from '../../../core/models/equipo.model';
 import { Jugador } from '../../../core/models/jugador.model';
 import { Categoria } from '../../categorias/categoria.model';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-jugador-campeonato-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, MainNavComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, MainNavComponent, SearchableSelectComponent],
   templateUrl: './jugador-campeonato-form.component.html',
   styleUrls: ['./jugador-campeonato-form.component.scss'],
 })
@@ -55,44 +59,21 @@ export class JugadorCampeonatoFormComponent implements OnInit {
   antecedenteReingreso: AntecedenteReingreso | null = null;
   checkingAntecedente = false;
 
-  // Autocomplete de jugadores
-  jugadorSearchText: string = '';
-  showJugadorDropdown: boolean = false;
-
-  get jugadoresFiltrados(): Jugador[] {
-    const query = this.jugadorSearchText.toLowerCase().trim();
-    if (!query) return this.jugadores;
-    return this.jugadores.filter(j =>
-      j.nombre.toLowerCase().includes(query) ||
-      (j.cedula && j.cedula.toLowerCase().includes(query))
-    );
+  get equiposSearchOptions(): SearchableSelectOption[] {
+    return this.equipos.map((equipo) => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      searchText: equipo.nombre,
+    }));
   }
 
-  selectJugador(jugador: Jugador): void {
-    this.form.get('jugadorId')?.setValue(jugador.id);
-    this.form.get('jugadorId')?.markAsTouched();
-    this.jugadorSearchText = `${jugador.nombre} - ${jugador.cedula}`;
-    this.showJugadorDropdown = false;
-  }
-
-  onJugadorSearchInput(value: string): void {
-    this.jugadorSearchText = value;
-    this.showJugadorDropdown = true;
-
-    const jugadorId = Number(this.form.get('jugadorId')?.value);
-    const seleccionado = this.jugadores.find((jugador) => jugador.id === jugadorId);
-    const textoSeleccionado = seleccionado
-      ? `${seleccionado.nombre} - ${seleccionado.cedula}`
-      : '';
-
-    if (!seleccionado || value !== textoSeleccionado) {
-      this.form.get('jugadorId')?.setValue(null);
-    }
-  }
-
-  onJugadorBlur(): void {
-    // Timeout para permitir que el mousedown del option se ejecute primero
-    setTimeout(() => { this.showJugadorDropdown = false; }, 200);
+  get jugadoresSearchOptions(): SearchableSelectOption[] {
+    return this.jugadores.map((jugador) => ({
+      value: jugador.id,
+      label: jugador.nombre,
+      secondary: jugador.cedula ? `Cédula: ${jugador.cedula}` : undefined,
+      searchText: `${jugador.nombre} ${jugador.cedula ?? ''}`,
+    }));
   }
 
   constructor(
@@ -256,8 +237,6 @@ export class JugadorCampeonatoFormComponent implements OnInit {
   }
 
   loadJugadoresByEquipo(equipoId: number): void {
-    this.jugadorSearchText = '';
-    this.showJugadorDropdown = false;
     this.form.get('jugadorId')?.setValue(null);
     this.jugadoresService.getByEquipo(equipoId).subscribe({
       next: (jugadores) => {
@@ -398,12 +377,6 @@ export class JugadorCampeonatoFormComponent implements OnInit {
                 posicion: jugadorCampeonato.posicion,
                 observaciones: jugadorCampeonato.observaciones,
               });
-
-              // Mostrar nombre del jugador en el campo de búsqueda (modo edición)
-              const jugadorSeleccionado = jugadores.find(j => j.id === jugadorCampeonato.jugadorId);
-              if (jugadorSeleccionado) {
-                this.jugadorSearchText = `${jugadorSeleccionado.nombre} - ${jugadorSeleccionado.cedula}`;
-              }
 
               // Forzar la actualización de la vista y deshabilitar campos después
               // de que Angular haya renderizado las opciones del select

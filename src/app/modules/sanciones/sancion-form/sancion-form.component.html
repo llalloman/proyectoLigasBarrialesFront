@@ -67,10 +67,12 @@
 
             <div class="form-item">
               <label>Partido (opcional)</label>
-              <select class="form-select" formControlName="partidoId">
-                <option value="">-- Sin partido específico --</option>
-                <option *ngFor="let p of partidos" [value]="p.id">{{ labelPartido(p) }}</option>
-              </select>
+              <app-searchable-select
+                formControlName="partidoId"
+                [options]="partidosSearchOptions"
+                placeholder="Sin partido específico"
+                searchPlaceholder="Buscar por equipos o jornada...">
+              </app-searchable-select>
             </div>
 
             <div class="form-item">
@@ -87,23 +89,25 @@
             <!-- Equipo (siempre visible) -->
             <div class="form-item">
               <label>Equipo</label>
-              <select class="form-select" formControlName="equipoId">
-                <option value="">-- Sin equipo --</option>
-                <option *ngFor="let e of equipos" [value]="e.id">{{ e.nombre }}</option>
-              </select>
+              <app-searchable-select
+                formControlName="equipoId"
+                [options]="equiposSearchOptions"
+                placeholder="Sin equipo"
+                searchPlaceholder="Buscar equipo...">
+              </app-searchable-select>
               <span class="field-hint">Selecciona el equipo para filtrar jugadores</span>
             </div>
 
             <!-- Jugador (visible si aplica a jugador o equipo) -->
             <div class="form-item" *ngIf="aplicaASeleccionado === 'jugador' || aplicaASeleccionado === ''">
               <label>Jugador (opcional)</label>
-              <select class="form-select" formControlName="jugadorId"
-                [attr.disabled]="!form.get('equipoId')?.value ? true : null">
-                <option value="">-- Sin jugador --</option>
-                <option *ngFor="let j of jugadores" [value]="j.id">
-                  {{ j.nombre }} {{ j.apellido ?? '' }}
-                </option>
-              </select>
+              <app-searchable-select
+                formControlName="jugadorId"
+                [options]="jugadoresSearchOptions"
+                [disabled]="!form.get('equipoId')?.value"
+                placeholder="Sin jugador"
+                searchPlaceholder="Buscar por nombre o cédula...">
+              </app-searchable-select>
             </div>
 
           </div>

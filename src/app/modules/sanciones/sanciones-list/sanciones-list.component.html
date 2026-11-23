@@ -154,10 +154,14 @@
 
         <div class="filtro-item" *ngIf="!permissions.isDirigente()">
           <label>Equipo</label>
-          <select class="form-select" [(ngModel)]="filtroEquipoId" [disabled]="sanciones.length === 0">
-            <option [ngValue]="null">— Todos —</option>
-            <option *ngFor="let eq of equiposDisponibles" [ngValue]="eq.id">{{ eq.nombre }}</option>
-          </select>
+          <app-searchable-select
+            [(ngModel)]="filtroEquipoId"
+            (ngModelChange)="currentPage = 1"
+            [options]="equiposSearchOptions"
+            [disabled]="sanciones.length === 0"
+            placeholder="Todos los equipos"
+            searchPlaceholder="Buscar equipo...">
+          </app-searchable-select>
         </div>
 
       </div>

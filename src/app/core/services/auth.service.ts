@@ -10,6 +10,7 @@ import {
   User,
 } from '../models/auth.model';
 import { ConfiguracionService } from './configuracion.service';
+import { NotificacionesService } from './notificaciones.service';
 
 /**
  * Servicio de autenticación
@@ -32,7 +33,12 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
   public user$ = this.currentUser$;
 
-  constructor(private http: HttpClient, private router: Router, private configuracionService: ConfiguracionService) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private configuracionService: ConfiguracionService,
+    private notificacionesService: NotificacionesService,
+  ) {}
 
   /**
    * Realiza el login del usuario
@@ -70,6 +76,7 @@ export class AuthService {
     localStorage.removeItem(this.USER_KEY);
     this.currentUserSubject.next(null);
     this.configuracionService.reset();
+    this.notificacionesService.limpiarEstado();
     this.router.navigate(['/login']);
   }
 

@@ -11,11 +11,15 @@ import { AuthService } from '../../../core/services/auth.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { LigasService } from '../../../core/services/ligas.service';
 import { MainNavComponent } from '../../../shared/components/main-nav/main-nav.component';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-sanciones-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MainNavComponent],
+  imports: [CommonModule, FormsModule, RouterModule, MainNavComponent, SearchableSelectComponent],
   templateUrl: './sanciones-list.component.html',
   styleUrl: './sanciones-list.component.scss',
 })
@@ -102,6 +106,14 @@ export class SancionesListComponent implements OnInit {
     return [...mapa.entries()]
       .map(([id, nombre]) => ({ id, nombre }))
       .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  get equiposSearchOptions(): SearchableSelectOption[] {
+    return this.equiposDisponibles.map((equipo) => ({
+      value: equipo.id,
+      label: equipo.nombre,
+      searchText: equipo.nombre,
+    }));
   }
 
   get sancionesFiltradas(): Sancion[] {

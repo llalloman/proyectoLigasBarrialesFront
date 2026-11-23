@@ -42,15 +42,14 @@
         <!-- Filtro de Equipo -->
         <div class="filter-group">
           <label for="equipoFilter">Equipo:</label>
-          <select 
+          <app-searchable-select
             id="equipoFilter"
             [(ngModel)]="selectedEquipoId"
-            class="filter-select">
-            <option value="">Todos los equipos</option>
-            <option *ngFor="let equipo of filteredEquipos" [value]="equipo.id">
-              {{ equipo.nombre }}
-            </option>
-          </select>
+            (ngModelChange)="currentPage = 1"
+            [options]="equiposSearchOptions"
+            placeholder="Todos los equipos"
+            searchPlaceholder="Buscar equipo...">
+          </app-searchable-select>
         </div>
 
         <!-- Botón para limpiar filtros -->

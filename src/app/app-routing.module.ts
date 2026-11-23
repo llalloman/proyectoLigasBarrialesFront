@@ -29,6 +29,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'notificaciones',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./modules/notificaciones/notificaciones.component').then(
+        (m) => m.NotificacionesComponent
+      ),
+  },
+  {
     path: 'ligas',
     canActivate: [AuthGuard, RolesGuard],
     data: { roles: ['master', 'directivo_liga'] },
@@ -293,7 +301,7 @@ export const routes: Routes = [
       {
         path: ':partidoId/acta',
         canActivate: [RolesGuard],
-        data: { roles: ['master', 'directivo_liga', 'tribuna_penas', 'tesoreria'] },
+        data: { roles: ['master', 'directivo_liga', 'dirigente_equipo', 'tribuna_penas', 'tesoreria'] },
         loadComponent: () =>
           import('./modules/acta-partido/acta-partido/acta-partido.component').then(
             (m) => m.ActaPartidoComponent
@@ -319,12 +327,48 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'goleadores/historial',
+    canActivate: [AuthGuard, RolesGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'] },
+    loadComponent: () =>
+      import('./modules/goleadores/goleadores-historial/goleadores-historial.component').then(
+        (m) => m.GoleadoresHistorialComponent
+      ),
+  },
+  {
     path: 'goleadores',
     canActivate: [AuthGuard, RolesGuard],
     data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'] },
     loadComponent: () =>
       import('./modules/goleadores/goleadores-list/goleadores-list.component').then(
         (m) => m.GoleadoresListComponent
+      ),
+  },
+  {
+    path: 'reportes',
+    canActivate: [AuthGuard, RolesGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'] },
+    loadComponent: () =>
+      import('./modules/reportes/reportes-campeonato/reportes-campeonato.component').then(
+        (m) => m.ReportesCampeonatoComponent
+      ),
+  },
+  {
+    path: 'reportes/equipos',
+    canActivate: [AuthGuard, RolesGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'], tipo: 'equipo' },
+    loadComponent: () =>
+      import('./modules/reportes/reportes-entidad/reportes-entidad.component').then(
+        (m) => m.ReportesEntidadComponent
+      ),
+  },
+  {
+    path: 'reportes/jugadores',
+    canActivate: [AuthGuard, RolesGuard],
+    data: { roles: ['master', 'directivo_liga', 'dirigente_equipo'], tipo: 'jugador' },
+    loadComponent: () =>
+      import('./modules/reportes/reportes-entidad/reportes-entidad.component').then(
+        (m) => m.ReportesEntidadComponent
       ),
   },
   {

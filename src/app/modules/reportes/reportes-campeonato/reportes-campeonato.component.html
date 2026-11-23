@@ -1,0 +1,149 @@
+<div class="page-container">
+  <header class="page-header">
+    <h1>Sistema de Ligas Barriales</h1>
+    <div class="user-info" *ngIf="user$ | async as user">
+      <span>{{ user.nombre }}</span>
+      <span class="user-role">({{ user.rol.nombre }})</span>
+      <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <app-main-nav></app-main-nav>
+
+  <div class="module-header">
+    <div>
+      <h2>📈 Reportes y estadísticas</h2>
+      <p>Resumen deportivo de solo lectura por campeonato, categoría y etapa.</p>
+    </div>
+    <div class="export-actions" *ngIf="reporte">
+      <button type="button" class="btn btn-outline" (click)="descargarPdf()" [disabled]="exportando">PDF</button>
+      <button type="button" class="btn btn-outline" (click)="descargarExcel()" [disabled]="exportando">Excel</button>
+    </div>
+  </div>
+
+  <main class="content">
+    <nav class="report-tabs">
+      <a routerLink="/reportes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Campeonato</a>
+      <a routerLink="/reportes/equipos" routerLinkActive="active">Equipos</a>
+      <a routerLink="/reportes/jugadores" routerLinkActive="active">Jugadores</a>
+    </nav>
+    <section class="filters-card">
+      <div class="filters-grid">
+        <div class="filter-item">
+          <label>Liga</label>
+          <select [(ngModel)]="ligaId" (change)="onLigaChange()" [disabled]="!esMaster">
+            <option [ngValue]="null">Seleccionar liga</option>
+            <option *ngFor="let liga of ligas" [ngValue]="liga.id">{{ liga.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label>Campeonato *</label>
+          <select [(ngModel)]="campeonatoId" (change)="onCampeonatoChange()" [disabled]="!ligaId">
+            <option [ngValue]="null">Seleccionar campeonato</option>
+            <option *ngFor="let campeonato of campeonatos" [ngValue]="campeonato.id">{{ campeonato.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label>Categoría</label>
+          <select [(ngModel)]="categoriaId" (change)="onCategoriaChange()" [disabled]="!campeonatoId">
+            <option [ngValue]="null">Todas las categorías</option>
+            <option *ngFor="let categoria of categorias" [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label>Etapa</label>
+          <select [(ngModel)]="etapa" (change)="consultar()" [disabled]="!reporte || etapas.length === 0">
+            <option value="">Todas las etapas</option>
+            <option *ngFor="let opcion of etapas" [value]="opcion">{{ nombreEtapa(opcion) }}</option>
+          </select>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="consultar()" [disabled]="!campeonatoId || loading">
+        {{ loading ? 'Generando...' : 'Actualizar reporte' }}
+      </button>
+    </section>
+
+    <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="loading" *ngIf="loading"><span class="spinner"></span> Calculando estadísticas...</div>
+
+    <ng-container *ngIf="reporte as data">
+      <section class="report-context">
+        <div>
+          <strong>{{ data.contexto.campeonatoNombre }}</strong>
+          <span>{{ data.contexto.categoriaNombre }} · {{ nombreEtapa(data.contexto.etapa) }}</span>
+        </div>
+        <span class="read-only">Solo lectura</span>
+      </section>
+
+      <section class="summary-grid">
+        <article><span>Total de partidos</span><strong>{{ data.resumen.totalPartidos }}</strong></article>
+        <article><span>Partidos jugados</span><strong>{{ data.resumen.partidosJugados }}</strong></article>
+        <article><span>Pendientes</span><strong>{{ data.resumen.partidosPendientes }}</strong></article>
+        <article><span>Avance</span><strong>{{ data.resumen.porcentajeAvance | number:'1.0-2' }}%</strong></article>
+        <article><span>Goles</span><strong>{{ data.resumen.totalGoles }}</strong></article>
+        <article><span>Promedio de goles</span><strong>{{ data.resumen.promedioGoles | number:'1.0-2' }}</strong></article>
+        <article><span>Equipos</span><strong>{{ data.resumen.totalEquipos }}</strong></article>
+        <article><span>Habilitados</span><strong>{{ data.resumen.jugadoresHabilitados }}</strong></article>
+        <article><span>Sanciones activas</span><strong>{{ data.resumen.sancionesActivas }}</strong></article>
+      </section>
+
+      <section class="report-grid">
+        <article class="card states-card">
+          <div class="card-header">
+            <div><h3>Estado de los partidos</h3><p>Distribución de la programación filtrada.</p></div>
+          </div>
+          <div class="state-row" *ngFor="let estado of estados">
+            <div class="state-label"><span>{{ estado.etiqueta }}</span><strong>{{ estado.valor }}</strong></div>
+            <div class="progress-track">
+              <span [class]="estado.clase" [style.width.%]="porcentajeEstado(estado.valor)"></span>
+            </div>
+            <small>{{ porcentajeEstado(estado.valor) | number:'1.0-2' }}%</small>
+          </div>
+        </article>
+
+        <article class="card scorers-card">
+          <div class="card-header">
+            <div><h3>Máximos goleadores</h3><p>Autogoles excluidos del total personal.</p></div>
+            <a routerLink="/goleadores/historial">Ver historial</a>
+          </div>
+          <div class="empty" *ngIf="data.goleadores.length === 0">No existen goles registrados para estos filtros.</div>
+          <ol class="scorers" *ngIf="data.goleadores.length">
+            <li *ngFor="let jugador of data.goleadores; let i = index">
+              <span class="position">{{ i + 1 }}</span>
+              <div><strong>{{ jugador.jugadorNombre }}</strong><small>{{ jugador.equipoNombre }}</small></div>
+              <span class="goals">{{ jugador.goles }}<small> goles</small></span>
+            </li>
+          </ol>
+        </article>
+      </section>
+
+      <section class="card performance-card">
+        <div class="card-header">
+          <div><h3>Rendimiento por equipo</h3><p>Resultados deportivos; no reemplaza la tabla oficial de posiciones.</p></div>
+          <a routerLink="/tabla-posiciones">Ver tabla oficial</a>
+        </div>
+        <div class="empty" *ngIf="data.rendimientoEquipos.length === 0">No existen equipos para los filtros seleccionados.</div>
+        <div class="table-wrapper" *ngIf="data.rendimientoEquipos.length">
+          <table>
+            <thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Efectividad</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let equipo of data.rendimientoEquipos; let i = index">
+                <td>{{ i + 1 }}</td><td class="team-name">{{ equipo.equipoNombre }}</td>
+                <td>{{ equipo.pj }}</td><td>{{ equipo.pg }}</td><td>{{ equipo.pe }}</td><td>{{ equipo.pp }}</td>
+                <td>{{ equipo.gf }}</td><td>{{ equipo.gc }}</td><td [class.positive]="equipo.dg > 0" [class.negative]="equipo.dg < 0">{{ equipo.dg > 0 ? '+' : '' }}{{ equipo.dg }}</td>
+                <td><strong>{{ equipo.efectividad | number:'1.0-2' }}%</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </ng-container>
+
+    <section class="empty initial" *ngIf="!reporte && !loading && !errorMessage">
+      Selecciona un campeonato para generar el reporte.
+    </section>
+  </main>
+</div>

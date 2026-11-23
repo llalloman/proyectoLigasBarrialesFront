@@ -2,7 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { FilaGoleador } from './goleadores.model';
+import {
+  FilaGoleador,
+  HistorialGolFiltros,
+  HistorialGolesRespuesta,
+} from './goleadores.model';
 
 @Injectable({
   providedIn: 'root',
@@ -34,5 +38,31 @@ export class GoleadoresService {
   getGolesPorPartido(partidoId: number): Observable<any[]> {
     const params = new HttpParams().set('partidoId', partidoId.toString());
     return this.http.get<any[]>(`${this.apiUrl}/partido`, { params });
+  }
+
+  getHistorial(filtros: HistorialGolFiltros): Observable<HistorialGolesRespuesta> {
+    let params = new HttpParams()
+      .set('campeonatoId', String(filtros.campeonatoId))
+      .set('pagina', String(filtros.pagina ?? 1))
+      .set('limite', String(filtros.limite ?? 20))
+      .set('estado', filtros.estado ?? 'activos');
+
+    const opcionales: Array<[string, string | number | null | undefined]> = [
+      ['categoriaId', filtros.categoriaId],
+      ['etapa', filtros.etapa],
+      ['jornada', filtros.jornada],
+      ['equipoId', filtros.equipoId],
+      ['jugadorId', filtros.jugadorId],
+      ['tipo', filtros.tipo],
+      ['fechaDesde', filtros.fechaDesde],
+      ['fechaHasta', filtros.fechaHasta],
+    ];
+    for (const [clave, valor] of opcionales) {
+      if (valor !== null && valor !== undefined && valor !== '') {
+        params = params.set(clave, String(valor));
+      }
+    }
+
+    return this.http.get<HistorialGolesRespuesta>(`${this.apiUrl}/historial`, { params });
   }
 }

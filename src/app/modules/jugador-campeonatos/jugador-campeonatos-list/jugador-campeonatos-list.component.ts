@@ -22,11 +22,15 @@ import { ListaJugadoresService } from '../../../core/services/lista-jugadores.se
 import { Liga } from '../../../core/models/liga.model';
 import { Campeonato } from '../../campeonatos/campeonato.model';
 import { Equipo } from '../../../core/models/equipo.model';
+import {
+  SearchableSelectComponent,
+  SearchableSelectOption,
+} from '../../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-jugador-campeonatos-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, MainNavComponent, FormsModule],
+  imports: [CommonModule, RouterModule, MainNavComponent, FormsModule, SearchableSelectComponent],
   templateUrl: './jugador-campeonatos-list.component.html',
   styleUrls: ['./jugador-campeonatos-list.component.scss']
 })
@@ -458,6 +462,14 @@ export class JugadorCampeonatosListComponent implements OnInit {
     }
     const ligaId = Number(this.filterLigaId);
     return this.equipos.filter(e => e.ligaId === ligaId);
+  }
+
+  get filteredEquiposSearchOptions(): SearchableSelectOption[] {
+    return this.filteredEquipos.map((equipo) => ({
+      value: String(equipo.id),
+      label: equipo.nombre,
+      searchText: equipo.nombre,
+    }));
   }
   
   onLigaChange(): void {

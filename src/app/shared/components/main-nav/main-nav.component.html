@@ -14,9 +14,9 @@
     </div>
   </div>
 
-  <!-- Grupo: Competencia (Campeonatos, Partidos, Tabla, Goleadores) -->
+  <!-- Grupo: Competencia (Campeonatos, Partidos, Tabla, Goleadores, Reportes) -->
   <div class="nav-group"
-    *ngIf="permissions.canAccessCampeonatos() || permissions.canAccessPartidos() || permissions.canAccessGoleadores()">
+    *ngIf="permissions.canAccessCampeonatos() || permissions.canAccessPartidos() || permissions.canAccessGoleadores() || permissions.canAccessReportes()">
     <span class="nav-group-label">Competencia ▾</span>
     <div class="nav-dropdown">
       <a *ngIf="permissions.canAccessCampeonatos()" routerLink="/campeonatos" routerLinkActive="active">🏅 Campeonatos</a>
@@ -24,6 +24,9 @@
       <a *ngIf="permissions.canAccessSolicitudesHorario()" routerLink="/partidos/solicitudes-horario" routerLinkActive="active">🕒 Solicitudes de horario</a>
       <a *ngIf="permissions.canAccessTablaPosiciones()" routerLink="/tabla-posiciones" routerLinkActive="active">📊 Tabla</a>
       <a *ngIf="permissions.canAccessGoleadores()" routerLink="/goleadores" routerLinkActive="active">⚽ Goleadores</a>
+      <a *ngIf="permissions.canAccessReportes()" routerLink="/reportes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">📈 Reportes</a>
+      <a *ngIf="permissions.canAccessReportes()" routerLink="/reportes/equipos" routerLinkActive="active">📋 Reporte por equipo</a>
+      <a *ngIf="permissions.canAccessReportes()" routerLink="/reportes/jugadores" routerLinkActive="active">🕓 Historial de jugador</a>
     </div>
   </div>
 
@@ -54,6 +57,40 @@
     <div class="nav-dropdown">
       <a routerLink="/usuarios" routerLinkActive="active">👤 Usuarios</a>
       <a routerLink="/configuracion" routerLinkActive="active">⚙️ Configuración</a>
+    </div>
+  </div>
+
+  <div class="notifications-nav">
+    <button
+      type="button"
+      class="notifications-trigger"
+      (click)="alternarNotificaciones()"
+      [attr.aria-expanded]="panelNotificacionesAbierto"
+      aria-label="Abrir notificaciones"
+    >
+      <svg class="bell-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+        <path d="M10 21h4"></path>
+      </svg>
+      <span class="notifications-count" *ngIf="(noLeidas$ | async) as noLeidas">{{ noLeidas > 99 ? '99+' : noLeidas }}</span>
+    </button>
+    <div class="notifications-panel" *ngIf="panelNotificacionesAbierto">
+      <div class="notifications-panel-title">
+        <strong>Notificaciones</strong>
+        <a routerLink="/notificaciones" (click)="panelNotificacionesAbierto = false">Ver todas</a>
+      </div>
+      <button
+        type="button"
+        class="notification-preview"
+        [class.unread]="!notificacion.leida"
+        *ngFor="let notificacion of recientes$ | async"
+        (click)="abrirNotificacion(notificacion)"
+      >
+        <strong>{{ notificacion.titulo }}</strong>
+        <span>{{ notificacion.mensaje }}</span>
+        <small>{{ notificacion.creadoEn | date:'dd/MM HH:mm' }}</small>
+      </button>
+      <p class="notifications-empty" *ngIf="(recientes$ | async)?.length === 0">No tienes notificaciones.</p>
     </div>
   </div>
 
